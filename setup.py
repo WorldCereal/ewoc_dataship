@@ -11,6 +11,10 @@ setup(
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     license="Copyright (c) 2021 CS Group",
     python_requires=">=3",
+    install_requires=[
+       "eodag",
+       "geopandas",
+    ],
     package_data={"": ["index/s2_idx.geojson"]},
     entry_points={"console_scripts": ["dataship=dataship.dag.main:cli"]},
 )
