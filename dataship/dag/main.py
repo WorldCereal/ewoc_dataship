@@ -27,6 +27,8 @@ def eodag_prods(tile_id, start_date, end_date, product_type, out_dir, config_fil
                                items_per_page=200, cloudCover=70)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
+    # Sometimes the search results show neighbouring tiles
+    # Filter and keep only desired tile
     dag.download_all(products, outputs_prefix=out_dir)
 
 
@@ -86,8 +88,24 @@ def eodag_by_ids(s2_tile_id, product_id, out_dir, provider, config_file=None):
     else:
         # Download data for other providers
         dag.download(final_product, outputs_prefix=out_dir)
-
-
+@cli.command('tirs_cp',help="Get L8 Thermal band from aws")
+@click.option('-k', '--s3_full_key')
+@click.option('-o', '--out_dir', help="Output directory")
+def copy_tirs_s3(s3_full_key,out_dir):
+    import boto3
+    bucket = "usgs-landsat"
+    key = s3_full_key.split(bucket+"/")[1]
+    filename = key.split("/")[-1]
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    out_file = os.path.join(out_dir,filename)
+    s3 = boto3.resource("s3")
+    object = s3.Object(bucket,key)
+    resp = object.get(RequestPayer="requester")
+    with open(out_file, "wb") as f:
+        for chunk in iter(lambda: resp["Body"].read(4096), b""):
+            f.write(chunk)
+    print('Done for TIRS copy')
 if __name__ == "__main__":
     cli()
 
