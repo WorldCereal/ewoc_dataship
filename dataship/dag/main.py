@@ -69,6 +69,7 @@ def eodag_by_ids(s2_tile_id, product_id, out_dir, provider, config_file=None):
         dag.set_preferred_provider("astraea_eod")
     else:
         dag = EODataAccessGateway(config_file)
+        # TODO Use logger instead
         print(provider)
         dag.set_preferred_provider(provider)
     products, est = dag.search(productType=product_type, start=start_date, end=end_date, geom=extent,
@@ -88,6 +89,7 @@ def eodag_by_ids(s2_tile_id, product_id, out_dir, provider, config_file=None):
     else:
         # Download data for other providers
         dag.download(final_product, outputs_prefix=out_dir)
+
 @cli.command('tirs_cp',help="Get L8 Thermal band from aws")
 @click.option('-k', '--s3_full_key')
 @click.option('-o', '--out_dir', help="Output directory")
@@ -105,7 +107,10 @@ def copy_tirs_s3(s3_full_key,out_dir):
     with open(out_file, "wb") as f:
         for chunk in iter(lambda: resp["Body"].read(4096), b""):
             f.write(chunk)
+    # TODO Use logger instead
     print('Done for TIRS copy')
+
+
 if __name__ == "__main__":
     cli()
 

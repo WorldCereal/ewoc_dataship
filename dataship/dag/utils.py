@@ -25,6 +25,7 @@ def get_dates_from_prod_id(product_id):
     :param product_id: Product ID from EOdag
     :return: date string and type of sensor
     """
+    # TODO update this function to use the direct eodag id search
     pid = product_id.split("_")
     sat_name = pid[0]
     sensor = ""
