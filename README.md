@@ -10,6 +10,7 @@ Data access for EWoC processors. Powered by [EOdag](https://eodag.readthedocs.io
 Docker usage from this repository:
 
 1 .`docker build -t dataship .`
+
 2. `docker run -ti --rm dataship --help` (the entrypoint is the dataship CLI)
 
 ## Usage 
@@ -32,7 +33,7 @@ For a more complete data access consider using [EOdag](https://eodag.readthedocs
 
 ### Download 
 Download S2/L8 products for a given S2 Tile id (ex 31TCJ)
-```bash
+```
 Usage: dataship download [OPTIONS]
 
   Simple data download using EOdag
