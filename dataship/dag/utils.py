@@ -1,5 +1,6 @@
 import re
 import os
+import boto3
 from datetime import datetime, timedelta
 
 import geopandas as gpd
@@ -73,3 +74,16 @@ def donwload_s1tiling_style(dag, eodag_product, out_dir):
     os.rename(f'{base}/{"measurement"}/iw-vh.tiff', f'{base}/{"measurement"}/{vh_name}.tiff')
     os.rename(f'{base}/{"measurement"}/iw-vv.tiff', f'{base}/{"measurement"}/{vv_name}.tiff')
     os.system(f'rm -r {tmp_dir}')
+
+def download_s3file(s3_full_key,out_dir, bucket):
+    key = s3_full_key.split(bucket+"/")[1]
+    filename = key.split("/")[-1]
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    out_file = os.path.join(out_dir,filename)
+    s3 = boto3.resource("s3")
+    object = s3.Object(bucket,key)
+    resp = object.get(RequestPayer="requester")
+    with open(out_file, "wb") as f:
+        for chunk in iter(lambda: resp["Body"].read(4096), b""):
+            f.write(chunk)

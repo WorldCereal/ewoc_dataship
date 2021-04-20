@@ -94,22 +94,12 @@ def eodag_by_ids(s2_tile_id, product_id, out_dir, provider, config_file=None):
 @click.option('-k', '--s3_full_key')
 @click.option('-o', '--out_dir', help="Output directory")
 def copy_tirs_s3(s3_full_key,out_dir):
-    import boto3
     bucket = "usgs-landsat"
-    key = s3_full_key.split(bucket+"/")[1]
-    filename = key.split("/")[-1]
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    out_file = os.path.join(out_dir,filename)
-    s3 = boto3.resource("s3")
-    object = s3.Object(bucket,key)
-    resp = object.get(RequestPayer="requester")
-    with open(out_file, "wb") as f:
-        for chunk in iter(lambda: resp["Body"].read(4096), b""):
-            f.write(chunk)
+    download_s3file(s3_full_key,out_dir,bucket)
+    qa_key = s3_full_key.replace('ST_B10','ST_QA')
+    download_s3file(qa_key, out_dir, bucket)
     # TODO Use logger instead
     print('Done for TIRS copy')
-
 
 if __name__ == "__main__":
     cli()
