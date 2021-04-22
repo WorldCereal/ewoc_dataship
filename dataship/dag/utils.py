@@ -4,8 +4,10 @@ import boto3
 from datetime import datetime, timedelta
 
 import geopandas as gpd
+import rasterio
+from rasterio.merge import merge
 import pkg_resources
-
+from eotile.eotile_module import main
 # Replace this with eotile later
 index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
 s2_grid = gpd.read_file(index_path)
@@ -87,3 +89,69 @@ def download_s3file(s3_full_key,out_dir, bucket):
     with open(out_file, "wb") as f:
         for chunk in iter(lambda: resp["Body"].read(4096), b""):
             f.write(chunk)
+
+def get_bounds(tile_id):
+    res = main(tile_id)
+    UL = res[0][0].UL
+    # Return LL, UR tuple
+    return (UL[0],UL[1]-109800,UL[0]+109800,UL[1])
+
+def merge_rasters(rasters,tile_id,output_fn):
+    bounds = get_bounds(tile_id)
+    sources = []
+    for raster in rasters:
+        src = rasterio.open(raster)
+        sources.append(src)
+    merge(sources,dst_path=output_fn,method='max',bounds=bounds)
+    for src in sources:
+        src.close()
+
+def get_l8_rasters(data_folder):
+    l8_rasters = []
+    for root, dirs, files in os.walk(data_folder):
+        for file in files:
+            if file.endswith('.tif') and 'LC08' in file:
+                l8_rasters.append(os.path.join(root,file))
+    return l8_rasters
+
+def list_path_bands(data_folder):
+    l8_rasters = get_l8_rasters(data_folder)
+    merge_dict = {}
+# List all rows for the same path and same day
+    for prod in l8_rasters:
+        meta = prod.split('_')
+        date = meta[3]
+        path = meta[2][:3]
+        prod_path = prod
+        band = re.findall('(?<=\_T1_)(.*?)(?=\.)',prod)[0]
+        # Should be a better way to fill up this dict
+        if date in merge_dict:
+            if path in merge_dict[date]:
+                if band in merge_dict[date][path]:
+                    merge_dict[date][path][band].append(prod_path)
+                else:
+                    merge_dict[date][path][band]=[]
+                    merge_dict[date][path][band].append(prod_path)
+            else:
+                merge_dict[date][path] = {}
+                if band in merge_dict[date][path]:
+                    merge_dict[date][path][band].append(prod_path)
+                else:
+                    merge_dict[date][path][band] = []
+                    merge_dict[date][path][band].append(prod_path)
+        else:
+            merge_dict[date]={}
+            if path in merge_dict[date]:
+                if band in merge_dict[date][path]:
+                    merge_dict[date][path][band].append(prod_path)
+                else:
+                    merge_dict[date][path][band]=[]
+                    merge_dict[date][path][band].append(prod_path)
+            else:
+                merge_dict[date][path] = {}
+                if band in merge_dict[date][path]:
+                    merge_dict[date][path][band].append(prod_path)
+                else:
+                    merge_dict[date][path][band] = []
+                    merge_dict[date][path][band].append(prod_path)
+    return merge_dict

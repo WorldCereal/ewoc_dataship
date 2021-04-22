@@ -2,6 +2,7 @@ import click
 
 from eodag import EODataAccessGateway
 from dataship.dag.utils import *
+from dataship.dag.ship import merge_l8
 
 
 @click.group()
@@ -100,6 +101,11 @@ def copy_tirs_s3(s3_full_key,out_dir):
     download_s3file(qa_key, out_dir, bucket)
     # TODO Use logger instead
     print('Done for TIRS copy')
+@cli.command('package', help = "Harmonize Landsat-8 products")
+@click.option('-f','--data_folder',help="Folder with L8 products")
+@click.option('-t','--s2_tile_id', help="S2 tile id")
+def pack_l8(data_folder,s2_tile_id):
+    merge_l8(data_folder,s2_tile_id)
 
 if __name__ == "__main__":
     cli()
