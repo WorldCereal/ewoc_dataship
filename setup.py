@@ -12,8 +12,9 @@ setup(
     license="Copyright (c) 2021 CS Group",
     python_requires=">=3",
     install_requires=[
-       "eodag",
-       "geopandas",
+       "eodag==2.2.0",
+       "geopandas==0.9.0",
+        "rasterio==1.2.2",
     ],
     package_data={"": ["index/s2_idx.geojson"]},
     entry_points={"console_scripts": ["dataship=dataship.dag.main:cli"]},
