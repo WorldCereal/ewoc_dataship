@@ -77,12 +77,11 @@ def donwload_s1tiling_style(dag, eodag_product, out_dir):
     os.rename(f'{base}/{"measurement"}/iw-vv.tiff', f'{base}/{"measurement"}/{vv_name}.tiff')
     os.system(f'rm -r {tmp_dir}')
 
-def download_s3file(s3_full_key,out_dir, bucket):
+def download_s3file(s3_full_key,out_file, bucket):
     key = s3_full_key.split(bucket+"/")[1]
-    filename = key.split("/")[-1]
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    out_file = os.path.join(out_dir,filename)
+    product_id = os.path.split(s3_full_key)[-1]
+    band_num = "_".join(product_id.split('_')[7:9])
+    out_file+="_"+band_num
     s3 = boto3.resource("s3")
     object = s3.Object(bucket,key)
     resp = object.get(RequestPayer="requester")
@@ -154,3 +153,27 @@ def list_path_bands(data_folder):
                     merge_dict[date][path][band] = []
                     merge_dict[date][path][band].append(prod_path)
     return merge_dict
+
+def copy_tirs_s3(s3_full_key,out_dir,s2_tile):
+    product_id = os.path.split(s3_full_key)[-1]
+    platform = product_id.split('_')[0]
+    processing_level = product_id.split('_')[1]
+    date = product_id.split('_')[3]
+    year = date[:4]
+    # Get tile id , remove the T in the beginning
+    tile_id = s2_tile
+    out_dir = os.path.join(out_dir,'TIR')
+    unique_id = f"{product_id.split('_')[2]}{product_id.split('_')[5]}{product_id.split('_')[6]}"
+    folder_st = os.path.join(out_dir, tile_id[:2], tile_id[2], tile_id[3:], year)
+    dir_name = f"{platform}_{processing_level}_{date}_{unique_id}_{tile_id}"
+    out_name = f"{platform}_{processing_level}_{date}_{unique_id}_{tile_id}"
+    raster_fn = os.path.join(folder_st, dir_name, out_name)
+    tmp = os.path.join(folder_st, dir_name)
+    if not os.path.exists(tmp):
+        os.makedirs(tmp)
+    bucket = "usgs-landsat"
+    download_s3file(s3_full_key,raster_fn,bucket)
+    qa_key = s3_full_key.replace('ST_B10','ST_QA')
+    download_s3file(qa_key, raster_fn, bucket)
+    # TODO Use logger instead
+    print('Done for TIRS copy')

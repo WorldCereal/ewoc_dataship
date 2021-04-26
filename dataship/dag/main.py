@@ -93,14 +93,10 @@ def eodag_by_ids(s2_tile_id, product_id, out_dir, provider, config_file=None):
 
 @cli.command('tirs_cp',help="Get L8 Thermal band from aws")
 @click.option('-k', '--s3_full_key')
+@click.option('-t', '--s2_tile_id', help="S2 tile id")
 @click.option('-o', '--out_dir', help="Output directory")
-def copy_tirs_s3(s3_full_key,out_dir):
-    bucket = "usgs-landsat"
-    download_s3file(s3_full_key,out_dir,bucket)
-    qa_key = s3_full_key.replace('ST_B10','ST_QA')
-    download_s3file(qa_key, out_dir, bucket)
-    # TODO Use logger instead
-    print('Done for TIRS copy')
+def tirs_cp(s3_full_key,out_dir,s2_tile_id):
+    copy_tirs_s3(s3_full_key,out_dir,s2_tile=s2_tile_id)
 @cli.command('package', help = "Harmonize Landsat-8 products")
 @click.option('-f','--data_folder',help="Folder with L8 products")
 @click.option('-t','--s2_tile_id', help="S2 tile id")
