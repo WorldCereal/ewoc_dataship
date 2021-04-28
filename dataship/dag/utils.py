@@ -7,7 +7,7 @@ import geopandas as gpd
 import rasterio
 from rasterio.merge import merge
 import pkg_resources
-from eotile.eotile_module import main
+#from eotile.eotile_module import main
 # Replace this with eotile later
 index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
 s2_grid = gpd.read_file(index_path)
@@ -90,7 +90,8 @@ def download_s3file(s3_full_key,out_file, bucket):
             f.write(chunk)
 
 def get_bounds(tile_id):
-    res = main(tile_id)
+    # TODO fix this when eotile package is installed
+    res = tile_id
     UL = res[0][0].UL
     # Return LL, UR tuple
     return (UL[0],UL[1]-109800,UL[0]+109800,UL[1])
