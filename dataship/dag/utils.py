@@ -165,7 +165,7 @@ def copy_tirs_s3(s3_full_key,out_dir,s2_tile):
     tile_id = s2_tile
     out_dir = os.path.join(out_dir,'TIR')
     unique_id = f"{product_id.split('_')[2]}{product_id.split('_')[5]}{product_id.split('_')[6]}"
-    folder_st = os.path.join(out_dir, tile_id[:2], tile_id[2], tile_id[3:], year)
+    folder_st = os.path.join(out_dir, tile_id[:2], tile_id[2], tile_id[3:], year,date.split('T')[0])
     dir_name = f"{platform}_{processing_level}_{date}_{unique_id}_{tile_id}"
     out_name = f"{platform}_{processing_level}_{date}_{unique_id}_{tile_id}"
     raster_fn = os.path.join(folder_st, dir_name, out_name)
