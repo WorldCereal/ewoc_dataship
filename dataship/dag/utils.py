@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import geopandas as gpd
 import rasterio
 from rasterio.merge import merge
+import numpy as np
 import pkg_resources
 from eotile.eotile_module import main
 # Replace this with eotile later
@@ -55,8 +56,10 @@ def get_dates_from_prod_id(product_id):
 def donwload_s1tiling_style(dag, eodag_product, out_dir):
     """
     Reformat the downloaded data for s1tiling
+    :param dag: EOdag EODataAccessGateway
+    :param eodag_product: EOdag product from the seach results
+    :param out_dir: Output directory
     """
-
     tmp_dir = os.path.join(out_dir, 'tmp_' + eodag_product.properties['id'])
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
@@ -78,6 +81,12 @@ def donwload_s1tiling_style(dag, eodag_product, out_dir):
     os.system(f'rm -r {tmp_dir}')
 
 def download_s3file(s3_full_key,out_file, bucket):
+    """
+    Download file from s3 object storage
+    :param s3_full_key: Object full path (bucket name, prefix, and key)
+    :param out_file: Full path and name of the output file
+    :param bucket: Bucket name
+    """
     key = s3_full_key.split(bucket+"/")[1]
     product_id = os.path.split(s3_full_key)[-1]
     band_num = "_".join(product_id.split('_')[7:9])
@@ -90,13 +99,23 @@ def download_s3file(s3_full_key,out_file, bucket):
             f.write(chunk)
 
 def get_bounds(tile_id):
-    # TODO fix this when eotile package is installed
+    """
+    Get S2 tile bounds
+    :param tile_id: S2 tile id
+    :return: Bounds coordinates
+    """
     res = main(tile_id)
     UL = res[0][0].UL
     # Return LL, UR tuple
     return (UL[0],UL[1]-109800,UL[0]+109800,UL[1])
 
 def merge_rasters(rasters,bounds,output_fn):
+    """
+    Merge a list of rasters and clip using bounds
+    :param rasters: List of raster paths
+    :param bounds: Bounds from get_bounds()
+    :param output_fn: Full path and name of the mosaic
+    """
     sources = []
     for raster in rasters:
         src = rasterio.open(raster)
@@ -106,6 +125,10 @@ def merge_rasters(rasters,bounds,output_fn):
         src.close()
 
 def get_l8_rasters(data_folder):
+    """
+    Find Landsat 8 rasters
+    :param data_folder: Input folder (any level)
+    """
     l8_rasters = []
     for root, dirs, files in os.walk(data_folder):
         for file in files:
@@ -114,6 +137,11 @@ def get_l8_rasters(data_folder):
     return l8_rasters
 
 def list_path_bands(data_folder):
+    """
+    Organize the files by date and path
+    :param data_folder:
+    :return: L8 rasters dict
+    """
     l8_rasters = get_l8_rasters(data_folder)
     merge_dict = {}
 # List all rows for the same path and same day
@@ -156,6 +184,13 @@ def list_path_bands(data_folder):
     return merge_dict
 
 def copy_tirs_s3(s3_full_key,out_dir,s2_tile):
+    """
+    Copy L8 Thermal bands from S3 bucket
+    :param s3_full_key: Object full path (bucket name, prefix, and key)
+    :param out_dir:
+    :param s2_tile:
+    :return:
+    """
     product_id = os.path.split(s3_full_key)[-1]
     platform = product_id.split('_')[0]
     processing_level = product_id.split('_')[1]
@@ -178,3 +213,29 @@ def copy_tirs_s3(s3_full_key,out_dir,s2_tile):
     download_s3file(qa_key, raster_fn, bucket)
     # TODO Use logger instead
     print('Done for TIRS copy')
+
+def s1_db(raster_path):
+    """
+    Convert Sentinel-1 to decibel
+    :param raster_path: path to Sentinel-1 tif file
+    """
+    ds = rasterio.open(raster_path,'r')
+    meta = ds.meta.copy()
+    band = ds.read(1)
+    ds.close()
+    decibel = 10 * np.log10(band)
+    dtype = rasterio.uint16
+    meta["dtype"] = dtype
+    meta["driver"] = "GTiff"
+    meta["nodata"] = 0
+    blocksize = 1024
+    with rasterio.open(
+        raster_path,
+        "w",
+        **meta,
+        compress="deflate",
+        tiled=True,
+        blockxsize=blocksize,
+        blockysize=blocksize,
+    ) as out:
+        out.write(decibel.astype(dtype), 1)
