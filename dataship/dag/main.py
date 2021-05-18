@@ -103,9 +103,9 @@ def tirs_cp(s3_full_key,out_dir,s2_tile_id):
 def pack_l8(data_folder,s2_tile_id):
     merge_l8(data_folder,s2_tile_id)
 @cli.command('s1db', help = "Convert S1 to db")
-@click.option('-r','--raster_path',help="Full path to S1 tif file")
-def s1db(raster_path):
-    s1_db(raster_path)
+@click.option('-f','--folder',help="SAR folder")
+def s1db(folder):
+    s1db_folder(folder)
 
 if __name__ == "__main__":
     cli()

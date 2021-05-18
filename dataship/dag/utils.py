@@ -1,3 +1,4 @@
+import logging
 import re
 import os
 import boto3
@@ -12,7 +13,9 @@ from eotile.eotile_module import main
 # Replace this with eotile later
 index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
 
-
+logging.basicConfig(
+    format="s1db - %(levelname)s - %(message)s", level=logging.INFO
+)
 
 def get_geom_from_id(tile_id):
     """
@@ -20,6 +23,7 @@ def get_geom_from_id(tile_id):
     :param tile_id: S2 tile id
     :return: GeoDataFrame with the footprint geometry
     """
+
     s2_grid = gpd.read_file(index_path)
     return s2_grid[s2_grid['Name'] == tile_id]
 
@@ -243,3 +247,17 @@ def s1_db(raster_path):
         blockysize=blocksize,
     ) as out:
         out.write(decibel.astype(dtype), 1)
+
+def s1db_folder(folder):
+    """
+    Convert all the S1 tif files in a folder
+    :param folder: path to folder
+    """
+    sar_files=[]
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if 's1' in file.lower() and file.endswith(('tif','TIF')):
+                sar_files.append(os.path.join(root,file))
+    for sar_file in sar_files:
+        logging.info(f'Converting {sar_file} to db 10*log10(linear)')
+        s1_db(sar_file)
