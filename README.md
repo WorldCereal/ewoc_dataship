@@ -23,6 +23,8 @@ Options:
 Commands:
   download  Simple data download using EOdag
   eodag_id  Get products by ID from a previous EOdag search
+  package   Harmonize Landsat-8 products
+  s1db      Convert S1 to db
   tirs_cp   Get L8 Thermal band from aws
 ```
 Note that dataship is tailored for the needs of the EWoC pre-processing modules. 
@@ -80,4 +82,14 @@ Options:
   -k, --s3_full_key TEXT
   -o, --out_dir TEXT      Output directory
   --help                  Show this message and exit.
+```
+### Convert S1 to db
+```bash
+Usage: dataship s1db [OPTIONS]
+
+  Convert S1 to db
+
+Options:
+  -f, --folder TEXT  SAR folder
+  --help             Show this message and exit.
 ```
