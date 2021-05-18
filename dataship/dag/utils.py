@@ -11,7 +11,7 @@ import pkg_resources
 from eotile.eotile_module import main
 # Replace this with eotile later
 index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
-s2_grid = gpd.read_file(index_path)
+
 
 
 def get_geom_from_id(tile_id):
@@ -20,6 +20,7 @@ def get_geom_from_id(tile_id):
     :param tile_id: S2 tile id
     :return: GeoDataFrame with the footprint geometry
     """
+    s2_grid = gpd.read_file(index_path)
     return s2_grid[s2_grid['Name'] == tile_id]
 
 
