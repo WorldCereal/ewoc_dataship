@@ -222,8 +222,11 @@ def s1_db(raster_path):
     ds = rasterio.open(raster_path,'r')
     meta = ds.meta.copy()
     band = ds.read(1)
+    # mask 0 values
+    mask = band!=0
+    mask = list(mask)
     ds.close()
-    decibel = 10 * np.log10(band)
+    decibel = 10 * np.log10(band,where=mask)
     dtype = rasterio.uint16
     meta["dtype"] = dtype
     meta["driver"] = "GTiff"
