@@ -232,6 +232,7 @@ def s1_db(raster_path):
     mask = list(mask)
     ds.close()
     decibel = 10 * np.log10(band,where=mask)
+    dn = 10.0 ** ((decibel + 83) / 20)
     dtype = rasterio.uint16
     meta["dtype"] = dtype
     meta["driver"] = "GTiff"
@@ -246,7 +247,7 @@ def s1_db(raster_path):
         blockxsize=blocksize,
         blockysize=blocksize,
     ) as out:
-        out.write(decibel.astype(dtype), 1)
+        out.write(dn.astype(dtype), 1)
 
 def s1db_folder(folder):
     """
