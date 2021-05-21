@@ -237,7 +237,7 @@ def s1_db(raster_path):
     meta["dtype"] = dtype
     meta["driver"] = "GTiff"
     meta["nodata"] = 0
-    blocksize = 1024
+    blocksize = 512
     with rasterio.open(
         raster_path,
         "w",
