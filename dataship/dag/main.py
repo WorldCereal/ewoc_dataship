@@ -106,6 +106,10 @@ def pack_l8(data_folder,s2_tile_id):
 @click.option('-f','--folder',help="SAR folder")
 def s1db(folder):
     s1db_folder(folder)
+@cli.command('srtm_id',help="Get L8 Thermal band from aws")
+@click.option('-t', '--s2_tile_id', help="S2 tile id")
+def srtm_id(s2_tile_id):
+    print(";".join(get_srtm(s2_tile_id)))
 
 if __name__ == "__main__":
     cli()

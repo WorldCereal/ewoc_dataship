@@ -4,6 +4,7 @@ import os
 import boto3
 from datetime import datetime, timedelta
 
+import eotile.eotile_module
 import geopandas as gpd
 import rasterio
 from rasterio.merge import merge
@@ -263,3 +264,13 @@ def s1db_folder(folder):
     for sar_file in sar_files:
         logging.info(f'Converting {sar_file} to db 10*log10(linear)')
         s1_db(sar_file)
+
+def get_srtm(tile_id):
+    """
+    Get srtm hgt files id for an S2 tile
+    :param tile_id:
+    :return: List of hgt files ids
+    """
+    res=eotile.eotile_module.main(tile_id,srtm=True)
+    srtm_df = res[2]
+    return list(srtm_df.id)
