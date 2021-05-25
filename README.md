@@ -114,4 +114,9 @@ from dataship.dag.utils import get_srtm
 get_srtm('30SXH')
 
 # Result: ['N38W001', 'N38W002', 'N37W001', 'N37W002']
+
+
+get_srtm("30SXH",full_name=True)
+
+# Result: ['N38W001.SRTMGL1.hgt.zip', 'N38W002.SRTMGL1.hgt.zip', 'N37W001.SRTMGL1.hgt.zip', 'N37W002.SRTMGL1.hgt.zip']
 ```
