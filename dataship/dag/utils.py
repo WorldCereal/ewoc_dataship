@@ -265,7 +265,7 @@ def s1db_folder(folder):
         logging.info(f'Converting {sar_file} to db 10*log10(linear)')
         s1_db(sar_file)
 
-def get_srtm(tile_id):
+def get_srtm(tile_id,full_name=False):
     """
     Get srtm hgt files id for an S2 tile
     :param tile_id:
@@ -273,4 +273,9 @@ def get_srtm(tile_id):
     """
     res=eotile.eotile_module.main(tile_id,srtm=True)
     srtm_df = res[2]
-    return list(srtm_df.id)
+    list_ids = list(srtm_df.id)
+    if full_name:
+        out = [f"{tile}.SRTMGL1.hgt.zip" for tile in list_ids]
+        return out
+    else:
+        return list_ids

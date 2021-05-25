@@ -108,8 +108,9 @@ def s1db(folder):
     s1db_folder(folder)
 @cli.command('srtm_id',help="Get SRTM tiles ids for an S2 tile id")
 @click.option('-t', '--s2_tile_id', help="S2 tile id")
-def srtm_id(s2_tile_id):
-    print(";".join(get_srtm(s2_tile_id)))
+@click.option('--full/--no-full', default=False)
+def srtm_id(s2_tile_id,full):
+    print(";".join(get_srtm(s2_tile_id,full_name=full)))
 
 if __name__ == "__main__":
     cli()
