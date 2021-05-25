@@ -87,11 +87,13 @@ Options:
 ```bash
 Usage: dataship s1db [OPTIONS]
 
-  Convert S1 to db
+  Convert S1 to db -> 10*log10(linear) then uint16 -> dn = 10.0 ** ((db +
+  83) / 20)
 
 Options:
   -f, --folder TEXT  SAR folder
   --help             Show this message and exit.
+
 ```
 ### Get SRTM tiles ids
 ```bash

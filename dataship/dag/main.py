@@ -102,7 +102,7 @@ def tirs_cp(s3_full_key,out_dir,s2_tile_id):
 @click.option('-t','--s2_tile_id', help="S2 tile id")
 def pack_l8(data_folder,s2_tile_id):
     merge_l8(data_folder,s2_tile_id)
-@cli.command('s1db', help = "Convert S1 to db stored as uint16: dn = 10.0 ** ((db + 83) / 20)")
+@cli.command('s1db', help = "Convert S1 to db -> 10*log10(linear) then uint16 -> dn = 10.0 ** ((db + 83) / 20)")
 @click.option('-f','--folder',help="SAR folder")
 def s1db(folder):
     s1db_folder(folder)
