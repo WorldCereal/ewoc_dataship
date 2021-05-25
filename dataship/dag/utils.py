@@ -262,7 +262,7 @@ def s1db_folder(folder):
             if 's1' in file.lower() and file.endswith(('tif','TIF')):
                 sar_files.append(os.path.join(root,file))
     for sar_file in sar_files:
-        logging.info(f'Converting {sar_file} to db 10*log10(linear)')
+        logging.info(f'Converting {sar_file} to db -> 10*log10(linear) and uint16 -> dn = 10.0 ** ((db + 83) / 20)')
         s1_db(sar_file)
 
 def get_srtm(tile_id,full_name=False):
