@@ -93,3 +93,25 @@ Options:
   -f, --folder TEXT  SAR folder
   --help             Show this message and exit.
 ```
+### Get SRTM tiles ids
+```bash
+Usage: dataship srtm_id [OPTIONS]
+
+  Get SRTM tiles ids for an S2 tile id
+
+Options:
+  -t, --s2_tile_id TEXT  S2 tile id
+  --help                 Show this message and exit.
+```
+Result of the CLI:
+```bash
+N38W001;N38W002;N37W001;N37W002
+```
+Result from python API
+```python
+from dataship.dag.utils import get_srtm
+
+get_srtm('30SXH')
+
+# Result: ['N38W001', 'N38W002', 'N37W001', 'N37W002']
+```
