@@ -15,7 +15,7 @@ from eotile.eotile_module import main
 index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
 
 logging.basicConfig(
-    format="s1db - %(levelname)s - %(message)s", level=logging.INFO
+    format="dataship - %(levelname)s - %(message)s", level=logging.INFO
 )
 
 def get_geom_from_id(tile_id):

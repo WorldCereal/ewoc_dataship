@@ -1,3 +1,5 @@
+import os
+
 import click
 
 from eodag import EODataAccessGateway
@@ -34,62 +36,21 @@ def eodag_prods(tile_id, start_date, end_date, product_type, out_dir, config_fil
 
 
 @cli.command('eodag_id',help="Get products by ID from a previous EOdag search")
-@click.option('-t', '--s2_tile_id', help="S2 tile id")
 @click.option('-pid', '--product_id', help="Product id from the plan json")
-@click.option('-pv', '--provider', help="EOdag provider ex astraea_eod/peps/theia", default='astraea_eod')
+@click.option('-pv', '--provider', help="EOdag provider ex astraea_eod/peps/theia/creodias", default='astraea_eod')
 @click.option('-o', '--out_dir', help="Output directory")
 @click.option('-cfg', '--config_file', help="EOdag config file")
-def eodag_by_ids(s2_tile_id, product_id, out_dir, provider, config_file=None):
-    # Extract dates and sensor from product id
-    start_date, end_date, sensor = get_dates_from_prod_id(product_id)
-    prods_types = {"S2": {"peps": "S2_MSI_L1C", "astraea_eod": "sentinel2_l1c"},
-                   "S1": {"peps": "S1_SAR_GRD", "astraea_eod": "sentinel1_l1c_grd"},
-                   "L8": {"astraea_eod": "landsat8_l1tp"}}
-    product_type = prods_types[sensor][provider.lower()]
-    # Get s2 tile footprint from external file (to be replaced by eotile)
-    df = get_geom_from_id(s2_tile_id)
-    bbox = df.total_bounds
-    extent = {'lonmin': bbox[0], 'latmin': bbox[1], 'lonmax': bbox[2], 'latmax': bbox[3]}
+def eodag_by_ids(product_id, out_dir, provider, config_file=None):
+    dag = EODataAccessGateway(config_file)
+    dag.set_preferred_provider(provider)
+    products,_ = dag.search(id=product_id,provider=provider)
+    dag.download(products[0],outputs_prefix=out_dir)
+    # delete zip file
+    list_out = os.listdir(out_dir)
+    for item in list_out:
+        if product_id in item and item.endswith('zip'):
+            os.remove(os.path.join(out_dir,item))
 
-    if config_file is None:
-        dag = EODataAccessGateway()
-        astraea_eod = '''
-                    astraea_eod:
-                        priority: 2 # Lower value means lower priority (Default: 0)
-                        search:   # Search parameters configuration
-                        auth:
-                            credentials:
-                                aws_access_key_id:
-                                aws_secret_access_key:
-                                aws_profile: 
-                        download:
-                            outputs_prefix:
-            '''
-        # Do not put the aws credentials here, they are parsed from env vars
-        dag.update_providers_config(astraea_eod)
-        dag.set_preferred_provider("astraea_eod")
-    else:
-        dag = EODataAccessGateway(config_file)
-        # TODO Use logger instead
-        print(provider)
-        dag.set_preferred_provider(provider)
-    products, est = dag.search(productType=product_type, start=start_date, end=end_date, geom=extent,
-                               items_per_page=200, cloudCover=70)
-    final_product = [prod for prod in products if prod.properties["id"] == product_id][0]
-
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    if provider == "astraea_eod":
-        # Get manifest.safe s3 key from vv s3 key
-        manifest_key = os.path.split(final_product.assets['vv']['href'])[0].replace('measurement', 'manifest.safe')
-        # Add manifest to EOProduct assets
-        final_product.assets['manifest'] = {}
-        final_product.assets['manifest']['href'] = manifest_key
-        # Download from aws and reformat the data
-        donwload_s1tiling_style(dag, final_product, out_dir)
-    else:
-        # Download data for other providers
-        dag.download(final_product, outputs_prefix=out_dir)
 
 @cli.command('tirs_cp',help="Get L8 Thermal band from aws")
 @click.option('-k', '--s3_full_key')
