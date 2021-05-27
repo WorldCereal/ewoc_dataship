@@ -9,7 +9,7 @@ from dataship.dag.ship import merge_l8
 
 @click.group()
 def cli():
-    click.secho("Unified data access using EOdag", fg="green",blink=True,bold=True)
+    click.secho("Unified data access using EOdag", fg="green",bold=True)
 
 @cli.command('download',help="Simple data download using EOdag")
 @click.option('-t', '--tile_id', help="S2 tile id")
