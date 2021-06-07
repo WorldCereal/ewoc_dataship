@@ -1,4 +1,4 @@
-import logging
+#import logging
 import re
 import os
 import boto3
@@ -14,9 +14,9 @@ from eotile.eotile_module import main
 # Replace this with eotile later
 index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
 
-logging.basicConfig(
-    format="dataship - %(levelname)s - %(message)s", level=logging.INFO
-)
+#logging.basicConfig(
+#    format="dataship - %(levelname)s - %(message)s", level=logging.INFO
+#)
 
 def get_geom_from_id(tile_id):
     """
@@ -110,6 +110,7 @@ def get_bounds(tile_id):
     :param tile_id: S2 tile id
     :return: Bounds coordinates
     """
+    # TODO update this function to match eotile version
     res = main(tile_id)
     UL = res[0][0].UL
     # Return LL, UR tuple
@@ -262,7 +263,7 @@ def s1db_folder(folder):
             if 's1' in file.lower() and file.endswith(('tif','TIF')):
                 sar_files.append(os.path.join(root,file))
     for sar_file in sar_files:
-        logging.info(f'Converting {sar_file} to db -> 10*log10(linear) and uint16 -> dn = 10.0 ** ((db + 83) / 20)')
+        print(f'Converting {sar_file} to db -> 10*log10(linear) and uint16 -> dn = 10.0 ** ((db + 83) / 20)')
         s1_db(sar_file)
     return len(sar_files)
 
