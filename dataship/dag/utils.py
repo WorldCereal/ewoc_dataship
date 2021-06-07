@@ -273,7 +273,7 @@ def get_srtm(tile_id,full_name=False):
     :param tile_id:
     :return: List of hgt files ids
     """
-    res=eotile.eotile_module.main(tile_id,srtm=True)
+    res=eotile.eotile_module.main(tile_id,srtm=True,overlap=True)
     srtm_df = res[2]
     list_ids = list(srtm_df.id)
     if full_name:
