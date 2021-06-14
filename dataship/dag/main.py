@@ -40,17 +40,12 @@ def eodag_prods(tile_id, start_date, end_date, product_type, out_dir, config_fil
 @click.option('-pv', '--provider', help="EOdag provider ex astraea_eod/peps/theia/creodias", default='astraea_eod')
 @click.option('-o', '--out_dir', help="Output directory")
 @click.option('-cfg', '--config_file', help="EOdag config file")
-def eodag_by_ids(product_id, out_dir, provider, config_file=None):
-    dag = EODataAccessGateway(config_file)
-    dag.set_preferred_provider(provider)
-    products,_ = dag.search(id=product_id,provider=provider)
-    dag.download(products[0],outputs_prefix=out_dir)
-    # delete zip file
-    list_out = os.listdir(out_dir)
-    for item in list_out:
-        if product_id in item and item.endswith('zip'):
-            os.remove(os.path.join(out_dir,item))
-
+@click.option('-sat', '--sat', help="Specify which Sat products to download when using a json file as a product_id (S2/S1/L8)")
+def eodag_by_ids(product_id, out_dir, provider, config_file=None,sat = "S2"):
+    if product_id.endswith("json"):
+        get_prods_from_json(product_id,out_dir, provider, sat,config_file=config_file)
+    else:
+        get_product_by_id(product_id,out_dir,provider,config_file=config_file)
 
 @cli.command('tirs_cp',help="Get L8 Thermal band from aws")
 @click.option('-k', '--s3_full_key')

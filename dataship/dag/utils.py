@@ -1,7 +1,7 @@
-#import logging
 import re
 import os
 import boto3
+import json
 from datetime import datetime, timedelta
 
 import eotile.eotile_module
@@ -11,12 +11,10 @@ from rasterio.merge import merge
 import numpy as np
 import pkg_resources
 from eotile.eotile_module import main
+from eodag import EODataAccessGateway
 # Replace this with eotile later
 index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
 
-#logging.basicConfig(
-#    format="dataship - %(levelname)s - %(message)s", level=logging.INFO
-#)
 
 def get_geom_from_id(tile_id):
     """
@@ -281,3 +279,36 @@ def get_srtm(tile_id,full_name=False):
         return out
     else:
         return list_ids
+
+
+def get_product_by_id(product_id, out_dir, provider, config_file=None):
+    dag = EODataAccessGateway(config_file)
+    dag.set_preferred_provider(provider)
+    products,_ = dag.search(id=product_id,provider=provider)
+    dag.download(products[0],outputs_prefix=out_dir)
+    # delete zip file
+    list_out = os.listdir(out_dir)
+    for item in list_out:
+        if product_id in item and item.endswith('zip'):
+            os.remove(os.path.join(out_dir,item))
+
+def get_prods_from_json(json_file, out_dir, provider,sat="S2", config_file=None):
+    # Read json plan
+    prod_types = {"S2":"S2_PROC","L8":"L8_PROC","S1":"SAR_PROC"}
+    sat = prod_types[sat]
+    with open(json_file) as f:
+        plan = json.load(f)
+    for tile in plan:
+        out_dir = os.path.join(out_dir,tile)
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        if sat == 'S2_PROC':
+            prods = plan[tile][sat]['INPUTS']
+            for prod in prods:
+                get_product_by_id(prod['id'],out_dir,provider,config_file=config_file)
+        else:
+            prods = plan[tile][sat]['INPUTS']
+            for prod in prods:
+                get_product_by_id(prod, out_dir, provider, config_file=config_file)
+
+
