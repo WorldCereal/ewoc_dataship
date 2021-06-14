@@ -64,12 +64,15 @@ Usage: dataship eodag_id [OPTIONS]
   Get products by ID from a previous EOdag search
 
 Options:
-  -t, --s2_tile_id TEXT     S2 tile id
   -pid, --product_id TEXT   Product id from the plan json
-  -pv, --provider TEXT      EOdag provider ex astraea_eod/peps/theia
+  -pv, --provider TEXT      EOdag provider ex astraea_eod/peps/theia/creodias
   -o, --out_dir TEXT        Output directory
   -cfg, --config_file TEXT  EOdag config file
+  -sat, --sat TEXT          Specify which Sat products to download when using
+                            a json file as a product_id (S2/S1/L8)
+
   --help                    Show this message and exit.
+
 ```
 ### Copy Landsat 8 thermal band
 This command is useful to get L8 thermal bands from the usgs aws bucket
