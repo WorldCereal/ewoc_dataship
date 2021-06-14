@@ -15,6 +15,7 @@ setup(
        "eodag==2.2.0",
        "geopandas==0.9.0",
         "rasterio==1.2.2",
+        "eotile==0.2rc2"
     ],
     package_data={"": ["index/s2_idx.geojson"]},
     entry_points={"console_scripts": ["dataship=dataship.dag.main:cli"]},
