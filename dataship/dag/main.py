@@ -1,10 +1,10 @@
 import os
 
 import click
-
 from eodag import EODataAccessGateway
-from dataship.dag.utils import *
+
 from dataship.dag.ship import merge_l8
+from dataship.dag.utils import *
 
 
 @click.group()
