@@ -364,8 +364,8 @@ def raster_to_ard(raster_path, band_num, raster_fn):
         out.write(raster_array)
 
 def binary_scl(scl_file,raster_fn):
-    src = rasterio.open(scl_file, "r")
-    ds = src.read(1)
+    with rasterio.open(scl_file,"r") as src:
+        ds = src.read(1)
     # For SCL flag all cloud pixels
     # TODO find a better way to do this
     ds[ds == 10] = 0
@@ -375,8 +375,10 @@ def binary_scl(scl_file,raster_fn):
     ds[ds == 3] = 0
     ds[ds != 0] = 1
     meta = src.meta.copy()
+    meta["driver"] = "GTiff"
     dtype = rasterio.uint8
     meta["dtype"] = dtype
+
     with rasterio.open(
         raster_fn,
         "w+",
@@ -387,7 +389,6 @@ def binary_scl(scl_file,raster_fn):
         blockysize=512,
     ) as out:
         out.write(ds.astype(rasterio.uint8), 1)
-    src.close()
 
 def l2a_to_ard(l2a_folder,work_dir):
     """
@@ -423,7 +424,12 @@ def l2a_to_ard(l2a_folder,work_dir):
         raster_fn = os.path.join(folder_st, dir_name, out_name)
         if band == 'SCL':
             binary_scl(band_path,raster_fn)
-            print('Done --> '+raster_fn)
+            print('Done --> ' + raster_fn)
+            try:
+                os.remove(raster_fn+'.aux.xml')
+            except:
+                print('Clean')
+
         else:
             raster_to_ard(band_path,band,raster_fn)
             print('Done --> ' + raster_fn)

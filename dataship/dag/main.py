@@ -68,6 +68,12 @@ def s1db(folder):
 def srtm_id(s2_tile_id,full):
     print(";".join(get_srtm(s2_tile_id,full_name=full)))
 
+@cli.command('l2a_ard',help="Convert L2A SAFE to ewoc ard format")
+@click.option('-f', '--l2a_folder', help="L2A SAFE folder")
+@click.option('-o', '--out_dir', help="Output directory")
+def l2a_ard(l2a_folder,out_dir):
+    l2a_to_ard(l2a_folder,out_dir)
+
 if __name__ == "__main__":
     cli()
 
