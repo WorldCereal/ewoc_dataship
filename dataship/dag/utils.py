@@ -422,6 +422,7 @@ def l2a_to_ard(l2a_folder,work_dir):
         print('Processing band '+band_name)
         out_name = f"{platform}_{atcor_algo}_{date}_{unique_id}_{tile_id}_{band}.tif"
         raster_fn = os.path.join(folder_st, dir_name, out_name)
+        ard_folder = os.path.join(folder_st, dir_name)
         if band == 'SCL':
             binary_scl(band_path,raster_fn)
             print('Done --> ' + raster_fn)
@@ -433,6 +434,7 @@ def l2a_to_ard(l2a_folder,work_dir):
         else:
             raster_to_ard(band_path,band,raster_fn)
             print('Done --> ' + raster_fn)
+    return ard_folder
 
 
 
