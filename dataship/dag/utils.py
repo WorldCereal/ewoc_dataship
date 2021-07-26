@@ -410,6 +410,7 @@ def l2a_to_ard(l2a_folder,work_dir):
     folder_st = os.path.join(work_dir,'OPTICAL', tile_id[:2], tile_id[2], tile_id[3:], year, date.split('T')[0])
     dir_name = f"{platform}_{processing_level}_{date}_{unique_id}_{tile_id}"
     tmp_dir = os.path.join(folder_st, dir_name)
+    ard_folder = os.path.join(folder_st, dir_name)
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
 
@@ -422,7 +423,6 @@ def l2a_to_ard(l2a_folder,work_dir):
         print('Processing band '+band_name)
         out_name = f"{platform}_{atcor_algo}_{date}_{unique_id}_{tile_id}_{band}.tif"
         raster_fn = os.path.join(folder_st, dir_name, out_name)
-        ard_folder = os.path.join(folder_st, dir_name)
         if band == 'SCL':
             binary_scl(band_path,raster_fn)
             print('Done --> ' + raster_fn)
