@@ -283,8 +283,13 @@ def get_srtm(tile_id,full_name=False):
         return list_ids
 
 
-def get_product_by_id(product_id, out_dir, provider, config_file=None):
-    dag = EODataAccessGateway(config_file)
+def get_product_by_id(product_id, out_dir, provider=None, config_file=None):
+    if config_file is None:
+        dag = EODataAccessGateway()
+    else:
+        dag = EODataAccessGateway(config_file)
+    if provider is None:
+        provider=os.getenv('EWOC_DATA_PROVIDER')
     dag.set_preferred_provider(provider)
     products,_ = dag.search(id=product_id,provider=provider)
     dag.download(products[0],outputs_prefix=out_dir)
