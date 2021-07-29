@@ -34,7 +34,6 @@ def upload_file(s3_client, local_file, bucket, s3_obj):
         return False
     return True
 
-
 def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
     tif_files_number = 0
     total_output_size = 0
@@ -44,11 +43,21 @@ def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
             if os.path.isfile(old_file):
                 if file.endswith('.tif'):
                     tif_files_number += 1
-                new_file = s3_path + root.lstrip(local_path) + "/" + file
+                new_file = os.path.join(s3_path, root.replace(local_path,''),file)
                 total_output_size = total_output_size + os.path.getsize(old_file)
                 upload_file(s3_client, old_file, bucketname, new_file)
     print(f'\n Uploaded {tif_files_number} tif files for a total size of {total_output_size}')
     return tif_files_number, total_output_size
 
+
+def download_s3file(s3_full_key,out_file, bucket):
+    """
+    Download file from s3 object storage
+    :param s3_full_key: Object full path (prefix, and key)
+    :param out_file: Full path and name of the output file
+    :param bucket: Bucket name
+    """
+    s3_client = get_s3_client()
+    s3_client.download_file(Bucket=bucket, Key=s3_full_key, Filename=out_file, ExtraArgs=dict(RequestPayer='requester'))
 
 

@@ -283,8 +283,13 @@ def get_srtm(tile_id,full_name=False):
         return list_ids
 
 
-def get_product_by_id(product_id, out_dir, provider, config_file=None):
-    dag = EODataAccessGateway(config_file)
+def get_product_by_id(product_id, out_dir, provider=None, config_file=None):
+    if config_file is None:
+        dag = EODataAccessGateway()
+    else:
+        dag = EODataAccessGateway(config_file)
+    if provider is None:
+        provider=os.getenv('EWOC_DATA_PROVIDER')
     dag.set_preferred_provider(provider)
     products,_ = dag.search(id=product_id,provider=provider)
     dag.download(products[0],outputs_prefix=out_dir)
@@ -410,6 +415,7 @@ def l2a_to_ard(l2a_folder,work_dir):
     folder_st = os.path.join(work_dir,'OPTICAL', tile_id[:2], tile_id[2], tile_id[3:], year, date.split('T')[0])
     dir_name = f"{platform}_{processing_level}_{date}_{unique_id}_{tile_id}"
     tmp_dir = os.path.join(folder_st, dir_name)
+    ard_folder = os.path.join(folder_st, dir_name)
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
 
@@ -422,12 +428,13 @@ def l2a_to_ard(l2a_folder,work_dir):
         print('Processing band '+band_name)
         out_name = f"{platform}_{atcor_algo}_{date}_{unique_id}_{tile_id}_{band}.tif"
         raster_fn = os.path.join(folder_st, dir_name, out_name)
-        ard_folder = os.path.join(folder_st, dir_name)
         if band == 'SCL':
-            binary_scl(band_path,raster_fn)
-            print('Done --> ' + raster_fn)
+            out_cld = f"{platform}_{atcor_algo}_{date}_{unique_id}_{tile_id}_MASK.tif"
+            raster_cld = os.path.join(folder_st, dir_name, out_cld)
+            binary_scl(band_path,raster_cld)
+            print('Done --> ' + raster_cld)
             try:
-                os.remove(raster_fn+'.aux.xml')
+                os.remove(raster_cld+'.aux.xml')
             except:
                 print('Clean')
 
