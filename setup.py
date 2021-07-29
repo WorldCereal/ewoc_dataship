@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="dataship",
-    version="0.1.2",
+    version="0.1.3",
     description="Data access using eodag",
     author="Fahd Benatia",
     author_email="fahd.benatia@csgroup.eu",
@@ -15,7 +15,7 @@ setup(
        "eodag==2.2.0",
        "geopandas==0.9.0",
         "rasterio==1.2.2",
-        "eotile==0.2rc2"
+        "eotile==0.2rc3"
     ],
     package_data={"": ["index/s2_idx.geojson"]},
     entry_points={"console_scripts": ["dataship=dataship.dag.main:cli"]},

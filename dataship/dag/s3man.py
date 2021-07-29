@@ -34,7 +34,6 @@ def upload_file(s3_client, local_file, bucket, s3_obj):
         return False
     return True
 
-
 def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
     tif_files_number = 0
     total_output_size = 0

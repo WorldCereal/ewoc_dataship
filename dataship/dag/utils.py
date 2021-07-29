@@ -429,10 +429,12 @@ def l2a_to_ard(l2a_folder,work_dir):
         out_name = f"{platform}_{atcor_algo}_{date}_{unique_id}_{tile_id}_{band}.tif"
         raster_fn = os.path.join(folder_st, dir_name, out_name)
         if band == 'SCL':
-            binary_scl(band_path,raster_fn)
-            print('Done --> ' + raster_fn)
+            out_cld = f"{platform}_{atcor_algo}_{date}_{unique_id}_{tile_id}_MASK.tif"
+            raster_cld = os.path.join(folder_st, dir_name, out_cld)
+            binary_scl(band_path,raster_cld)
+            print('Done --> ' + raster_cld)
             try:
-                os.remove(raster_fn+'.aux.xml')
+                os.remove(raster_cld+'.aux.xml')
             except:
                 print('Clean')
 
