@@ -12,7 +12,7 @@ setup(
     license="Copyright (c) 2021 CS Group",
     python_requires=">=3",
     install_requires=[
-       "eodag==2.2.0",
+       "eodag==2.3.2",
        "geopandas==0.9.0",
         "rasterio==1.2.2",
         "eotile==0.2rc3"
