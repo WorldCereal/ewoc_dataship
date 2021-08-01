@@ -293,7 +293,7 @@ def get_product_by_id(product_id, out_dir, provider=None, config_file=None, prod
         provider=os.getenv('EWOC_DATA_PROVIDER')
     dag.set_preferred_provider(provider)
     if product_type is not None:
-        products,_ = dag.search(id=product_id, provider=provider, product_type=product_type)
+        products,_ = dag.search(id=product_id, provider=provider, productType=product_type)
     else:
         products,_ = dag.search(id=product_id, provider=provider)
     if not products:
@@ -311,7 +311,7 @@ def get_s1_product_by_id(product_id, out_dir, provider=None, config_file=None):
         provider=os.getenv('EWOC_DATA_PROVIDER')
 
     if provider == 'creodias':
-        get_product_by_id(product_id, out_dir, provider=provider, config_file=config_file, productType="S1_SAR_GRD")
+        get_product_by_id(product_id, out_dir, provider=provider, config_file=config_file, product_type="S1_SAR_GRD")
     else:
         get_product_by_id(product_id, out_dir, provider=provider, config_file=config_file)
 
