@@ -102,7 +102,6 @@ def get_bounds(tile_id):
     :param tile_id: S2 tile id
     :return: Bounds coordinates
     """
-    # TODO update this function to match eotile version
     res = main(tile_id)
     UL0 = list(res[0]['UL0'])[0]
     UL1 = list(res[0]['UL1'])[0]
@@ -266,7 +265,7 @@ def get_srtm(tile_id,full_name=False):
     :param tile_id:
     :return: List of hgt files ids
     """
-    res= main(tile_id,srtm=True,overlap=True,no_l8=True,no_s2=True)
+    res= main(tile_id,dem=True,overlap=True,no_l8=True,no_s2=True)
     srtm_df = res[2]
     list_ids = list(srtm_df.id)
     if full_name:
