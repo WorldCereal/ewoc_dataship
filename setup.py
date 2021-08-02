@@ -17,6 +17,5 @@ setup(
         "rasterio==1.2.2",
         "eotile==0.2rc3"
     ],
-    package_data={"": ["index/s2_idx.geojson"]},
     entry_points={"console_scripts": ["dataship=dataship.dag.main:cli"]},
 )
