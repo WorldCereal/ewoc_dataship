@@ -2,21 +2,14 @@ import json
 import logging
 import os
 import re
-import shutil
 from datetime import datetime, timedelta
 
 import boto3
-import geopandas as gpd
 import numpy as np
-import pkg_resources
 import rasterio
 from eodag import EODataAccessGateway
 from eotile.eotile_module import main
 from rasterio.merge import merge
-from tqdm import tqdm
-
-# Replace this with eotile later
-index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
 
 
 def get_geom_from_id(tile_id):
@@ -25,9 +18,8 @@ def get_geom_from_id(tile_id):
     :param tile_id: S2 tile id
     :return: GeoDataFrame with the footprint geometry
     """
-
-    s2_grid = gpd.read_file(index_path)
-    return s2_grid[s2_grid['Name'] == tile_id]
+    res = main(tile_id)
+    return res[0]
 
 
 def get_dates_from_prod_id(product_id):
@@ -111,11 +103,11 @@ def get_bounds(tile_id):
     :param tile_id: S2 tile id
     :return: Bounds coordinates
     """
-    # TODO update this function to match eotile version
     res = main(tile_id)
-    UL = res[0][0].UL
+    UL0 = list(res[0]['UL0'])[0]
+    UL1 = list(res[0]['UL1'])[0]
     # Return LL, UR tuple
-    return (UL[0],UL[1]-109800,UL[0]+109800,UL[1])
+    return (UL0,UL1-109800,UL0+109800,UL1)
 
 def merge_rasters(rasters,bounds,output_fn):
     """
@@ -274,7 +266,7 @@ def get_srtm(tile_id,full_name=False):
     :param tile_id:
     :return: List of hgt files ids
     """
-    res= main(tile_id,srtm=True,overlap=True,no_l8=True,no_s2=True)
+    res= main(tile_id,dem=True,overlap=True,no_l8=True,no_s2=True)
     srtm_df = res[2]
     list_ids = list(srtm_df.id)
     if full_name:
@@ -285,6 +277,14 @@ def get_srtm(tile_id,full_name=False):
 
 
 def get_product_by_id(product_id, out_dir, provider=None, config_file=None, product_type=None):
+    """
+    Get satellite product with id using eodag
+    :param product_id: id like S2A_MSIL1C_20200518T135121_N0209_R024_T21HTC_20200518T153019
+    :param out_dir: Ouput directory
+    :param provider: This is your data provider needed by eodag, could be different from the cloud provider
+    :param config_file: Credentials for eodag, if none provided the credentials will be selected from env vars
+    :param product_type: Product type, extra arg for eodag useful for creodias
+    """
     if config_file is None:
         dag = EODataAccessGateway()
     else:
@@ -307,6 +307,13 @@ def get_product_by_id(product_id, out_dir, provider=None, config_file=None, prod
             os.remove(os.path.join(out_dir,item))
 
 def get_s1_product_by_id(product_id, out_dir, provider=None, config_file=None):
+    """
+    Wrapper around get_product_by_id adapted for Sentinel-1 on creodias
+    :param product_id: something like S1B_IW_GRDH_1SDV_20200510T092220_20200510T092245_021517_028DAB_A416
+    :param out_dir: Ouptut directory
+    :param provider: Data provider (creodias)
+    :param config_file: eodag config file, if None the creds will be selected from env vars
+    """
     if provider is None:
         provider=os.getenv('EWOC_DATA_PROVIDER')
 
@@ -316,6 +323,14 @@ def get_s1_product_by_id(product_id, out_dir, provider=None, config_file=None):
         get_product_by_id(product_id, out_dir, provider=provider, config_file=config_file)
 
 def get_prods_from_json(json_file, out_dir, provider,sat="S2", config_file=None):
+    """
+    Bulk download using json workplan
+    :param json_file: Path to workplan json file
+    :param out_dir: Ouput directory
+    :param provider: Data provider (creodias, peps, astraea_eod, ...)
+    :param sat: S2/S1 or L8
+    :param config_file: eodag config file
+    """
     # Read json plan
     prod_types = {"S2":"S2_PROC","L8":"L8_PROC","S1":"SAR_PROC"}
     sat = prod_types[sat]
@@ -363,6 +378,12 @@ def get_s2_prodname(safe_path):
     return prodname
 
 def raster_to_ard(raster_path, band_num, raster_fn):
+    """
+    Read raster and update internals to fit ewoc ard specs
+    :param raster_path: Path to raster file
+    :param band_num: Band number, B02 for example
+    :param raster_fn: Output raster path
+    """
     with rasterio.Env(GDAL_CACHEMAX=2048):
         with rasterio.open(raster_path,'r') as src:
             raster_array = src.read()
@@ -385,10 +406,14 @@ def raster_to_ard(raster_path, band_num, raster_fn):
         out.write(raster_array)
 
 def binary_scl(scl_file,raster_fn):
+    """
+    Convert L2A SCL file to binary cloud mask
+    :param scl_file: Path to SCL file
+    :param raster_fn: Output binary mask path
+    """
     with rasterio.open(scl_file,"r") as src:
         ds = src.read(1)
     # For SCL flag all cloud pixels
-    # TODO find a better way to do this
     ds[ds == 10] = 0
     ds[ds == 9] = 0
     ds[ds == 8] = 0
@@ -415,6 +440,7 @@ def l2a_to_ard(l2a_folder,work_dir):
     """
     Convert an L2A product into EWoC ARD format
     :param l2a_folder: L2A SAFE folder
+    :param work_dir: Output directory
     """
     bands = {'B02':10,'B03':10,'B04':10,'B08':10,'B05':20,'B06':20, 'B07': 20, 'B11':20,'B12':20, 'SCL':20}
     # Prepare ewoc folder name
