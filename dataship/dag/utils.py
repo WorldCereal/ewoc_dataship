@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import shutil
@@ -283,7 +284,7 @@ def get_srtm(tile_id,full_name=False):
         return list_ids
 
 
-def get_product_by_id(product_id, out_dir, provider=None, config_file=None):
+def get_product_by_id(product_id, out_dir, provider=None, config_file=None, product_type=None):
     if config_file is None:
         dag = EODataAccessGateway()
     else:
@@ -291,13 +292,28 @@ def get_product_by_id(product_id, out_dir, provider=None, config_file=None):
     if provider is None:
         provider=os.getenv('EWOC_DATA_PROVIDER')
     dag.set_preferred_provider(provider)
-    products,_ = dag.search(id=product_id,provider=provider)
+    if product_type is not None:
+        products,_ = dag.search(id=product_id, provider=provider, productType=product_type)
+    else:
+        products,_ = dag.search(id=product_id, provider=provider)
+    if not products:
+        logging.error('No results return by eodag!')
+        raise ValueError
     dag.download(products[0],outputs_prefix=out_dir)
     # delete zip file
     list_out = os.listdir(out_dir)
     for item in list_out:
         if product_id in item and item.endswith('zip'):
             os.remove(os.path.join(out_dir,item))
+
+def get_s1_product_by_id(product_id, out_dir, provider=None, config_file=None):
+    if provider is None:
+        provider=os.getenv('EWOC_DATA_PROVIDER')
+
+    if provider == 'creodias':
+        get_product_by_id(product_id, out_dir, provider=provider, config_file=config_file, product_type="S1_SAR_GRD")
+    else:
+        get_product_by_id(product_id, out_dir, provider=provider, config_file=config_file)
 
 def get_prods_from_json(json_file, out_dir, provider,sat="S2", config_file=None):
     # Read json plan
