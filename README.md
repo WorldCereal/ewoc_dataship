@@ -125,3 +125,26 @@ get_srtm("30SXH",full_name=True)
 
 # Result: ['N38W001.SRTMGL1.hgt.zip', 'N38W002.SRTMGL1.hgt.zip', 'N37W001.SRTMGL1.hgt.zip', 'N37W002.SRTMGL1.hgt.zip']
 ```
+
+### Get SRTM 1s data
+
+```bash
+Usage: dataship get_srtm [OPTIONS]
+
+  Get SRTM tiles for an S2 tile id
+
+Options:
+  --s2_tile_id TEXT  S2 tile id
+  --out_dir TEXT
+  --source TEXT
+  --help             Show this message and exit.
+```
+
+SRTM data will be donwloaded in the output directory according to the source selected (by default esa website)
+
+```python
+from dataship.dag.utils import get_srtm1s
+
+get_srtm1s('21HTC', Path('/tmp'), source='esa')
+
+```
