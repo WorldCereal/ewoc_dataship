@@ -4,8 +4,8 @@ from pathlib import Path
 import click
 from eodag import EODataAccessGateway
 
-from dataship.dag.ship import merge_l8
-from dataship.dag.utils import *
+from .ship import merge_l8
+from .utils import *
 
 
 @click.group()

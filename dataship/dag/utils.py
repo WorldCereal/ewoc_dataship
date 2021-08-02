@@ -4,16 +4,17 @@ import logging
 import os
 from pathlib import Path
 import re
-import requests
 from typing import List
 import zipfile
 
 import boto3
-import numpy as np
-import rasterio
 from eodag import EODataAccessGateway
 from eotile.eotile_module import main
+import numpy as np
+import rasterio
 from rasterio.merge import merge
+import requests
+
 
 logger = logging.getLogger(__name__)
 

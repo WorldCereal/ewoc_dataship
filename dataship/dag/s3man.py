@@ -1,7 +1,8 @@
+import os
+
 import boto3
 import botocore
 from botocore.exceptions import ClientError
-import os
 
 
 # Some s3 functions from argo workflow coded by Alex G.
