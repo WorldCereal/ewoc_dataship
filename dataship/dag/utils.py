@@ -2,8 +2,10 @@ from datetime import datetime, timedelta
 import json
 import logging
 import os
+from pathlib import Path
 import re
 import requests
+from typing import List
 import zipfile
 
 import boto3
@@ -278,10 +280,22 @@ def get_srtm(tile_id, full_name=False):
     else:
         return list_ids
 
-def get_srtm1s(s2_tile_id, out_dirpath, source='esa'):
+def get_srtm1s(s2_tile_id: str, out_dirpath: Path, source: str ='esa')-> None:
+    """
+    Retrieve srtm 1s data for a Sentinel-2 tile id from the source into the output dir
+    :param s2_tile_ids: Sentinel-2 tile id
+    :param out_dirpath: Output directory where the srtm data is downloaded
+    :param source: Source where to retrieve the srtm 1s data
+    """
     get_srtm1s_from_ids(get_srtm1s_ids(s2_tile_id), out_dirpath, source=source)
 
-def get_srtm1s_from_ids(srtm_tile_ids, out_dir, source='esa'):
+def get_srtm1s_from_ids(srtm_tile_ids: List[str], out_dir: Path, source: str='esa')-> None:
+    """
+    Retrieve srtm 1s data from the source into the output dir
+    :param srtm_tile_ids: List of srtm tile ids
+    :param out_dirpath: Output directory where the srtm data is downloaded
+    :param source: Source where to retrieve the srtm 1s data
+    """
     if source == 'esa':
         logger.debug("Use ESA website to retrieve the srtm 1s data!")
         get_srtm_from_esa(srtm_tile_ids, out_dir)
@@ -297,7 +311,12 @@ def get_srtm1s_from_ids(srtm_tile_ids, out_dir, source='esa'):
     else:
         logger.error('Source %s not supported!', source)
 
-def get_srtm_from_esa(srtm_tile_ids, out_dirpath):
+def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path)-> None:
+    """
+    Retrieve srtm 1s data from ESA website into the output dir
+    :param srtm_tile_ids: List of srtm tile ids
+    :param out_dirpath: Output directory where the srtm data is downloaded
+    """
     ESA_WEBSITE_ROOT='http://step.esa.int/auxdata/dem/SRTMGL1/'
     for srtm_tile_id in srtm_tile_ids:
         srtm_tile_id_filename= srtm_tile_id + '.SRTMGL1.hgt.zip'
@@ -320,7 +339,7 @@ def get_srtm_from_esa(srtm_tile_ids, out_dirpath):
 
         srtm_tile_id_filepath.unlink()
 
-def get_srtm1s_ids(s2_tile_id):
+def get_srtm1s_ids(s2_tile_id: str)-> None:
     """
     Get srtm 1s id for an S2 tile
     :param s2 tile_id:
