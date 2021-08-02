@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta
 import json
 import logging
 import os
 import re
-from datetime import datetime, timedelta
+import requests
+import zipfile
 
 import boto3
 import numpy as np
@@ -11,6 +13,7 @@ from eodag import EODataAccessGateway
 from eotile.eotile_module import main
 from rasterio.merge import merge
 
+logger = logging.getLogger(__name__)
 
 def get_geom_from_id(tile_id):
     """
@@ -260,7 +263,7 @@ def s1db_folder(folder):
         s1_db(sar_file)
     return len(sar_files)
 
-def get_srtm(tile_id,full_name=False):
+def get_srtm(tile_id, full_name=False):
     """
     Get srtm hgt files id for an S2 tile
     :param tile_id:
@@ -269,6 +272,64 @@ def get_srtm(tile_id,full_name=False):
     res= main(tile_id,dem=True,overlap=True,no_l8=True,no_s2=True)
     srtm_df = res[2]
     list_ids = list(srtm_df.id)
+    if full_name:
+        out = [f"{tile}.SRTMGL1.hgt.zip" for tile in list_ids]
+        return out
+    else:
+        return list_ids
+
+def get_srtm1s(s2_tile_id, out_dirpath, source='esa'):
+    get_srtm1s_from_ids(get_srtm_ids(s2_tile_id), out_dirpath, source=source)
+
+
+def get_srtm1s_from_ids(srtm_tile_ids, out_dir, source='esa'):
+    if source == 'esa':
+        logger.debug("Use ESA website to retrieve the srtm 1s data!")
+        get_srtm_from_esa(srtm_tile_ids, out_dir)
+    elif source == 'creodias':
+        logger.debug('Use creodias s3 bucket to retrieve srtm 1s data!')
+        raise NotImplementedError
+    elif source == 'local':
+        logger.debug('Use local s3 bucket to retrieve srtm 1s data!')
+        raise NotImplementedError
+    elif source == 'usgs':
+        logger.debug('Use usgs EE to retrieve srtm 1s data!')
+        raise NotImplementedError
+    else:
+        logger.error('Source %s not supported!', source)
+
+def get_srtm_from_esa(srtm_tile_ids, out_dirpath):
+    ESA_WEBSITE_ROOT='http://step.esa.int/auxdata/dem/SRTMGL1/'
+    for srtm_tile_id in srtm_tile_ids:
+        srtm_tile_id_filename= srtm_tile_id + '.SRTMGL1.hgt.zip'
+        srtm_tile_id_url= ESA_WEBSITE_ROOT + srtm_tile_id_filename
+        
+        r= requests.get(srtm_tile_id_url)
+        if r.status_code != requests.codes.ok:
+            logger.error('%s not dwnloaded (error_code: %s) from %s!',
+                         srtm_tile_id_filename, r.status_code, srtm_tile_id_url)
+            continue
+        else:
+            logger.debug('%s downloaded!', srtm_tile_id_filename)
+
+        srtm_tile_id_filepath= out_dirpath / srtm_tile_id_filename
+        with open(srtm_tile_id_filepath, 'wb') as srtm_file:
+            srtm_file.write(r.content)
+
+        with zipfile.ZipFile(srtm_tile_id_filepath, 'r') as srtm_zipfile:
+            srtm_zipfile.extractall(out_dirpath)
+
+        srtm_tile_id_filepath.unlink()
+        
+
+def get_srtm_ids(s2_tile_id, full_name=False):
+    """
+    Get srtm hgt files id for an S2 tile
+    :param tile_id:
+    :return: List of hgt files ids
+    """
+    res= main(s2_tile_id, dem=True, overlap=True, no_l8=True, no_s2=True)
+    list_ids = list(res[2].id)
     if full_name:
         out = [f"{tile}.SRTMGL1.hgt.zip" for tile in list_ids]
         return out
