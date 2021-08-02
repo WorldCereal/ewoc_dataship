@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import click
 from eodag import EODataAccessGateway
@@ -67,6 +68,14 @@ def s1db(folder):
 @click.option('--full/--no-full', default=False)
 def srtm_id(s2_tile_id,full):
     print(";".join(get_srtm(s2_tile_id,full_name=full)))
+
+@cli.command('get_srtm',help="Get SRTM tiles for an S2 tile id")
+@click.option('--s2_tile_id', help="S2 tile id")
+@click.option('--out_dir')
+@click.option('--source', default='esa')
+def srtm_id(s2_tile_id, out_dir, source):
+    print(";".join(get_srtm1s_ids(s2_tile_id)))
+    get_srtm1s(s2_tile_id, Path(out_dir), source=source)
 
 @cli.command('l2a_ard',help="Convert L2A SAFE to ewoc ard format")
 @click.option('-f', '--l2a_folder', help="L2A SAFE folder")
