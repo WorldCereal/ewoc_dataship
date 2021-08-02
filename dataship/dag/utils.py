@@ -2,22 +2,14 @@ import json
 import logging
 import os
 import re
-import shutil
 from datetime import datetime, timedelta
 
 import boto3
-import geopandas as gpd
 import numpy as np
-import pkg_resources
 import rasterio
 from eodag import EODataAccessGateway
 from eotile.eotile_module import main
 from rasterio.merge import merge
-from tqdm import tqdm
-
-# Replace this with eotile later
-index_path = pkg_resources.resource_filename(__name__, os.path.join("../index", "s2_idx.geojson"))
-
 
 def get_geom_from_id(tile_id):
     """
@@ -25,9 +17,8 @@ def get_geom_from_id(tile_id):
     :param tile_id: S2 tile id
     :return: GeoDataFrame with the footprint geometry
     """
-
-    s2_grid = gpd.read_file(index_path)
-    return s2_grid[s2_grid['Name'] == tile_id]
+    res = main(tile_id)
+    return res[0]
 
 
 def get_dates_from_prod_id(product_id):
