@@ -74,7 +74,7 @@ def srtm_id(s2_tile_id,full):
 @click.option('--out_dir')
 @click.option('--source', default='esa')
 def srtm_id(s2_tile_id, out_dir, source):
-    print(";".join(get_srtm_ids(s2_tile_id)))
+    print(";".join(get_srtm1s_ids(s2_tile_id)))
     get_srtm1s(s2_tile_id, Path(out_dir), source=source)
 
 @cli.command('l2a_ard',help="Convert L2A SAFE to ewoc ard format")

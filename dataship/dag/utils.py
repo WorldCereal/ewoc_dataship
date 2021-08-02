@@ -279,8 +279,7 @@ def get_srtm(tile_id, full_name=False):
         return list_ids
 
 def get_srtm1s(s2_tile_id, out_dirpath, source='esa'):
-    get_srtm1s_from_ids(get_srtm_ids(s2_tile_id), out_dirpath, source=source)
-
+    get_srtm1s_from_ids(get_srtm1s_ids(s2_tile_id), out_dirpath, source=source)
 
 def get_srtm1s_from_ids(srtm_tile_ids, out_dir, source='esa'):
     if source == 'esa':
@@ -320,22 +319,15 @@ def get_srtm_from_esa(srtm_tile_ids, out_dirpath):
             srtm_zipfile.extractall(out_dirpath)
 
         srtm_tile_id_filepath.unlink()
-        
 
-def get_srtm_ids(s2_tile_id, full_name=False):
+def get_srtm1s_ids(s2_tile_id):
     """
-    Get srtm hgt files id for an S2 tile
-    :param tile_id:
-    :return: List of hgt files ids
+    Get srtm 1s id for an S2 tile
+    :param s2 tile_id:
+    :return: List of srtm ids
     """
     res= main(s2_tile_id, dem=True, overlap=True, no_l8=True, no_s2=True)
-    list_ids = list(res[2].id)
-    if full_name:
-        out = [f"{tile}.SRTMGL1.hgt.zip" for tile in list_ids]
-        return out
-    else:
-        return list_ids
-
+    return list(res[2].id)
 
 def get_product_by_id(product_id, out_dir, provider=None, config_file=None, product_type=None):
     """
