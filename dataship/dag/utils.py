@@ -104,9 +104,10 @@ def get_bounds(tile_id):
     """
     # TODO update this function to match eotile version
     res = main(tile_id)
-    UL = res[0][0].UL
+    UL0 = list(res[0]['UL0'])[0]
+    UL1 = list(res[0]['UL1'])[0]
     # Return LL, UR tuple
-    return (UL[0],UL[1]-109800,UL[0]+109800,UL[1])
+    return (UL0,UL1-109800,UL0+109800,UL1)
 
 def merge_rasters(rasters,bounds,output_fn):
     """
