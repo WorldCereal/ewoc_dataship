@@ -1,16 +1,22 @@
+from datetime import datetime, timedelta
 import json
 import logging
 import os
+from pathlib import Path
 import re
-from datetime import datetime, timedelta
+from typing import List
+import zipfile
 
 import boto3
-import numpy as np
-import rasterio
 from eodag import EODataAccessGateway
 from eotile.eotile_module import main
+import numpy as np
+import rasterio
 from rasterio.merge import merge
+import requests
 
+
+logger = logging.getLogger(__name__)
 
 def get_geom_from_id(tile_id):
     """
@@ -260,7 +266,7 @@ def s1db_folder(folder):
         s1_db(sar_file)
     return len(sar_files)
 
-def get_srtm(tile_id,full_name=False):
+def get_srtm(tile_id, full_name=False):
     """
     Get srtm hgt files id for an S2 tile
     :param tile_id:
@@ -275,6 +281,73 @@ def get_srtm(tile_id,full_name=False):
     else:
         return list_ids
 
+def get_srtm1s(s2_tile_id: str, out_dirpath: Path, source: str ='esa')-> None:
+    """
+    Retrieve srtm 1s data for a Sentinel-2 tile id from the source into the output dir
+    :param s2_tile_ids: Sentinel-2 tile id
+    :param out_dirpath: Output directory where the srtm data is downloaded
+    :param source: Source where to retrieve the srtm 1s data
+    """
+    get_srtm1s_from_ids(get_srtm1s_ids(s2_tile_id), out_dirpath, source=source)
+
+def get_srtm1s_from_ids(srtm_tile_ids: List[str], out_dir: Path, source: str='esa')-> None:
+    """
+    Retrieve srtm 1s data from the source into the output dir
+    :param srtm_tile_ids: List of srtm tile ids
+    :param out_dirpath: Output directory where the srtm data is downloaded
+    :param source: Source where to retrieve the srtm 1s data
+    """
+    if source == 'esa':
+        logger.debug("Use ESA website to retrieve the srtm 1s data!")
+        get_srtm_from_esa(srtm_tile_ids, out_dir)
+    elif source == 'creodias':
+        logger.debug('Use creodias s3 bucket to retrieve srtm 1s data!')
+        raise NotImplementedError
+    elif source == 'local':
+        logger.debug('Use local s3 bucket to retrieve srtm 1s data!')
+        raise NotImplementedError
+    elif source == 'usgs':
+        logger.debug('Use usgs EE to retrieve srtm 1s data!')
+        raise NotImplementedError
+    else:
+        logger.error('Source %s not supported!', source)
+
+def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path)-> None:
+    """
+    Retrieve srtm 1s data from ESA website into the output dir
+    :param srtm_tile_ids: List of srtm tile ids
+    :param out_dirpath: Output directory where the srtm data is downloaded
+    """
+    ESA_WEBSITE_ROOT='http://step.esa.int/auxdata/dem/SRTMGL1/'
+    for srtm_tile_id in srtm_tile_ids:
+        srtm_tile_id_filename= srtm_tile_id + '.SRTMGL1.hgt.zip'
+        srtm_tile_id_url= ESA_WEBSITE_ROOT + srtm_tile_id_filename
+        
+        r= requests.get(srtm_tile_id_url)
+        if r.status_code != requests.codes.ok:
+            logger.error('%s not dwnloaded (error_code: %s) from %s!',
+                         srtm_tile_id_filename, r.status_code, srtm_tile_id_url)
+            continue
+        else:
+            logger.debug('%s downloaded!', srtm_tile_id_filename)
+
+        srtm_tile_id_filepath= out_dirpath / srtm_tile_id_filename
+        with open(srtm_tile_id_filepath, 'wb') as srtm_file:
+            srtm_file.write(r.content)
+
+        with zipfile.ZipFile(srtm_tile_id_filepath, 'r') as srtm_zipfile:
+            srtm_zipfile.extractall(out_dirpath)
+
+        srtm_tile_id_filepath.unlink()
+
+def get_srtm1s_ids(s2_tile_id: str)-> None:
+    """
+    Get srtm 1s id for an S2 tile
+    :param s2 tile_id:
+    :return: List of srtm ids
+    """
+    res= main(s2_tile_id, dem=True, overlap=True, no_l8=True, no_s2=True)
+    return list(res[2].id)
 
 def get_product_by_id(product_id, out_dir, provider=None, config_file=None, product_type=None):
     """
