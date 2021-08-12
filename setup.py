@@ -16,7 +16,7 @@ setup(
         "botocore",
         "click",
         "numpy",
-        "eodag==2.3.2",
+        "eodag==2.3.3",
         "geopandas==0.9.0",
         "rasterio==1.2.2",
         "requests",
