@@ -23,6 +23,6 @@ setup(
         "eotile==0.2rc3"
     ],
     extras_require={
-        'tests': ['pytest']},
+        'tests': ['pytest','tox']},
     entry_points={"console_scripts": ["dataship=dataship.dag.main:cli"]},
 )
