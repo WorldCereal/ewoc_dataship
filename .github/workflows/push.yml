@@ -25,7 +25,7 @@ jobs:
     - name: Analysing the code with pylint
       run: pylint --output-format=text $(find -type f -name "*.py" ! -path "**/venv/**")
 
-      - name: Build package
+    - name: Build package
       run: python -m build
 
 
