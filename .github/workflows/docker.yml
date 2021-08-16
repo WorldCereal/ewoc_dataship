@@ -29,7 +29,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            hfjcmwgl.gra5.container-registry.ovh.net/ewoc/dataship
+            hfjcmwgl.gra5.container-registry.ovh.net/world-cereal/dataship
           # generate Docker tags based on the following events/attributes
           tags: |
             type=ref,event=branch
