@@ -36,14 +36,3 @@ jobs:
 #      with:
 #        user: __token__
 #        password: ${{ secrets.PYPI_API_TOKEN }}
-
-  check-docker:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      - name: Build Docker images
-        uses: docker/build-push-action@v2.5.0
