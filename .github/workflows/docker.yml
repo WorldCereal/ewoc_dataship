@@ -30,7 +30,12 @@ jobs:
           # list of Docker images to use as base name for tags
           images: |
             hfjcmwgl.gra5.container-registry.ovh.net/world-cereal/dataship
+          # Do not generate :latest tag on Git push tag
+          # See https://github.com/marketplace/actions/docker-metadata-action#latest-tag
+          flavor: |
+            latest=false
           # generate Docker tags based on the following events/attributes
+          # See https://github.com/marketplace/actions/docker-metadata-action#tags-input
           tags: |
             type=ref,event=branch
             type=ref,suffix=-{{sha}},event=branch
