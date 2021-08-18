@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="dataship",
-    version="0.1.6",
+    version="0.1.7",
     description="Data access using eodag",
     author="Fahd Benatia",
     author_email="fahd.benatia@csgroup.eu",
@@ -20,9 +20,8 @@ setup(
         "geopandas==0.9.0",
         "rasterio==1.2.2",
         "requests",
-        "eotile==0.2rc3"
+        "eotile==0.2rc3",
     ],
-    extras_require={
-        'tests': ['pytest','tox']},
+    extras_require={"tests": ["pytest", "tox"]},
     entry_points={"console_scripts": ["dataship=dataship.dag.main:cli"]},
 )
