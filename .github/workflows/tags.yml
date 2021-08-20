@@ -17,6 +17,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.7'
+    - name: Download EOTile
+      uses: robinraju/release-downloader@v1.1
+      with:
+        repository: "WorldCereal/ewoc_eotile"
+        tag: "0.2rc3"
+        fileName: "eotile-0.2rc3-py3-none-any.whl"
+        token: ${{ secrets.CS_ORG_TOKEN }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
