@@ -20,18 +20,24 @@ jobs:
       with:
         python-version: '3.7'
 
+    # Extract COTS versions from Dockerfile
+    - name: COTS Versions
+      id: cots-versions
+      run: |
+        sed -n '/^ARG/s/ARG *\(.*\)=\(.*\)/::set-output name=\1::\2/p' Dockerfile
+
     - name: Download EOTile
       uses: robinraju/release-downloader@v1.1
       with:
         repository: "WorldCereal/ewoc_eotile"
-        tag: "0.2rc3"
-        fileName: "eotile-0.2rc3-py3-none-any.whl"
+        tag: "${{ steps.cots-versions.outputs.EOTILE_VERSION }}"
+        fileName: "eotile-${{ steps.cots-versions.outputs.EOTILE_VERSION }}-py3-none-any.whl"
         token: ${{ secrets.CS_ORG_TOKEN }}
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install eotile-0.2rc3-py3-none-any.whl
+        python -m pip install eotile-${{ steps.cots-versions.outputs.EOTILE_VERSION }}-py3-none-any.whl
         pip install build
         pip install pylint
 
