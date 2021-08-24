@@ -327,12 +327,12 @@ def get_srtm1s_from_ids(
     if source == "esa":
         logger.debug("Use ESA website to retrieve the srtm 1s data!")
         get_srtm_from_esa(srtm_tile_ids, out_dir)
-    elif source == "creodias":
+    elif source == "creodias-bucket":
         logger.debug("Use creodias s3 bucket to retrieve srtm 1s data!")
         raise NotImplementedError
-    elif source == "local":
+    elif source == "local-bucket":
         logger.debug("Use local s3 bucket to retrieve srtm 1s data!")
-        get_srtm_from_local(srtm_tile_ids, out_dir)
+        get_srtm_from_local_bucket(srtm_tile_ids, out_dir)
     elif source == "usgs":
         logger.debug("Use usgs EE to retrieve srtm 1s data!")
         raise NotImplementedError
@@ -340,25 +340,25 @@ def get_srtm1s_from_ids(
         logger.error("Source %s not supported!", source)
 
 
-def get_srtm_from_local(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
+def get_srtm_from_local_bucket(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
     """
     Retrieve srtm 1s data from local bucket into the output dir
     :param srtm_tile_ids: List of srtm tile ids
     :param out_dirpath: Output directory where the srtm data is downloaded
     """
-    bucket = "world-cereal"
+    local_bucket_name = "world-cereal"
     for srtm_tile_id in srtm_tile_ids:
-        print(srtm_tile_id)
         srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
-        key = os.path.join("srtm30", srtm_tile_id_filename)
-        srtm_tile_id_filepath = os.path.join(out_dirpath, srtm_tile_id_filename)
-        dwnld_s3file(key, srtm_tile_id_filepath, bucket)
+        srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
+        dwnld_s3file("srtm30/" + srtm_tile_id_filename,
+                     str(srtm_tile_id_filepath),
+                     local_bucket_name)
         logger.debug("%s downloaded!", srtm_tile_id_filename)
 
         with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
             srtm_zipfile.extractall(out_dirpath)
 
-        os.remove(srtm_tile_id_filepath)
+        srtm_tile_id_filepath.unlink()
 
 
 def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
