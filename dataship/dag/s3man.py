@@ -102,7 +102,7 @@ def download_object(bucket, object_name: str, filepath: Path, request_payer: boo
         extra_args=dict(RequestPayer='requester')
 
     try:
-        bucket.download(object_name, filepath, ExtraArgs=extra_args)
+        bucket.download_file(object_name, filepath, ExtraArgs=extra_args)
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] == "404":
             logger.error("The object does not exist.")
