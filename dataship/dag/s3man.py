@@ -192,7 +192,7 @@ def download_s1_prd_from_creodias(prd_id:str, out_dirpath:Path):
     """
     s1_prd_info = S1PrdIdInfo(prd_id)
     s1_bucket_prefix='Sentinel-1/SAR/'
-    prd_prefix = s1_bucket_prefix + s1_prd_info.product_type + '/' \
+    prd_prefix = s1_bucket_prefix + s1_prd_info.product_type \
                  + s1_prd_info.start_time.date().strftime(CREODIAS_BUCKET_FORMAT_PREFIX) \
                  + prd_id + '/'
     download_prd_from_creodias(prd_prefix, out_dirpath)

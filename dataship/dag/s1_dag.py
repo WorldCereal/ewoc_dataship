@@ -18,6 +18,7 @@ def get_s1_product(prd_id:str, out_root_dirpath:Path, source:str='creodias_eodat
     if source == 'creodias_finder':
         get_s1_product_by_id(prd_id, out_root_dirpath, provider='creodias', config_file=eodag_config_file)
     elif source == 'creodias_eodata':
+        logging.info('Use creodias EODATA object storage!',)
         download_s1_prd_from_creodias(prd_id, out_root_dirpath)
     elif source == 'aws_s3':
         raise NotImplementedError('Get S1 product from AWS bucket is not currently implemented!')
