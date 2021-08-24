@@ -327,11 +327,11 @@ def get_srtm1s_from_ids(
     if source == "esa":
         logger.debug("Use ESA website to retrieve the srtm 1s data!")
         get_srtm_from_esa(srtm_tile_ids, out_dir)
-    elif source == "creodias-bucket":
-        logger.debug("Use creodias s3 bucket to retrieve srtm 1s data!")
+    elif source == "creodias_eodata":
+        logger.debug("Use creodias bucket to retrieve srtm 1s data!")
         raise NotImplementedError
-    elif source == "local-bucket":
-        logger.debug("Use local s3 bucket to retrieve srtm 1s data!")
+    elif source == "ewoc":
+        logger.debug("Use EWoC bucket to retrieve srtm 1s data!")
         get_srtm_from_local_bucket(srtm_tile_ids, out_dir)
     elif source == "usgs":
         logger.debug("Use usgs EE to retrieve srtm 1s data!")
