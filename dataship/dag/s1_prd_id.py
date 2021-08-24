@@ -125,7 +125,7 @@ class S1PrdIdInfo:
 
     @property
     def product_type(self):
-        return self._mission_id
+        return self._product_type
 
     @product_type.setter
     def product_type(self, value):
