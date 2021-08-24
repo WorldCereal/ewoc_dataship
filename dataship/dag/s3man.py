@@ -32,36 +32,33 @@ def get_s3_client():
     return s3_client
 
 def create_s3_resource(s3_resource_name):
-    """ Get a s3 ressources from boto3.
+    """ Create s3 resource from boto3 for supported object storage
 
-    Retrieves rows pertaining to the given keys from the Table instance
-    represented by table_handle.  String keys will be UTF-8 encoded.
+    We suport AWS, creodias eodata and ewoc object storage.
+
+    The following env variables are needed:
+      - for ewoc:
+        - EWOC_S3_ACCESS_KEY_ID
+        - EWOC_S3_SECRET_ACCESS_KEY
+        - EWOC_ENDPOINT_URL
+      - for aws   
+        - AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY
+
+    For more information:
+     - for creodias eodata case: https://creodias.eu/faq-s3/-/asset_publisher/SIs09LQL6Gct/content/how-to-download-a-eo-data-file-using-boto3-?inheritRedirect=true
+     - for creodias ewo case: https://creodias.eu/-/how-to-access-private-object-storage-using-s3cmd-or-boto3-?inheritRedirect=true&redirect=%2Ffaq-s3
 
     Args:
-      table_handle:
-        An open smalltable.Table instance.
-      keys:
-        A sequence of strings representing the key of each table row to
-        fetch.  String keys will be UTF-8 encoded.
-      require_all_keys:
-        Optional; If require_all_keys is True only rows with values set
-        for all keys will be returned.
+      s3 resource name: str 
+        Resource name supported: aws, creodias_eodata, ewoc.
 
     Returns:
-      A dict mapping keys to the corresponding table row data
-      fetched. Each row is represented as a tuple of strings. For
-      example:
-
-      {b'Serak': ('Rigel VII', 'Preparer'),
-       b'Zim': ('Irk', 'Invader'),
-       b'Lrrr': ('Omicron Persei 8', 'Emperor')}
-
-      Returned keys are always bytes.  If a key from the keys argument is
-      missing from the dictionary, then that row was not found in the
-      table (and require_all_keys must have been False).
+      A boto3 Subclass of ServiceResource
 
     Raises:
-      IOError: An error occurred accessing the smalltable.
+      ValueError: When the resource name is not provided or the env variable not set for ewoc case.
+      NotImplementedError: When the resource name is not supported
     """
     if s3_resource_name is None:
         logging.critical('S3 ressource name not provided!')
@@ -69,15 +66,13 @@ def create_s3_resource(s3_resource_name):
     elif s3_resource_name == 'aws':
         return boto3.resource('s3')
     elif s3_resource_name == 'creodias_eodata':
-        # cf. https://creodias.eu/faq-s3/-/asset_publisher/SIs09LQL6Gct/content/how-to-download-a-eo-data-file-using-boto3-?inheritRedirect=true
-        return boto3.resource('s3',
+       return boto3.resource('s3',
                               aws_access_key_id=str(None),
                               aws_secret_access_key=str(None),
                               endpoint_url='http://data.cloudferro.com')
     elif s3_resource_name == 'ewoc':
         ewoc_access_key_id = os.getenv('EWOC_S3_ACCESS_KEY_ID')
         ewoc_secret_access_key_id = os.getenv('EWOC_S3_SECRET_ACCESS_KEY')
-        # cf. https://creodias.eu/-/how-to-access-private-object-storage-using-s3cmd-or-boto3-?inheritRedirect=true&redirect=%2Ffaq-s3
         CREODIAS_EWOC_ENDPOINT_URL= 'https://s3.waw2-1.cloudferro.com'
         ewoc_endpoint_url = os.getenv('EWOC_ENDPOINT_URL', CREODIAS_EWOC_ENDPOINT_URL)
         logging.debug('EWoC endpoint URL: %s', ewoc_endpoint_url)
@@ -93,35 +88,64 @@ def create_s3_resource(s3_resource_name):
         logging.critical('S3 resource %s not supported', s3_resource_name)
         raise NotImplementedError
 
-def download_object(s3_resource, bucket_name, object_name, filepath, request_payer=False):
+def download_object(bucket, object_name: str, filepath: Path, request_payer: bool=False):
+    """ Download a object from a bucket
+
+    Args:
+        bucket (boto3 bucket): bucket object creates with boto3
+        object_name (str): key in the object storage of the object
+        filepath (Path): Filepath where the object will be writen
+        request_payer (bool, optional): [description]. Defaults to False.
+    """
     extra_args=None
     if request_payer==True:
         extra_args=dict(RequestPayer='requester')
 
     try:
-        s3_resource.Bucket(bucket_name).download(object_name, filepath, ExtraArgs=extra_args)
+        bucket.download(object_name, filepath, ExtraArgs=extra_args)
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] == "404":
             logger.error("The object does not exist.")
         else:
             raise
 
-def upload_object(s3_resource, bucket_name, filepath, object_name):
+def upload_object(bucket, filepath: Path, object_name: str)-> bool:
+    """ Upload a object to a bucket
+
+    Args:
+        bucket (boto3 bucket): bucket object creates with boto3
+        filepath (Path): Filepath of the object to write
+        object_name (str): key in the object storage of the object
+
+    Returns:
+        [bool]: if upload succeed
+    """
     try:
-        s3_resource.Bucket(bucket_name).upload_file(filepath, object_name)
+        bucket.upload_file(filepath, object_name)
         logging.info('Uploaded %s (%s) to %s', filepath, filepath.stat().st_size, object_name)
     except ClientError as e:
         logging.error(e)
         return False
     return True
 
-def upload_objects(s3_ressource, bucket_name, dirpath, object_prefix, file_suffix='.tif'):
+def upload_objects(bucket, dirpath: Path, object_prefix:str, file_suffix :str='.tif'):
+    """ Upload a set of objects from a directory to a bucket
+
+    Args:
+        bucket (boto3 bucket): bucket object creates with boto3
+        dirpath (Path): Directory which contains the files to upload
+        object_prefix (str): where to put the objects 
+        file_suffix (str, optional): extension use to filter the files in the directory. Defaults to '.tif'.
+
+    Returns:
+        [type]: [description]
+    """
     filepaths=sorted(dirpath.glob(file_suffix))
     upload_object_size= 0
     for filepath in filepaths:
         upload_object_size += filepath.stat().st_size
         object_name = object_prefix + '/' + filepath
-        upload_object(s3_ressource, bucket_name, filepath, object_name)
+        upload_object(bucket, filepath, object_name)
 
     logging.info('Uploaded %s tif files for a total size of %s.', len(filepaths), upload_object_size)
 
@@ -136,10 +160,14 @@ def upload_file(s3_client, local_file, bucket, s3_obj):
         return False
     return True
 
-def download_prd_from_creodias(prd_prefix, out_dirpath):
-    s3_resource = create_s3_resource('creodias_eodata')
-    bucket_name = 'DIAS'
-    bucket = s3_resource.Bucket(bucket_name)
+def download_prd_from_creodias(prd_prefix: str, out_dirpath:Path):
+    """ Download product from creodias eodata object storage
+
+    Args:
+        prd_prefix (str): prd key prefix
+        out_dirpath (Path): directory where to write the objects of the product 
+    """
+    bucket = create_s3_resource('creodias_eodata').Bucket('DIAS')
     logger.debug('Product prefix: %s', prd_prefix)
     for obj in bucket.objects.filter(Prefix=prd_prefix):
         if obj.key[-1]== '/':
@@ -150,11 +178,17 @@ def download_prd_from_creodias(prd_prefix, out_dirpath):
         filename =  obj.key.split(sep='/', maxsplit=6)[-1]
         output_filepath = out_dirpath / filename
         logging.debug('Try to download %s to %s', obj.key, output_filepath)
-        download_object(s3_resource, bucket_name, obj.key, str(output_filepath))
+        download_object(bucket, obj.key, str(output_filepath))
 
 CREODIAS_BUCKET_FORMAT_PREFIX='/%Y/%m/%d/'
 
-def download_s1_prd_from_creodias(prd_id, out_dirpath):
+def download_s1_prd_from_creodias(prd_id:str, out_dirpath:Path):
+    """ Download Sentinel-1 product from creodias eodata object storage
+
+    Args:
+        prd_id (str): Sentinel-1 product id
+        out_dirpath (Path): Directory where to put the product
+    """
     s1_prd_info = S1PrdIdInfo(prd_id)
     s1_bucket_prefix='Sentinel-1/SAR/'
     prd_prefix = s1_bucket_prefix + s1_prd_info.product_type + '/' \
@@ -162,7 +196,13 @@ def download_s1_prd_from_creodias(prd_id, out_dirpath):
                  + prd_id + '/'
     download_prd_from_creodias(prd_prefix, out_dirpath)
 
-def download_s2_prd_from_creodias(prd_id, out_dirpath):
+def download_s2_prd_from_creodias(prd_id:str, out_dirpath:Path):
+    """ Download Sentinel-2 product from creodias eodata object storage
+
+    Args:
+        prd_id (str): Sentinel-2 product id
+        out_dirpath (Path): Directory where to put the product
+    """
     s2_prd_info = S2PrdIdInfo(prd_id)
     s2_bucket_prefix='Sentinel-2/MSI/'
     prd_prefix = s2_bucket_prefix + s2_prd_info.product_level + '/' \

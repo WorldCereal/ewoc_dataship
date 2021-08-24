@@ -4,7 +4,7 @@ class S1PrdIdInfo:
 
     FORMAT_DATETIME='%Y%m%dT%H%M%S'
 
-    def __init__(self, s1_prd_id) -> None:
+    def __init__(self, s1_prd_id:str) -> None:
         # S1A_IW_GRDH_1SDV_20210708T060105_20210708T060130_038682_04908E_8979.SAFE
         # https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-1-sar/naming-conventions
         s1_prod_id_wsafe=s1_prd_id.split('.')[0]
