@@ -15,7 +15,7 @@ from eodag import EODataAccessGateway
 from eotile.eotile_module import main
 from rasterio.merge import merge
 
-from dataship.dag.s3man import download_s3file as dwnld_s3file
+from dataship.dag.s3man import download_s1_prd_from_creodias, download_s3file as dwnld_s3file
 
 logger = logging.getLogger(__name__)
 
@@ -438,6 +438,27 @@ def get_product_by_id(
         if product_id in item and item.endswith("zip"):
             os.remove(os.path.join(out_dir, item))
 
+
+def get_s1_product(prd_id:str, out_root_dirpath:Path, source:str='creodias_eodata', eodag_config_file=None):
+    """
+    Retrieve Sentinel-1 data via eodag or directly from a object storage
+    """
+    if source is None:
+        source = os.getenv('EWOC_DATA_SOURCE')
+
+    if source == 'creodias_finder':
+        get_product_by_id(prd_id, out_root_dirpath, provider='creodias', config_file=eodag_config_file)
+    elif source == 'creodias_eodata':
+        download_s1_prd_from_creodias(prd_id, out_root_dirpath)
+    elif source == 'aws_s3':
+        raise NotImplementedError('Get S1 product from AWS bucket is not currently implemented!')
+    else:
+        if eodag_config_file is not None:
+            data_provider=os.getenv('EWOC_DATA_PROVIDER')
+            logging.info('Use EODAG to retrieve the Sentinel-1 product with the following data provider %s.', data_provider)
+            get_product_by_id(prd_id, out_root_dirpath, provider=data_provider)
+        else:
+            raise NotImplementedError
 
 def get_s1_product_by_id(product_id, out_dir, provider=None, config_file=None):
     """
