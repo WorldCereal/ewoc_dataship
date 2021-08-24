@@ -170,6 +170,7 @@ def download_prd_from_creodias(prd_prefix: str, out_dirpath:Path):
     bucket = create_s3_resource('creodias_eodata').Bucket('DIAS')
     logger.debug('Product prefix: %s', prd_prefix)
     for obj in bucket.objects.filter(Prefix=prd_prefix):
+        logger.debug(obj)
         if obj.key[-1]== '/':
             dirname = obj.key.split(sep='/', maxsplit=6)[-1]
             output_dir = out_dirpath /  dirname
