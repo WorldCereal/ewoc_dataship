@@ -207,7 +207,7 @@ def download_s2_prd_from_creodias(prd_id:str, out_dirpath:Path):
     """
     s2_prd_info = S2PrdIdInfo(prd_id)
     s2_bucket_prefix='Sentinel-2/MSI/'
-    prd_prefix = s2_bucket_prefix + s2_prd_info.product_level + '/' \
+    prd_prefix = s2_bucket_prefix + s2_prd_info.product_level \
                  + s2_prd_info.datatake_sensing_start_time.date().strftime(CREODIAS_BUCKET_FORMAT_PREFIX) \
                  + prd_id + '/'
     download_prd_from_creodias(prd_prefix, out_dirpath)
