@@ -4,21 +4,35 @@ from dataship.classes.s1_prd_id import S1PrdIdInfo
 
 logger = logging.getLogger(__name__)
 
-def l2a_to_ard(product_id):
+def l2a_to_ard(product_id, work_dir):
     """
     Convert an L2A product into EWoC ARD format
     :param l2a_folder: L2A SAFE folder
     :param work_dir: Output directory
     """
-
+    bands = {
+        "B02": 10,
+        "B03": 10,
+        "B04": 10,
+        "B08": 10,
+        "B05": 20,
+        "B06": 20,
+        "B07": 20,
+        "B11": 20,
+        "B12": 20,
+        "SCL": 20,
+    }
+    # Prepare ewoc folder name
     platform = product_id.split("_")[0]
     processing_level = product_id.split("_")[1]
     date = product_id.split("_")[2]
     year = date[:4]
     # Get tile id , remove the T in the beginning
     tile_id = product_id.split("_")[5][1:]
+    atcor_algo = "L2A"
     unique_id = "".join(product_id.split("_")[3:6])
     folder_st = os.path.join(
+        work_dir,
         "OPTICAL",
         tile_id[:2],
         tile_id[2],
@@ -27,8 +41,15 @@ def l2a_to_ard(product_id):
         date.split("T")[0],
     )
     dir_name = f"{platform}_{processing_level}_{date}_{unique_id}_{tile_id}"
-    ard_folder = os.path.join(folder_st, dir_name)
-    return ard_folder
+
+    # Convert bands and SCL
+    raster_fn_list = []
+    for band in bands:
+        out_name = f"{platform}_{atcor_algo}_{date}_{unique_id}_{tile_id}_{band}.tif"
+        raster_fn = os.path.join(folder_st, dir_name, out_name)
+        raster_fn_list.append(raster_fn)
+
+    return raster_fn_list
 
 
 def l8_to_ard(key,s2_tile,out_dir=None):
