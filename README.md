@@ -9,7 +9,9 @@ Data access for EWoC processors. Powered by [EOdag](https://eodag.readthedocs.io
 
 Docker usage from this repository:
 
-1 .`docker build -t dataship .`
+0. Download the EOtile package.
+
+1. `docker build -t dataship .`
 
 2. `docker run -ti --rm dataship --help` (the entrypoint is the dataship CLI)
 
