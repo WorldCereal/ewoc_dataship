@@ -2,6 +2,7 @@ from datetime import date
 import logging
 import os
 from pathlib import Path
+import zipfile
 
 import boto3
 import botocore
@@ -227,6 +228,40 @@ def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
     print(f'\n Uploaded {tif_files_number} tif files for a total size of {total_output_size}')
     return tif_files_number, total_output_size
 
+
+def download_srtm_tiles_from_ewoc(srtm_tile_ids, out_dirpath):
+    bucket = create_s3_resource('ewoc').Bucket('world-cereal')
+    srtm_prefix = 'srtm30/'
+    for srtm_tile_id in srtm_tile_ids:
+        srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
+        srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
+        srtm_object_key = srtm_prefix + srtm_tile_id_filename
+        logger.info(srtm_object_key)
+        download_object(bucket,
+                        srtm_object_key,
+                        str(srtm_tile_id_filepath))
+
+        with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
+            srtm_zipfile.extractall(out_dirpath)
+
+        srtm_tile_id_filepath.unlink()
+
+def download_srtm_tiles_from_creodias(srtm_tile_ids, out_dirpath):
+    bucket = create_s3_resource('creodias_eodata').Bucket('DIAS')
+    srtm_prefix = 'auxdata/SRTMGL1/dem/'
+    for srtm_tile_id in srtm_tile_ids:
+        srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
+        srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
+        srtm_object_key = srtm_prefix + srtm_tile_id_filename
+        logger.info(srtm_object_key)
+        download_object(bucket,
+                        srtm_object_key,
+                        str(srtm_tile_id_filepath))
+
+        with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
+            srtm_zipfile.extractall(out_dirpath)
+
+        srtm_tile_id_filepath.unlink()
 
 def download_s3file(s3_full_key,out_file, bucket):
     """

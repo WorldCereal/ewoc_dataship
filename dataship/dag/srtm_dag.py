@@ -8,6 +8,7 @@ import requests
 from eotile.eotile_module import main
 
 from dataship.dag.s3man import download_s3file as dwnld_s3file
+from dataship.dag.s3man import download_srtm_tiles_from_ewoc, download_srtm_tiles_from_creodias
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +52,10 @@ def get_srtm1s_from_ids(
         get_srtm_from_esa(srtm_tile_ids, out_dir)
     elif source == "creodias_eodata":
         logger.info("Use creodias bucket to retrieve srtm 1s data!")
-        raise NotImplementedError
+        get_srtm_from_creodias(srtm_tile_ids, out_dir)
     elif source == "ewoc":
         logger.info("Use EWoC bucket to retrieve srtm 1s data!")
-        get_srtm_from_local_bucket(srtm_tile_ids, out_dir)
+        get_srtm_from_ewoc(srtm_tile_ids, out_dir)
     elif source == "usgs":
         logger.info("Use usgs EE to retrieve srtm 1s data!")
         raise NotImplementedError
@@ -83,6 +84,21 @@ def get_srtm_from_local_bucket(srtm_tile_ids: List[str], out_dirpath: Path) -> N
 
         srtm_tile_id_filepath.unlink()
 
+def get_srtm_from_ewoc(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
+    """
+    Retrieve srtm 1s data from ewoc object storage into the output dir
+    :param srtm_tile_ids: List of srtm tile ids
+    :param out_dirpath: Output directory where the srtm data is downloaded
+    """
+    download_srtm_tiles_from_ewoc(srtm_tile_ids, out_dirpath)
+
+def get_srtm_from_creodias(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
+    """
+    Retrieve srtm 1s data from creodias eodata object storage into the output dir
+    :param srtm_tile_ids: List of srtm tile ids
+    :param out_dirpath: Output directory where the srtm data is downloaded
+    """
+    download_srtm_tiles_from_creodias(srtm_tile_ids, out_dirpath)
 
 def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
     """
