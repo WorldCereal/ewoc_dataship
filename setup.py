@@ -17,7 +17,7 @@ setup(
         "click<9",
         "numpy<2",
         "eodag>=2.3.3,<3",
-        "geopandas>0.9,<0.10",
+        "geopandas>=0.9,<0.10",
         "rasterio>=1.2.2,<2",
         "requests<3",
         "eotile>=0.2.6,<0.3",
