@@ -20,7 +20,7 @@ setup(
         "geopandas==0.9.0",
         "rasterio==1.2.2",
         "requests",
-        "eotile==0.2rc3",
+        "eotile>=0.2.6",
     ],
     extras_require={"tests": ["pytest", "tox"]},
     entry_points={"console_scripts": ["dataship=dataship.dag.main:cli"]},
