@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="dataship",
-    version="0.1.8",
+    version="0.1.9",
     description="Data access using eodag",
     author="Fahd Benatia",
     author_email="fahd.benatia@csgroup.eu",
