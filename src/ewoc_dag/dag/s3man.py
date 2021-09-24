@@ -7,8 +7,8 @@ import boto3
 import botocore
 from botocore.exceptions import ClientError
 
-from dataship.eo_prd_id.s1_prd_id import S1PrdIdInfo
-from dataship.eo_prd_id.s2_prd_id import S2PrdIdInfo
+from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
+from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 
 logger = logging.getLogger(__name__)
 

@@ -7,8 +7,8 @@ import zipfile
 import requests
 from eotile.eotile_module import main
 
-from dataship.dag.s3man import download_s3file as dwnld_s3file
-from dataship.dag.s3man import download_srtm_tiles_from_ewoc, download_srtm_tiles_from_creodias
+from ewoc_dag.dag.s3man import download_s3file as dwnld_s3file
+from ewoc_dag.dag.s3man import download_srtm_tiles_from_ewoc, download_srtm_tiles_from_creodias
 
 logger = logging.getLogger(__name__)
 

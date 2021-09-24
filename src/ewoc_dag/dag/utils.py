@@ -12,7 +12,7 @@ from eodag import EODataAccessGateway
 from eotile.eotile_module import main
 from rasterio.merge import merge
 
-from dataship.dag.s3man import download_s3file as dwnld_s3file
+from ewoc_dag.dag.s3man import download_s3file as dwnld_s3file
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@ import logging
 import os
 from pathlib import Path
 
-from dataship.dag.s3man import download_s1_prd_from_creodias
-from dataship.dag.utils import get_product_by_id
+from ewoc_dag.dag.s3man import download_s1_prd_from_creodias
+from ewoc_dag.dag.utils import get_product_by_id
 
 logger = logging.getLogger(__name__)
 

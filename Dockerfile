@@ -12,6 +12,6 @@ RUN apt-get update -y && apt-get install -y python3.7 && apt-get install -y pyth
     && rm -rf /var/lib/apt/lists/*
 RUN python3 -m pip install --no-cache-dir -U pip
 
-COPY dataship setup* /work/
+COPY src setup* /work/
 RUN pip install --no-cache-dir .
-ENTRYPOINT ["dataship"]
+ENTRYPOINT ["ewoc_dag"]

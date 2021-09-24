@@ -1,7 +1,10 @@
 import click
 
-from dataship.dag.ship import merge_l8
-from dataship.dag.utils import *
+from ewoc_dag.dag.ship import merge_l8
+from ewoc_dag.dag.utils import *
+from ewoc_dag.dag.srtm_dag import get_srtm, get_srtm1s, get_srtm1s_ids
+from pathlib import Path
+import os
 
 
 @click.group()
