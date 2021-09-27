@@ -12,6 +12,7 @@ from dataship.eo_prd_id.s2_prd_id import S2PrdIdInfo
 
 logger = logging.getLogger(__name__)
 
+
 # Some s3 functions from argo workflow coded by Alex G.
 def get_s3_client():
     client_config = botocore.config.Config(max_pool_connections=100)
@@ -30,6 +31,7 @@ def get_s3_client():
                                  config=client_config)
 
     return s3_client
+
 
 def create_s3_resource(s3_resource_name):
     """ Create s3 resource from boto3 for supported object storage
@@ -88,6 +90,7 @@ def create_s3_resource(s3_resource_name):
         logging.critical('S3 resource %s not supported', s3_resource_name)
         raise NotImplementedError
 
+
 def download_object(bucket, object_name: str, filepath: Path, request_payer: bool=False):
     """ Download a object from a bucket
 
@@ -109,6 +112,7 @@ def download_object(bucket, object_name: str, filepath: Path, request_payer: boo
         else:
             raise
 
+
 def upload_object(bucket, filepath: Path, object_name: str)-> bool:
     """ Upload a object to a bucket
 
@@ -128,6 +132,7 @@ def upload_object(bucket, filepath: Path, object_name: str)-> bool:
         return False
     return True
 
+
 def upload_objects(bucket, dirpath: Path, object_prefix:str, file_suffix :str='.tif'):
     """ Upload a set of objects from a directory to a bucket
 
@@ -140,8 +145,8 @@ def upload_objects(bucket, dirpath: Path, object_prefix:str, file_suffix :str='.
     Returns:
         [type]: [description]
     """
-    filepaths=sorted(dirpath.glob(file_suffix))
-    upload_object_size= 0
+    filepaths = sorted(dirpath.glob(file_suffix))
+    upload_object_size = 0
     for filepath in filepaths:
         upload_object_size += filepath.stat().st_size
         object_name = object_prefix + '/' + filepath
@@ -151,6 +156,7 @@ def upload_objects(bucket, dirpath: Path, object_prefix:str, file_suffix :str='.
 
     return len(filepaths), upload_object_size
 
+
 def upload_file(s3_client, local_file, bucket, s3_obj):
     try:
         s3_client.upload_file(local_file, bucket, s3_obj)
@@ -159,6 +165,7 @@ def upload_file(s3_client, local_file, bucket, s3_obj):
         print("Failed to upload file {} to s3://{}/{}".format(local_file, bucket, s3_obj))
         return False
     return True
+
 
 def download_prd_from_creodias(prd_prefix: str, out_dirpath:Path):
     """ Download product from creodias eodata object storage
@@ -171,17 +178,18 @@ def download_prd_from_creodias(prd_prefix: str, out_dirpath:Path):
     logger.debug('Product prefix: %s', prd_prefix)
     for obj in bucket.objects.filter(Prefix=prd_prefix):
         logger.debug(obj)
-        if obj.key[-1]== '/':
+        if obj.key[-1] == '/':
             dirname = obj.key.split(sep='/', maxsplit=6)[-1]
             output_dir = out_dirpath /  dirname
             output_dir.mkdir(parents=True, exist_ok=True)
             continue
-        filename =  obj.key.split(sep='/', maxsplit=6)[-1]
+        filename = obj.key.split(sep='/', maxsplit=6)[-1]
         output_filepath = out_dirpath / filename
         logging.debug('Try to download %s to %s', obj.key, output_filepath)
         download_object(bucket, obj.key, str(output_filepath))
 
 CREODIAS_BUCKET_FORMAT_PREFIX='/%Y/%m/%d/'
+
 
 def download_s1_prd_from_creodias(prd_id:str, out_dirpath:Path):
     """ Download Sentinel-1 product from creodias eodata object storage
@@ -196,6 +204,7 @@ def download_s1_prd_from_creodias(prd_id:str, out_dirpath:Path):
                  + s1_prd_info.start_time.date().strftime(CREODIAS_BUCKET_FORMAT_PREFIX) \
                  + prd_id + '/'
     download_prd_from_creodias(prd_prefix, out_dirpath)
+
 
 def download_s2_prd_from_creodias(prd_id:str, out_dirpath:Path):
     """ Download Sentinel-2 product from creodias eodata object storage
@@ -221,9 +230,10 @@ def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
             if os.path.isfile(old_file):
                 if file.endswith('.tif'):
                     tif_files_number += 1
-                new_file = os.path.join(s3_path, root.replace(local_path,''),file)
+                new_file = os.path.join(s3_path, root.replace(local_path, ''), file)
                 total_output_size = total_output_size + os.path.getsize(old_file)
                 upload_file(s3_client, old_file, bucketname, new_file)
+                print(f'File {new_file} successfully pushed')  # DEBUG
     print(f'\n Uploaded {tif_files_number} tif files for a total size of {total_output_size}')
     return tif_files_number, total_output_size
 
