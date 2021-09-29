@@ -233,7 +233,7 @@ def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
                 new_file = os.path.join(s3_path, root.replace(local_path, ''), file)
                 total_output_size = total_output_size + os.path.getsize(old_file)
                 upload_file(s3_client, old_file, bucketname, new_file)
-                print(f'File {os.path.dirname(new_file)}/ successfully pushed to bucket')  # DEBUG
+                print(f'successfully pushed to {os.path.dirname(new_file)}/ on the bucket')  # DEBUG
     print(f'\n Uploaded {tif_files_number} tif files for a total size of {total_output_size}')
     return tif_files_number, total_output_size
 
