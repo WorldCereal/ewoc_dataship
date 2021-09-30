@@ -237,10 +237,10 @@ def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
                 if os.path.dirname(new_file) not in paths:
                     paths.append(os.path.dirname(new_file))
     if len(paths) == 1:
-        print(f'\n Uploaded {tif_files_number} tif files | {paths[0]}')
+        print(f'\n Uploaded {tif_files_number} tif files to bucket | s3://{bucketname}/{paths[0]}')
     else:
         print("Error, incorrect number of directories : ")
-        print(f'\n Uploaded {tif_files_number} tif files | {" ; ".join(paths)}')
+        print(f'\n Uploaded {tif_files_number} tif files to bucket | s3://{bucketname}/{f" ; s3://{bucketname}/".join(paths)}')
     return tif_files_number, total_output_size
 
 
