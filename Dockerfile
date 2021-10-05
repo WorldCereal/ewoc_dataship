@@ -1,5 +1,5 @@
 # Set base image
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 #Set the working directory in the container
 WORKDIR /work
 
@@ -15,6 +15,6 @@ RUN python3 -m pip install --no-cache-dir -U pip
 RUN pip3 install --no-cache-dir -U setuptools setuptools_scm wheel
 
 COPY src setup* /work/
-RUN pip install --no-cache-dir .
+RUN pip3 install --no-cache-dir .
 
 ENTRYPOINT ["ewoc_dag"]
