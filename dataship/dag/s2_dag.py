@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def get_s2_product(prd_id:str, out_root_dirpath:Path, source:str='creodias_eodata', eodag_config_file=None):
     """
-    Retrieve Sentinel-1 data via eodag or directly from a object storage
+    Retrieve Sentinel-2 data via eodag or directly from a object storage
     """
 
     if source is None:
@@ -24,13 +24,15 @@ def get_s2_product(prd_id:str, out_root_dirpath:Path, source:str='creodias_eodat
         logging.info('Use creodias EODATA object storage!')
         download_s2_prd_from_creodias(prd_id, out_root_dirpath)
     elif source == 'aws_e84':
+        if "L2A" in prd_id:
+            raise NotImplementedError("A Level 2 product was given. This is not implemented yet")
         pattern_t = r"(?<=_T)(.*?)(?=\_)"
         pattern_d = r"(?<=C_)(.*?)(?=\_)"
         tile_id = re.findall(pattern_t, prd_id)[0]
         date = re.findall(pattern_d, prd_id)[0].split("T")[0]
         cm_s2 = Sentinel_Cloud_Mask(tile_id, date, bucket="sentinel-cogs", prefix="sentinel-s2-l2a-cogs/")
         if cm_s2.mask_exists():
-            cm_s2.download(str(Path(out_root_dirpath)/(prd_id+".tif")))  # TODO check this
+            cm_s2.download(str(Path(out_root_dirpath)/(prd_id+".tif")))
         else:
             print("Mask doesn't exist on the specified bucket")
     else:

@@ -418,18 +418,24 @@ def binary_scl(scl_file, raster_fn):
     :param raster_fn: Output binary mask path
     """
     with rasterio.open(scl_file, "r") as src:
-        ds = src.read(1)
-    # For SCL flag all cloud pixels
-    ds[ds == 10] = 0
-    ds[ds == 9] = 0
-    ds[ds == 8] = 0
-    ds[ds == 1] = 0
-    ds[ds == 3] = 0
-    ds[ds != 0] = 1
+        scl = src.read(1)
+
+    # Set the to-be-masked SCL values
+    SCL_MASK_VALUES = [0, 1, 3, 8, 9, 10, 11]
+
+    # Set the nodata value in SCL
+    SCL_NODATA_VALUE = 0
+
+    # Contruct the final binary 0-1-255 mask
+    mask = np.zeros_like(scl)
+    mask[scl == SCL_NODATA_VALUE] = 255
+    mask[~np.isin(scl, SCL_MASK_VALUES)] = 1
+
     meta = src.meta.copy()
     meta["driver"] = "GTiff"
     dtype = rasterio.uint8
     meta["dtype"] = dtype
+    meta["nodata"] = 255
 
     with rasterio.open(
         raster_fn,
@@ -440,7 +446,7 @@ def binary_scl(scl_file, raster_fn):
         blockxsize=512,
         blockysize=512,
     ) as out:
-        out.write(ds.astype(rasterio.uint8), 1)
+        out.write(mask.astype(rasterio.uint8), 1)
 
 
 def l2a_to_ard(l2a_folder, work_dir):
