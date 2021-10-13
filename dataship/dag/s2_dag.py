@@ -34,7 +34,7 @@ def get_s2_product(prd_id:str, out_root_dirpath:Path, source:str='creodias_eodat
         if cm_s2.mask_exists():
             cm_s2.download(str(Path(out_root_dirpath)/(prd_id+".tif")))
         else:
-            print("Mask doesn't exist on the specified bucket")
+            logger.error("Mask doesn't exist on the specified bucket")
     else:
         # TODO: Implement the other two prodivers
         raise NotImplementedError

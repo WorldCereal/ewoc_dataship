@@ -449,24 +449,29 @@ def binary_scl(scl_file, raster_fn):
         out.write(mask.astype(rasterio.uint8), 1)
 
 
-def l2a_to_ard(l2a_folder, work_dir):
+def l2a_to_ard(l2a_folder, work_dir, only_scl=False):
     """
     Convert an L2A product into EWoC ARD format
     :param l2a_folder: L2A SAFE folder
     :param work_dir: Output directory
     """
-    bands = {
-        "B02": 10,
-        "B03": 10,
-        "B04": 10,
-        "B08": 10,
-        "B05": 20,
-        "B06": 20,
-        "B07": 20,
-        "B11": 20,
-        "B12": 20,
-        "SCL": 20,
-    }
+    if only_scl:
+        bands = {
+            "SCL": 20,
+        }
+    else:
+        bands = {
+            "B02": 10,
+            "B03": 10,
+            "B04": 10,
+            "B08": 10,
+            "B05": 20,
+            "B06": 20,
+            "B07": 20,
+            "B11": 20,
+            "B12": 20,
+            "SCL": 20,
+        }
     # Prepare ewoc folder name
     prod_name = get_s2_prodname(l2a_folder)
     product_id = prod_name
