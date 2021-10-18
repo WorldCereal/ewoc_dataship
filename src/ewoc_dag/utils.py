@@ -11,8 +11,6 @@ import numpy as np
 import rasterio
 from rasterio.merge import merge
 
-from ewoc_dag.s3man import download_s3file as dwnld_s3file
-
 logger = logging.getLogger(__name__)
 
 

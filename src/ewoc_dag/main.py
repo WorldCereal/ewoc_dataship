@@ -2,10 +2,11 @@ import os
 from pathlib import Path
 
 import click
+from eodag import EODataAccessGateway
 
 from ewoc_dag.ship import merge_l8
-from ewoc_dag.utils import *
-from ewoc_dag.srtm_dag import get_srtm, get_srtm1s, get_srtm1s_ids
+from ewoc_dag.utils import get_geom_from_id, get_prods_from_json, get_product_by_id, l2a_to_ard, copy_tirs_s3, s1db_folder
+from ewoc_dag.srtm_dag import get_srtm1s, get_srtm1s_ids
 
 
 @click.group()

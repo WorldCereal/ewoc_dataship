@@ -43,7 +43,7 @@ def create_s3_resource(s3_resource_name):
         - EWOC_S3_ACCESS_KEY_ID
         - EWOC_S3_SECRET_ACCESS_KEY
         - EWOC_ENDPOINT_URL
-      - for aws   
+      - for aws
         - AWS_ACCESS_KEY_ID
         - AWS_SECRET_ACCESS_KEY
 
@@ -52,7 +52,7 @@ def create_s3_resource(s3_resource_name):
      - for creodias ewo case: https://creodias.eu/-/how-to-access-private-object-storage-using-s3cmd-or-boto3-?inheritRedirect=true&redirect=%2Ffaq-s3
 
     Args:
-      s3 resource name: str 
+      s3 resource name: str
         Resource name supported: aws, creodias_eodata, ewoc.
 
     Returns:
@@ -101,7 +101,7 @@ def download_object(bucket, object_name: str, filepath: Path, request_payer: boo
         request_payer (bool, optional): [description]. Defaults to False.
     """
     extra_args=None
-    if request_payer==True:
+    if request_payer is True:
         extra_args=dict(RequestPayer='requester')
 
     try:
@@ -139,7 +139,7 @@ def upload_objects(bucket, dirpath: Path, object_prefix:str, file_suffix :str='.
     Args:
         bucket (boto3 bucket): bucket object creates with boto3
         dirpath (Path): Directory which contains the files to upload
-        object_prefix (str): where to put the objects 
+        object_prefix (str): where to put the objects
         file_suffix (str, optional): extension use to filter the files in the directory. Defaults to '.tif'.
 
     Returns:
@@ -152,7 +152,8 @@ def upload_objects(bucket, dirpath: Path, object_prefix:str, file_suffix :str='.
         object_name = object_prefix + '/' + filepath
         upload_object(bucket, filepath, object_name)
 
-    logging.info('Uploaded %s tif files for a total size of %s.', len(filepaths), upload_object_size)
+    logging.info('Uploaded %s tif files for a total size of %s.', len(filepaths),
+                                                                  upload_object_size)
 
     return len(filepaths), upload_object_size
 
@@ -172,7 +173,7 @@ def download_prd_from_creodias(prd_prefix: str, out_dirpath:Path):
 
     Args:
         prd_prefix (str): prd key prefix
-        out_dirpath (Path): directory where to write the objects of the product 
+        out_dirpath (Path): directory where to write the objects of the product
     """
     bucket = create_s3_resource('creodias_eodata').Bucket('DIAS')
     logger.debug('Product prefix: %s', prd_prefix)
@@ -286,10 +287,14 @@ def download_s3file(s3_full_key,out_file, bucket):
     :param bucket: Bucket name
     """
     s3_client = get_s3_client()
-    s3_client.download_file(Bucket=bucket, Key=s3_full_key, Filename=out_file, ExtraArgs=dict(RequestPayer='requester'))
+    s3_client.download_file(Bucket=bucket, Key=s3_full_key, Filename=out_file,
+                            ExtraArgs=dict(RequestPayer='requester'))
 
 
 if __name__ == "__main__":
-    download_s2_prd_from_creodias('S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE', Path('/tmp'))
-    download_s2_prd_from_creodias('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE', Path('/tmp'))
-    download_s1_prd_from_creodias('S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE', Path('/tmp'))
+    download_s2_prd_from_creodias('S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE',
+                                  Path('/tmp'))
+    download_s2_prd_from_creodias('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE',
+                                  Path('/tmp'))
+    download_s1_prd_from_creodias('S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE',
+                                  Path('/tmp'))
