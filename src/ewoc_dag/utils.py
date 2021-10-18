@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import re
-from typing import List
 
 import boto3
 from eodag import EODataAccessGateway
@@ -11,7 +10,6 @@ from eotile.eotile_module import main
 import numpy as np
 import rasterio
 from rasterio.merge import merge
-
 
 from ewoc_dag.s3man import download_s3file as dwnld_s3file
 
@@ -34,7 +32,7 @@ def get_dates_from_prod_id(product_id):
     :param product_id: Product ID from EOdag
     :return: date string and type of sensor
     """
-    # TODO update this function to use the direct eodag id search
+    #TODO update this function to use the direct eodag id search
     pid = product_id.split("_")
     sat_name = pid[0]
     sensor = ""
@@ -242,13 +240,15 @@ def s1_db(raster_path):
     Convert Sentinel-1 to decibel
     :param raster_path: path to Sentinel-1 tif file
     """
-    ds = rasterio.open(raster_path, "r")
-    meta = ds.meta.copy()
-    band = ds.read(1)
-    # mask 0 values
-    mask = band != 0
-    db_mask = list(mask)
-    ds.close()
+
+
+    with rasterio.open(raster_path, 'r') as ds_in:
+        meta = ds_in.meta.copy()
+        band = ds_in.read(1)
+        # mask 0 values
+        mask = band != 0
+        db_mask = list(mask)
+
     decibel = 10 * np.log10(band, where=db_mask)
     dn = 10.0 ** ((decibel + 83) / 20)
     dn[~mask] = 0

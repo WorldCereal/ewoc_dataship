@@ -68,7 +68,7 @@ def create_s3_resource(s3_resource_name):
     elif s3_resource_name == 'aws':
         return boto3.resource('s3')
     elif s3_resource_name == 'creodias_eodata':
-       return boto3.resource('s3',
+        return boto3.resource('s3',
                               aws_access_key_id=str(None),
                               aws_secret_access_key=str(None),
                               endpoint_url='http://data.cloudferro.com')

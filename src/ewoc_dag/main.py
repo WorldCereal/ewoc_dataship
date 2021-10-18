@@ -102,14 +102,6 @@ def pack_l8(data_folder, s2_tile_id):
 def s1db(folder):
     s1db_folder(folder)
 
-
-@cli.command("srtm_id", help="Get SRTM tiles ids for an S2 tile id")
-@click.option("-t", "--s2_tile_id", help="S2 tile id")
-@click.option("--full/--no-full", default=False)
-def srtm_id(s2_tile_id, full):
-    print(";".join(get_srtm(s2_tile_id, full_name=full)))
-
-
 @cli.command("get_srtm", help="Get SRTM tiles for an S2 tile id")
 @click.option("--s2_tile_id", help="S2 tile id")
 @click.option("--out_dir")
