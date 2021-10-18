@@ -1,4 +1,4 @@
-from ewoc_dag.dag.utils import *
+from ewoc_dag.utils import *
 
 def merge_l8(data_folder,tile_id):
     bounds = get_bounds(tile_id)
