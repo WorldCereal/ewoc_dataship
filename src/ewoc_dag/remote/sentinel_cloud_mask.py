@@ -1,5 +1,7 @@
 import re
 import boto3
+from botocore import UNSIGNED
+from botocore.config import Config
 
 
 class Sentinel_Cloud_Mask:
@@ -68,9 +70,6 @@ class Sentinel_Cloud_Mask:
                     RequestPayer=self.payer,
                 )
             elif self.payer is None:
-                from botocore import UNSIGNED
-                from botocore.config import Config
-
                 s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
                 response = s3.list_objects_v2(
                     Bucket=self.bucket, Prefix=self.prefix + prod_dir, MaxKeys=100,Delimiter="/",
@@ -103,15 +102,14 @@ class Sentinel_Cloud_Mask:
         if self.mask_exists():
             if self.payer == "requester":
                 s3 = boto3.resource("s3")
-                object = s3.Object(self.bucket, self.key)
-                resp = object.get(RequestPayer="requester")
+                s3_object = s3.Object(self.bucket, self.key)
+                resp = s3_object.get(RequestPayer="requester")
             elif self.payer is None:
-                from botocore import UNSIGNED
-                from botocore.config import Config
+
 
                 s3 = boto3.resource("s3", config=Config(signature_version=UNSIGNED))
-                object = s3.Object(self.bucket, self.key)
-                resp = object.get()
+                s3_object = s3.Object(self.bucket, self.key)
+                resp = s3_object.get()
             with open(out_file, "wb") as f:
                 for chunk in iter(lambda: resp["Body"].read(4096), b""):
                     f.write(chunk)
