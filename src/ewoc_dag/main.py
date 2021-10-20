@@ -1,7 +1,12 @@
-import click
+import os
+from pathlib import Path
 
-from dataship.dag.ship import merge_l8
-from dataship.dag.utils import *
+import click
+from eodag import EODataAccessGateway
+
+from ewoc_dag.ship import merge_l8
+from ewoc_dag.utils import get_geom_from_id, get_prods_from_json, get_product_by_id, l2a_to_ard, copy_tirs_s3, s1db_folder
+from ewoc_dag.srtm_dag import get_srtm1s, get_srtm1s_ids
 
 
 @click.group()
@@ -97,14 +102,6 @@ def pack_l8(data_folder, s2_tile_id):
 @click.option("-f", "--folder", help="SAR folder")
 def s1db(folder):
     s1db_folder(folder)
-
-
-@cli.command("srtm_id", help="Get SRTM tiles ids for an S2 tile id")
-@click.option("-t", "--s2_tile_id", help="S2 tile id")
-@click.option("--full/--no-full", default=False)
-def srtm_id(s2_tile_id, full):
-    print(";".join(get_srtm(s2_tile_id, full_name=full)))
-
 
 @cli.command("get_srtm", help="Get SRTM tiles for an S2 tile id")
 @click.option("--s2_tile_id", help="S2 tile id")

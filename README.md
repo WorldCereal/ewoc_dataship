@@ -3,7 +3,7 @@
 Data access for EWoC processors. Powered by [EOdag](https://eodag.readthedocs.io/en/stable/)
 
 ## Installation
-1. Clone this repository 
+1. Clone this repository
 2. (Optional) create a venv
 3. `pip install .`
 
@@ -15,7 +15,7 @@ Docker usage from this repository:
 
 2. `docker run -ti --rm dataship --help` (the entrypoint is the dataship CLI)
 
-## Usage 
+## Usage
 ```bash
 Usage: dataship [OPTIONS] COMMAND [ARGS]...
 
@@ -29,13 +29,13 @@ Commands:
   s1db      Convert S1 to db
   tirs_cp   Get L8 Thermal band from aws
 ```
-Note that dataship is tailored for the needs of the EWoC pre-processing modules. 
+Note that dataship is tailored for the needs of the EWoC pre-processing modules.
 
 For a more complete data access consider using [EOdag](https://eodag.readthedocs.io/en/stable/).
 
-## Commands 
+## Commands
 
-### Download 
+### Download
 Download S2/L8 products for a given S2 Tile id (ex 31TCJ)
 ```
 Usage: dataship download [OPTIONS]
@@ -116,7 +116,7 @@ N38W001;N38W002;N37W001;N37W002
 ```
 Result from python API
 ```python
-from dataship.dag.utils import get_srtm
+from ewoc_dag.dag.srtm_dag import get_srtm
 
 get_srtm('30SXH')
 
@@ -145,7 +145,7 @@ Options:
 SRTM data will be donwloaded in the output directory according to the source selected (by default esa website)
 
 ```python
-from dataship.dag.utils import get_srtm1s
+from ewoc_dag.dag.srtm_dag import get_srtm1s
 
 get_srtm1s('21HTC', Path('/tmp'), source='esa')
 

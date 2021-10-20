@@ -1,6 +1,7 @@
 import os
 import logging
-from dataship.eo_prd_id.s1_prd_id import S1PrdIdInfo
+
+from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 
 logger = logging.getLogger(__name__)
 
