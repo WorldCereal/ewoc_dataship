@@ -122,22 +122,6 @@ def get_bounds(tile_id):
     return (UL0, UL1 - 109800, UL0 + 109800, UL1)
 
 
-def merge_rasters(rasters, bounds, output_fn):
-    """
-    Merge a list of rasters and clip using bounds
-    :param rasters: List of raster paths
-    :param bounds: Bounds from get_bounds()
-    :param output_fn: Full path and name of the mosaic
-    """
-    sources = []
-    for raster in rasters:
-        src = rasterio.open(raster)
-        sources.append(src)
-    merge(sources, dst_path=output_fn, method="max", bounds=bounds)
-    for src in sources:
-        src.close()
-
-
 def get_l8_rasters(data_folder):
     """
     Find Landsat 8 rasters
@@ -149,54 +133,6 @@ def get_l8_rasters(data_folder):
             if file.endswith((".tif", ".TIF")) and "LC08" in file:
                 l8_rasters.append(os.path.join(root, file))
     return l8_rasters
-
-
-def list_path_bands(data_folder):
-    """
-    Organize the files by date and path
-    :param data_folder:
-    :return: L8 rasters dict
-    """
-    l8_rasters = get_l8_rasters(data_folder)
-    merge_dict = {}
-    # List all rows for the same path and same day
-    for prod in l8_rasters:
-        meta = prod.split("_")
-        date = meta[3]
-        path = meta[2][:3]
-        prod_path = prod
-        band = re.findall("(?<=\_T1_)(.*?)(?=\.)", prod)[0]
-        # Should be a better way to fill up this dict
-        if date in merge_dict:
-            if path in merge_dict[date]:
-                if band in merge_dict[date][path]:
-                    merge_dict[date][path][band].append(prod_path)
-                else:
-                    merge_dict[date][path][band] = []
-                    merge_dict[date][path][band].append(prod_path)
-            else:
-                merge_dict[date][path] = {}
-                if band in merge_dict[date][path]:
-                    merge_dict[date][path][band].append(prod_path)
-                else:
-                    merge_dict[date][path][band] = []
-                    merge_dict[date][path][band].append(prod_path)
-        else:
-            merge_dict[date] = {}
-            if path in merge_dict[date]:
-                if band in merge_dict[date][path]:
-                    merge_dict[date][path][band].append(prod_path)
-                else:
-                    merge_dict[date][path][band] = []
-                    merge_dict[date][path][band].append(prod_path)
-            else:
-                merge_dict[date][path] = {}
-                if band in merge_dict[date][path]:
-                    merge_dict[date][path][band].append(prod_path)
-                else:
-                    merge_dict[date][path][band] = []
-                    merge_dict[date][path][band].append(prod_path)
-    return merge_dict
 
 
 def copy_tirs_s3(s3_full_key, out_dir, s2_tile):
