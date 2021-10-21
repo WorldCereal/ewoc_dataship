@@ -9,7 +9,6 @@ from eodag import EODataAccessGateway
 from eotile.eotile_module import main
 import numpy as np
 import rasterio
-from rasterio.merge import merge
 
 logger = logging.getLogger(__name__)
 
@@ -167,59 +166,6 @@ def copy_tirs_s3(s3_full_key, out_dir, s2_tile):
     download_s3file(qa_key, raster_fn, bucket)
     # TODO Use logger instead
     print("Done for TIRS copy")
-
-
-def s1_db(raster_path):
-    """
-    Convert Sentinel-1 to decibel
-    :param raster_path: path to Sentinel-1 tif file
-    """
-
-
-    with rasterio.open(raster_path, 'r') as ds_in:
-        meta = ds_in.meta.copy()
-        band = ds_in.read(1)
-        # mask 0 values
-        mask = band != 0
-        db_mask = list(mask)
-
-    decibel = 10 * np.log10(band, where=db_mask)
-    dn = 10.0 ** ((decibel + 83) / 20)
-    dn[~mask] = 0
-    dtype = rasterio.uint16
-    meta["dtype"] = dtype
-    meta["driver"] = "GTiff"
-    meta["nodata"] = 0
-    blocksize = 512
-    with rasterio.open(
-        raster_path,
-        "w",
-        **meta,
-        compress="deflate",
-        tiled=True,
-        blockxsize=blocksize,
-        blockysize=blocksize,
-    ) as out:
-        out.write(dn.astype(dtype), 1)
-
-
-def s1db_folder(folder):
-    """
-    Convert all the S1 tif files in a folder
-    :param folder: path to folder
-    """
-    sar_files = []
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-            if "s1" in file.lower() and file.endswith(("tif", "TIF")):
-                sar_files.append(os.path.join(root, file))
-    for sar_file in sar_files:
-        print(
-            f"Converting {sar_file} to db -> 10*log10(linear) and uint16 -> dn = 10.0 ** ((db + 83) / 20)"
-        )
-        s1_db(sar_file)
-    return len(sar_files)
-
 
 def get_product_by_id(
     product_id, out_dir, provider=None, config_file=None, product_type=None
