@@ -7,14 +7,6 @@ Data access for EWoC processors. Powered by [EOdag](https://eodag.readthedocs.io
 2. (Optional) create a venv
 3. `pip install .`
 
-Docker usage from this repository:
-
-0. Download the EOtile package.
-
-1. `docker build -t dataship .`
-
-2. `docker run -ti --rm dataship --help` (the entrypoint is the dataship CLI)
-
 ## Usage
 ```bash
 Usage: dataship [OPTIONS] COMMAND [ARGS]...
