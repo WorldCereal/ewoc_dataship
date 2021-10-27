@@ -4,8 +4,7 @@ from pathlib import Path
 import click
 from eodag import EODataAccessGateway
 
-from ewoc_dag.ship import merge_l8
-from ewoc_dag.utils import get_geom_from_id, get_prods_from_json, get_product_by_id, l2a_to_ard, copy_tirs_s3, s1db_folder
+from ewoc_dag.utils import get_geom_from_id, get_prods_from_json, get_product_by_id, l2a_to_ard, copy_tirs_s3
 from ewoc_dag.srtm_dag import get_srtm1s, get_srtm1s_ids
 
 
@@ -43,7 +42,7 @@ def eodag_prods(
     }
     dag = EODataAccessGateway(config_file)
     dag.set_preferred_provider(provider)
-    products, est = dag.search(
+    products, __ = dag.search(
         productType=product_type,
         start=start_date,
         end=end_date,
@@ -87,21 +86,6 @@ def eodag_by_ids(product_id, out_dir, provider, config_file=None, sat="S2"):
 def tirs_cp(s3_full_key, out_dir, s2_tile_id):
     copy_tirs_s3(s3_full_key, out_dir, s2_tile=s2_tile_id)
 
-
-@cli.command("package", help="Harmonize Landsat-8 products")
-@click.option("-f", "--data_folder", help="Folder with L8 products")
-@click.option("-t", "--s2_tile_id", help="S2 tile id")
-def pack_l8(data_folder, s2_tile_id):
-    merge_l8(data_folder, s2_tile_id)
-
-
-@cli.command(
-    "s1db",
-    help="Convert S1 to db -> 10*log10(linear) then uint16 -> dn = 10.0 ** ((db + 83) / 20)",
-)
-@click.option("-f", "--folder", help="SAR folder")
-def s1db(folder):
-    s1db_folder(folder)
 
 @cli.command("get_srtm", help="Get SRTM tiles for an S2 tile id")
 @click.option("--s2_tile_id", help="S2 tile id")

@@ -3,11 +3,13 @@
 Data access for EWoC processors. Powered by [EOdag](https://eodag.readthedocs.io/en/stable/)
 
 ## Installation
+
 1. Clone this repository
 2. (Optional) create a venv
 3. `pip install .`
 
 ## Usage
+
 ```bash
 Usage: dataship [OPTIONS] COMMAND [ARGS]...
 
@@ -18,9 +20,9 @@ Commands:
   download  Simple data download using EOdag
   eodag_id  Get products by ID from a previous EOdag search
   package   Harmonize Landsat-8 products
-  s1db      Convert S1 to db
   tirs_cp   Get L8 Thermal band from aws
 ```
+
 Note that dataship is tailored for the needs of the EWoC pre-processing modules.
 
 For a more complete data access consider using [EOdag](https://eodag.readthedocs.io/en/stable/).
@@ -28,8 +30,10 @@ For a more complete data access consider using [EOdag](https://eodag.readthedocs
 ## Commands
 
 ### Download
+
 Download S2/L8 products for a given S2 Tile id (ex 31TCJ)
-```
+
+```bash
 Usage: dataship download [OPTIONS]
 
   Simple data download using EOdag
@@ -50,8 +54,11 @@ Options:
   -cfg, --config_file TEXT  EOdag config file
   --help                    Show this message and exit.
 ```
+
 ### Download by ID
+
 Download a S2/L8 product with an ID
+
 ```bash
 Usage: dataship eodag_id [OPTIONS]
 
@@ -68,8 +75,11 @@ Options:
   --help                    Show this message and exit.
 
 ```
+
 ### Copy Landsat 8 thermal band
+
 This command is useful to get L8 thermal bands from the usgs aws bucket
+
 ```bash
 Usage: dataship tirs_cp [OPTIONS]
 
@@ -80,19 +90,9 @@ Options:
   -o, --out_dir TEXT      Output directory
   --help                  Show this message and exit.
 ```
-### Convert S1 to db
-```bash
-Usage: dataship s1db [OPTIONS]
 
-  Convert S1 to db -> 10*log10(linear) then uint16 -> dn = 10.0 ** ((db +
-  83) / 20)
-
-Options:
-  -f, --folder TEXT  SAR folder
-  --help             Show this message and exit.
-
-```
 ### Get SRTM tiles ids
+
 ```bash
 Usage: dataship srtm_id [OPTIONS]
 
@@ -102,11 +102,15 @@ Options:
   -t, --s2_tile_id TEXT  S2 tile id
   --help                 Show this message and exit.
 ```
+
 Result of the CLI:
+
 ```bash
 N38W001;N38W002;N37W001;N37W002
 ```
+
 Result from python API
+
 ```python
 from ewoc_dag.dag.srtm_dag import get_srtm
 

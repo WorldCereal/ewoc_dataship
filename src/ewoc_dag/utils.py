@@ -9,7 +9,6 @@ from eodag import EODataAccessGateway
 from eotile.eotile_module import main
 import numpy as np
 import rasterio
-from rasterio.merge import merge
 
 logger = logging.getLogger(__name__)
 
@@ -122,22 +121,6 @@ def get_bounds(tile_id):
     return (UL0, UL1 - 109800, UL0 + 109800, UL1)
 
 
-def merge_rasters(rasters, bounds, output_fn):
-    """
-    Merge a list of rasters and clip using bounds
-    :param rasters: List of raster paths
-    :param bounds: Bounds from get_bounds()
-    :param output_fn: Full path and name of the mosaic
-    """
-    sources = []
-    for raster in rasters:
-        src = rasterio.open(raster)
-        sources.append(src)
-    merge(sources, dst_path=output_fn, method="max", bounds=bounds)
-    for src in sources:
-        src.close()
-
-
 def get_l8_rasters(data_folder):
     """
     Find Landsat 8 rasters
@@ -149,54 +132,6 @@ def get_l8_rasters(data_folder):
             if file.endswith((".tif", ".TIF")) and "LC08" in file:
                 l8_rasters.append(os.path.join(root, file))
     return l8_rasters
-
-
-def list_path_bands(data_folder):
-    """
-    Organize the files by date and path
-    :param data_folder:
-    :return: L8 rasters dict
-    """
-    l8_rasters = get_l8_rasters(data_folder)
-    merge_dict = {}
-    # List all rows for the same path and same day
-    for prod in l8_rasters:
-        meta = prod.split("_")
-        date = meta[3]
-        path = meta[2][:3]
-        prod_path = prod
-        band = re.findall("(?<=\_T1_)(.*?)(?=\.)", prod)[0]
-        # Should be a better way to fill up this dict
-        if date in merge_dict:
-            if path in merge_dict[date]:
-                if band in merge_dict[date][path]:
-                    merge_dict[date][path][band].append(prod_path)
-                else:
-                    merge_dict[date][path][band] = []
-                    merge_dict[date][path][band].append(prod_path)
-            else:
-                merge_dict[date][path] = {}
-                if band in merge_dict[date][path]:
-                    merge_dict[date][path][band].append(prod_path)
-                else:
-                    merge_dict[date][path][band] = []
-                    merge_dict[date][path][band].append(prod_path)
-        else:
-            merge_dict[date] = {}
-            if path in merge_dict[date]:
-                if band in merge_dict[date][path]:
-                    merge_dict[date][path][band].append(prod_path)
-                else:
-                    merge_dict[date][path][band] = []
-                    merge_dict[date][path][band].append(prod_path)
-            else:
-                merge_dict[date][path] = {}
-                if band in merge_dict[date][path]:
-                    merge_dict[date][path][band].append(prod_path)
-                else:
-                    merge_dict[date][path][band] = []
-                    merge_dict[date][path][band].append(prod_path)
-    return merge_dict
 
 
 def copy_tirs_s3(s3_full_key, out_dir, s2_tile):
@@ -231,59 +166,6 @@ def copy_tirs_s3(s3_full_key, out_dir, s2_tile):
     download_s3file(qa_key, raster_fn, bucket)
     # TODO Use logger instead
     print("Done for TIRS copy")
-
-
-def s1_db(raster_path):
-    """
-    Convert Sentinel-1 to decibel
-    :param raster_path: path to Sentinel-1 tif file
-    """
-
-
-    with rasterio.open(raster_path, 'r') as ds_in:
-        meta = ds_in.meta.copy()
-        band = ds_in.read(1)
-        # mask 0 values
-        mask = band != 0
-        db_mask = list(mask)
-
-    decibel = 10 * np.log10(band, where=db_mask)
-    dn = 10.0 ** ((decibel + 83) / 20)
-    dn[~mask] = 0
-    dtype = rasterio.uint16
-    meta["dtype"] = dtype
-    meta["driver"] = "GTiff"
-    meta["nodata"] = 0
-    blocksize = 512
-    with rasterio.open(
-        raster_path,
-        "w",
-        **meta,
-        compress="deflate",
-        tiled=True,
-        blockxsize=blocksize,
-        blockysize=blocksize,
-    ) as out:
-        out.write(dn.astype(dtype), 1)
-
-
-def s1db_folder(folder):
-    """
-    Convert all the S1 tif files in a folder
-    :param folder: path to folder
-    """
-    sar_files = []
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-            if "s1" in file.lower() and file.endswith(("tif", "TIF")):
-                sar_files.append(os.path.join(root, file))
-    for sar_file in sar_files:
-        print(
-            f"Converting {sar_file} to db -> 10*log10(linear) and uint16 -> dn = 10.0 ** ((db + 83) / 20)"
-        )
-        s1_db(sar_file)
-    return len(sar_files)
-
 
 def get_product_by_id(
     product_id, out_dir, provider=None, config_file=None, product_type=None
