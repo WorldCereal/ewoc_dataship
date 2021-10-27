@@ -10,7 +10,7 @@ on:
 jobs:
   build-python:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -20,15 +20,9 @@ jobs:
       with:
         python-version: '3.8'
 
-    # Extract COTS versions from Dockerfile
-    - name: COTS Versions
-      id: cots-versions
-      run: |
-        sed -n '/^ARG/s/ARG *\(.*\)=\(.*\)/::set-output name=\1::\2/p' Dockerfile
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install .
         pip install build
         pip install pylint
 
