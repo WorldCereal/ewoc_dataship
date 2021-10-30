@@ -101,7 +101,7 @@ def donwload_s1tiling_style(dag, eodag_product, out_dir):
     )
     os.system(f"rm -r {tmp_dir}")
 
-
+# TODO: to be removed!
 def download_s3file(s3_full_key, out_file, bucket):
     """
     Download file from s3 object storage
