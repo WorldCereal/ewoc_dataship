@@ -6,42 +6,28 @@ import zipfile
 import requests
 from eotile.eotile_module import main
 
-from ewoc_dag.s3man import download_s3file as dwnld_s3file
-from ewoc_dag.provider.creodias import download_srtm_tiles_from_creodias
-from ewoc_dag.provider.ewoc import download_srtm_tiles_from_ewoc
+from ewoc_dag.provider.creodias import CREODIASDataProvider
+from ewoc_dag.provider.ewoc import EWOCDataProvider
 
 
 logger = logging.getLogger(__name__)
 
-def get_srtm(tile_id, full_name=False):
-    """
-    Get srtm hgt files id for an S2 tile
-    :param tile_id:
-    :return: List of hgt files ids
-    """
-    res = main(tile_id, dem=True, overlap=True, no_l8=True, no_s2=True)
-    srtm_df = res[2]
-    list_ids = list(srtm_df.id)
-    if full_name:
-        out = [f"{tile}.SRTMGL1.hgt.zip" for tile in list_ids]
-        return out
-    else:
-        return list_ids
 
-
-def get_srtm1s(s2_tile_id: str, out_dirpath: Path, source: str = "esa") -> None:
+def get_srtm_from_s2_tile_id(s2_tile_id: str, out_dirpath: Path,
+                             source: str = "esa", resolution='1s') -> None:
     """
     Retrieve srtm 1s data for a Sentinel-2 tile id from the source into the output dir
     :param s2_tile_ids: Sentinel-2 tile id
     :param out_dirpath: Output directory where the srtm data is downloaded
     :param source: Source where to retrieve the srtm 1s data
+    :param resolution: 1s or 3s for respectively 30m and 90m srtm
     """
-    get_srtm1s_from_ids(get_srtm1s_ids(s2_tile_id), out_dirpath, source=source)
+    get_srtm_tiles(get_srtm1s_ids(s2_tile_id), out_dirpath,
+                   source=source, resolution=resolution)
 
 
-def get_srtm1s_from_ids(
-    srtm_tile_ids: List[str], out_dir: Path, source: str = "esa"
-) -> None:
+def get_srtm_tiles(srtm_tile_ids: List[str], out_dir: Path,
+                    source: str = "esa", resolution='1s') -> None:
     """
     Retrieve srtm 1s data from the source into the output dir
     :param srtm_tile_ids: List of srtm tile ids
@@ -49,57 +35,26 @@ def get_srtm1s_from_ids(
     :param source: Source where to retrieve the srtm 1s data
     """
     if source == "esa":
-        logger.info("Use ESA website to retrieve the srtm 1s data!")
-        get_srtm_from_esa(srtm_tile_ids, out_dir)
-    elif source == "creodias_eodata":
-        logger.info("Use creodias bucket to retrieve srtm 1s data!")
-        get_srtm_from_creodias(srtm_tile_ids, out_dir)
+        if resolution != "1s":
+            logger.info("Use ESA website to retrieve the srtm 1s data!")
+            get_srtm_from_esa(srtm_tile_ids, out_dir)
+        else:
+            raise ValueError(f"Source SRTM{resolution} not available on ESA website!")
+    elif source == "creodias":
+        if resolution != "1s":
+            logger.info("Use creodias bucket to retrieve srtm 1s data!")
+            CREODIASDataProvider().download_srtm1s_tiles(srtm_tile_ids, out_dir)
+        else:
+            raise ValueError(f"Source SRTM{resolution} not available on CREODIAS bucket!")
     elif source == "ewoc":
-        logger.info("Use EWoC bucket to retrieve srtm 1s data!")
-        get_srtm_from_ewoc(srtm_tile_ids, out_dir)
+        logger.info("Use EWoC bucket to retrieve srtm data!")
+        EWOCDataProvider().download_srtm_tiles(srtm_tile_ids, out_dir,
+                                               resolution=resolution)
     elif source == "usgs":
         logger.info("Use usgs EE to retrieve srtm 1s data!")
         raise NotImplementedError
     else:
-        logger.error("Source %s not supported!", source)
-        raise ValueError
-
-
-def get_srtm_from_local_bucket(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
-    """
-    Retrieve srtm 1s data from local bucket into the output dir
-    :param srtm_tile_ids: List of srtm tile ids
-    :param out_dirpath: Output directory where the srtm data is downloaded
-    """
-    local_bucket_name = "world-cereal"
-    for srtm_tile_id in srtm_tile_ids:
-        srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
-        srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
-        dwnld_s3file("srtm30/" + srtm_tile_id_filename,
-                     str(srtm_tile_id_filepath),
-                     local_bucket_name)
-        logger.debug("%s downloaded!", srtm_tile_id_filename)
-
-        with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
-            srtm_zipfile.extractall(out_dirpath)
-
-        srtm_tile_id_filepath.unlink()
-
-def get_srtm_from_ewoc(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
-    """
-    Retrieve srtm 1s data from ewoc object storage into the output dir
-    :param srtm_tile_ids: List of srtm tile ids
-    :param out_dirpath: Output directory where the srtm data is downloaded
-    """
-    download_srtm_tiles_from_ewoc(srtm_tile_ids, out_dirpath)
-
-def get_srtm_from_creodias(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
-    """
-    Retrieve srtm 1s data from creodias eodata object storage into the output dir
-    :param srtm_tile_ids: List of srtm tile ids
-    :param out_dirpath: Output directory where the srtm data is downloaded
-    """
-    download_srtm_tiles_from_creodias(srtm_tile_ids, out_dirpath)
+        raise ValueError(f"Source {source} not supported!")
 
 def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
     """
@@ -112,12 +67,12 @@ def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
         srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
         srtm_tile_id_url = ESA_WEBSITE_ROOT + srtm_tile_id_filename
 
-        r = requests.get(srtm_tile_id_url)
-        if r.status_code != requests.codes.ok:
+        response = requests.get(srtm_tile_id_url)
+        if response.status_code != requests.codes.ok:
             logger.error(
                 "%s not dwnloaded (error_code: %s) from %s!",
                 srtm_tile_id_filename,
-                r.status_code,
+                response.status_code,
                 srtm_tile_id_url,
             )
             continue
@@ -126,13 +81,12 @@ def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
 
         srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
         with open(srtm_tile_id_filepath, "wb") as srtm_file:
-            srtm_file.write(r.content)
+            srtm_file.write(response.content)
 
         with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
             srtm_zipfile.extractall(out_dirpath)
 
         srtm_tile_id_filepath.unlink()
-
 
 def get_srtm1s_ids(s2_tile_id: str) -> None:
     """

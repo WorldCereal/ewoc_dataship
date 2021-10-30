@@ -2,8 +2,6 @@ import logging
 from pathlib import Path
 import zipfile
 
-import boto3
-
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 from ewoc_dag.provider.eodata import EODataProvider
@@ -13,40 +11,11 @@ logger = logging.getLogger(__name__)
 class CREODIASDataProvider(EODataProvider):
     _CREODIAS_BUCKET_FORMAT_PREFIX='/%Y/%m/%d/'
 
-    def __init__(self, use_eodag:bool=False) -> None:
-        super().__init__()
-        if not use_eodag:
-            self._s3_client = boto3.client('s3',
-                aws_access_key_id=str(None),
-                aws_secret_access_key=str(None),
-                endpoint_url='http://data.cloudferro.com')
-            self.bucket_name = 'DIAS'
-        else:
-            self._s3_client=None
-
-    def _download_prd_from_eodata(self, prd_prefix: str, out_dirpath:Path) -> None:
-        """ Download product from creodias eodata object storage
-
-        Args:
-            prd_prefix (str): prd key prefix
-            out_dirpath (Path): directory where to write the objects of the product
-        """
-        logger.debug('Product prefix: %s', prd_prefix)
-        for obj in self._s3_client.list_objects_v2(Bucket=self.bucket_name,
-                                                   Prefix=prd_prefix):
-            logger.debug(obj)
-            if obj.key[-1] == '/':
-                dirname = obj.key.split(sep='/', maxsplit=6)[-1]
-                output_dir = out_dirpath /  dirname
-                output_dir.mkdir(parents=True, exist_ok=True)
-                continue
-            filename = obj.key.split(sep='/', maxsplit=6)[-1]
-            output_filepath = out_dirpath / filename
-            logging.debug('Try to download %s to %s', obj.key, output_filepath)
-            self._s3_client.download_file(Bucket=self.bucket_name,
-                                          Key=obj.key,
-                                          Filename=str(output_filepath))
-
+    def __init__(self) -> None:
+        super().__init__(s3_access_key_id='anystring',
+                         s3_secret_access_key='anystring',
+                         endpoint_url='http://data.cloudferro.com')
+        self._bucket_name = 'DIAS'
 
     def download_s1_prd(self, prd_id:str, out_dirpath:Path) -> None:
         """ Download Sentinel-1 product from creodias eodata object storage
@@ -60,10 +29,10 @@ class CREODIASDataProvider(EODataProvider):
         prd_prefix = s1_bucket_prefix + s1_prd_info.product_type \
                     + s1_prd_info.start_time.date().strftime(self._CREODIAS_BUCKET_FORMAT_PREFIX) \
                     + prd_id + '/'
-        self._download_prd_from_eodata(prd_prefix, out_dirpath)
+        self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
 
 
-    def download_s2_prd(self, prd_id:str, out_dirpath:Path, 
+    def download_s2_prd(self, prd_id:str, out_dirpath:Path,
                         l2_mask_only:bool=False) -> None:
         """ Download Sentinel-2 product from creodias eodata object storage
 
@@ -77,13 +46,13 @@ class CREODIASDataProvider(EODataProvider):
                     + s2_prd_info.datatake_sensing_start_time.date().strftime(self._CREODIAS_BUCKET_FORMAT_PREFIX) \
                     + prd_id + '/'
         if not l2_mask_only:
-            self._download_prd_from_eodata(prd_prefix, out_dirpath)
+            self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
         else:
             if s2_prd_info.product_level == "L2A":
                 mask_key = prd_prefix + 'path/to/mask'
                 mask_filepath = out_dirpath / 'mask.tif'
-                self._s3_client.download_file(Bucket=self.bucket_name,
-                                            Key=mask_key, 
+                self._s3_client.download_file(Bucket=self._bucket_name,
+                                            Key=mask_key,
                                             Filename=str(mask_filepath))
             else:
                 logger.warning('Not possible!')
@@ -96,7 +65,7 @@ class CREODIASDataProvider(EODataProvider):
             srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
             srtm_object_key = srtm_prefix + srtm_tile_id_filename
             logger.info(srtm_object_key)
-            self._s3_client.download_file(Bucket=self.bucket_name,
+            self._s3_client.download_file(Bucket=self._bucket_name,
                                           Key=srtm_object_key,
                                           Filename=str(srtm_tile_id_filepath))
 

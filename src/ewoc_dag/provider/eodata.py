@@ -1,13 +1,24 @@
 import logging
 from pathlib import Path
 
+import boto3
+
 logger = logging.getLogger(__name__)
 
 
 class EODataProvider:
-    def __init__(self) -> None:
-        pass
-
+    def __init__(self, s3_access_key_id=None,
+                       s3_secret_access_key=None,
+                       endpoint_url=None) -> None:
+        if (s3_access_key_id is None and
+           s3_secret_access_key is None and
+           endpoint_url is None):
+            self._s3_client = boto3.client('s3')
+        else:
+            self._s3_client = boto3.client('s3',
+                aws_access_key_id=s3_access_key_id,
+                aws_secret_access_key=s3_secret_access_key,
+                endpoint_url=endpoint_url)
 
     def _download_prd(self, prd_prefix:str, out_dirpath:Path, bucket_name:str,
                       request_payer:bool=False)-> None:

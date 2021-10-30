@@ -23,7 +23,19 @@ def get_geom_from_id(tile_id):
     res = main(tile_id)
     return res[0]
 
+def get_bounds(tile_id):
+    """
+    Get S2 tile bounds
+    :param tile_id: S2 tile id
+    :return: Bounds coordinates
+    """
+    res = main(tile_id)
+    UL0 = list(res[0]["UL0"])[0]
+    UL1 = list(res[0]["UL1"])[0]
+    # Return LL, UR tuple
+    return (UL0, UL1 - 109800, UL0 + 109800, UL1)
 
+# DEPRECATED cf. eo_prd_id
 def get_dates_from_prod_id(product_id):
     """
     Get date from product ID
@@ -53,7 +65,7 @@ def get_dates_from_prod_id(product_id):
     end_date = date + timedelta(days=1)
     return start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), sensor
 
-
+# TODO: Move to AWS provider ?
 def donwload_s1tiling_style(dag, eodag_product, out_dir):
     """
     Reformat the downloaded data for s1tiling
@@ -108,20 +120,6 @@ def download_s3file(s3_full_key, out_file, bucket):
         for chunk in iter(lambda: resp["Body"].read(4096), b""):
             f.write(chunk)
 
-
-def get_bounds(tile_id):
-    """
-    Get S2 tile bounds
-    :param tile_id: S2 tile id
-    :return: Bounds coordinates
-    """
-    res = main(tile_id)
-    UL0 = list(res[0]["UL0"])[0]
-    UL1 = list(res[0]["UL1"])[0]
-    # Return LL, UR tuple
-    return (UL0, UL1 - 109800, UL0 + 109800, UL1)
-
-
 def merge_rasters(rasters, bounds, output_fn):
     """
     Merge a list of rasters and clip using bounds
@@ -136,7 +134,6 @@ def merge_rasters(rasters, bounds, output_fn):
     merge(sources, dst_path=output_fn, method="max", bounds=bounds)
     for src in sources:
         src.close()
-
 
 def get_l8_rasters(data_folder):
     """
@@ -198,7 +195,7 @@ def list_path_bands(data_folder):
                     merge_dict[date][path][band].append(prod_path)
     return merge_dict
 
-
+# TODO: move to AWS provider to enhance te download L8 function with a subset dwnl paramter
 def copy_tirs_s3(s3_full_key, out_dir, s2_tile):
     """
     Copy L8 Thermal bands from S3 bucket

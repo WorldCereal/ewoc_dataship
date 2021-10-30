@@ -51,7 +51,7 @@ class AWSDataProvider(EODataProvider):
                                           Filename=str(output_filepath),
                                           ExtraArgs=extra_args)
 
-    def download_l8_c2_prd(self, prd_id:str, out_dirpath_root:Path):
+    def download_l8_c2_prd(self, prd_id:str, out_dirpath_root:Path, l2_mask_only=False):
         out_dirpath = out_dirpath_root / prd_id.split('.')[0]
         out_dirpath.mkdir(exist_ok=True)
 
@@ -151,20 +151,20 @@ class AWSDataProvider(EODataProvider):
 
 
     def download_copdem_tiles(self, copdem_tile_ids:List[str], out_dirpath:Path,
-                              resolution:int=30):
+                              resolution:int=30) -> None:
         if resolution == 30:
             bucket_name = 'copernicus-dem-30m'
         elif resolution == 90:
             bucket_name = 'copernicus-dem-90m'
         else:
-            logger.error('todo')
-            return None
+            logger.error('Resolution of Copernicus DEM is 30 or 90 meters!')
+            return
 
         for copdem_tile_id in copdem_tile_ids:
             copdem_tile_id_filename = copdem_tile_id + '.tif'
             copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename
             copdem_object_key = copdem_tile_id + '/' + copdem_tile_id_filename
-            logging.info('Try to download %s to %s', copdem_object_key, copdem_tile_id_filename)
+            logger.info('Try to download %s to %s', copdem_object_key, copdem_tile_id_filepath)
             self._s3_client.download_file(Bucket=bucket_name,
                                           Key=copdem_object_key,
                                           Filename=str(copdem_tile_id_filepath))
