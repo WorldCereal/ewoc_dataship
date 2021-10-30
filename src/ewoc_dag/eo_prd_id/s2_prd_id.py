@@ -74,7 +74,7 @@ class S2PrdIdInfo:
     @datatake_sensing_start_time.setter
     def datatake_sensing_start_time(self, value):
         self._datatake_sensing_start_time = datetime.strptime(value, self.FORMAT_DATETIME)
-        
+
     @property
     def product_level(self):
         return self._product_level
@@ -108,15 +108,23 @@ relative_orbit_number={self.relative_orbit_number}, tile_id={self.tile_id}, \
 product_discriminator={self.product_discriminator}'
 
     def __repr__(self):
-         return f'S2PrdIdInfo(s2_prd_id={self._s2_prd_id})'
+        return f'S2PrdIdInfo(s2_prd_id={self._s2_prd_id})'
 
     @staticmethod
-    def is_valid(s2_prd_id): 
+    def is_valid(s2_prd_id):
         try:
             S2PrdIdInfo(s2_prd_id)
             return True
         except ValueError:
             return False
+
+    @staticmethod
+    def is_l1c(s2_prd_id):
+        return bool(S2PrdIdInfo(s2_prd_id).product_level == 'L1C')
+
+    @staticmethod
+    def is_l2a(s2_prd_id):
+        return bool(S2PrdIdInfo(s2_prd_id).product_level == 'L2A')
       
 if __name__ == "__main__":
     print(S2PrdIdInfo('S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE'))

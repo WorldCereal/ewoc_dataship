@@ -1,14 +1,10 @@
 import logging
 import os
 from pathlib import Path
-import zipfile
 
 import boto3
 import botocore
 from botocore.exceptions import ClientError
-
-from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
-from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 
 logger = logging.getLogger(__name__)
 
@@ -168,60 +164,6 @@ def upload_file(s3_client, local_file, bucket, s3_obj):
     return True
 
 
-def download_prd_from_creodias(prd_prefix: str, out_dirpath:Path):
-    """ Download product from creodias eodata object storage
-
-    Args:
-        prd_prefix (str): prd key prefix
-        out_dirpath (Path): directory where to write the objects of the product
-    """
-    bucket = create_s3_resource('creodias_eodata').Bucket('DIAS')
-    logger.debug('Product prefix: %s', prd_prefix)
-    for obj in bucket.objects.filter(Prefix=prd_prefix):
-        logger.debug(obj)
-        if obj.key[-1] == '/':
-            dirname = obj.key.split(sep='/', maxsplit=6)[-1]
-            output_dir = out_dirpath /  dirname
-            output_dir.mkdir(parents=True, exist_ok=True)
-            continue
-        filename = obj.key.split(sep='/', maxsplit=6)[-1]
-        output_filepath = out_dirpath / filename
-        logging.debug('Try to download %s to %s', obj.key, output_filepath)
-        download_object(bucket, obj.key, str(output_filepath))
-
-CREODIAS_BUCKET_FORMAT_PREFIX='/%Y/%m/%d/'
-
-
-def download_s1_prd_from_creodias(prd_id:str, out_dirpath:Path):
-    """ Download Sentinel-1 product from creodias eodata object storage
-
-    Args:
-        prd_id (str): Sentinel-1 product id
-        out_dirpath (Path): Directory where to put the product
-    """
-    s1_prd_info = S1PrdIdInfo(prd_id)
-    s1_bucket_prefix='Sentinel-1/SAR/'
-    prd_prefix = s1_bucket_prefix + s1_prd_info.product_type \
-                 + s1_prd_info.start_time.date().strftime(CREODIAS_BUCKET_FORMAT_PREFIX) \
-                 + prd_id + '/'
-    download_prd_from_creodias(prd_prefix, out_dirpath)
-
-
-def download_s2_prd_from_creodias(prd_id:str, out_dirpath:Path):
-    """ Download Sentinel-2 product from creodias eodata object storage
-
-    Args:
-        prd_id (str): Sentinel-2 product id
-        out_dirpath (Path): Directory where to put the product
-    """
-    s2_prd_info = S2PrdIdInfo(prd_id)
-    s2_bucket_prefix='Sentinel-2/MSI/'
-    prd_prefix = s2_bucket_prefix + s2_prd_info.product_level \
-                 + s2_prd_info.datatake_sensing_start_time.date().strftime(CREODIAS_BUCKET_FORMAT_PREFIX) \
-                 + prd_id + '/'
-    download_prd_from_creodias(prd_prefix, out_dirpath)
-
-
 def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
     tif_files_number = 0
     total_output_size = 0
@@ -245,40 +187,6 @@ def recursive_upload_dir_to_s3(s3_client, local_path, s3_path, bucketname):
     return tif_files_number, total_output_size
 
 
-def download_srtm_tiles_from_ewoc(srtm_tile_ids, out_dirpath):
-    bucket = create_s3_resource('ewoc').Bucket('world-cereal')
-    srtm_prefix = 'srtm30/'
-    for srtm_tile_id in srtm_tile_ids:
-        srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
-        srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
-        srtm_object_key = srtm_prefix + srtm_tile_id_filename
-        logger.info(srtm_object_key)
-        download_object(bucket,
-                        srtm_object_key,
-                        str(srtm_tile_id_filepath))
-
-        with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
-            srtm_zipfile.extractall(out_dirpath)
-
-        srtm_tile_id_filepath.unlink()
-
-def download_srtm_tiles_from_creodias(srtm_tile_ids, out_dirpath):
-    bucket = create_s3_resource('creodias_eodata').Bucket('DIAS')
-    srtm_prefix = 'auxdata/SRTMGL1/dem/'
-    for srtm_tile_id in srtm_tile_ids:
-        srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
-        srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
-        srtm_object_key = srtm_prefix + srtm_tile_id_filename
-        logger.info(srtm_object_key)
-        download_object(bucket,
-                        srtm_object_key,
-                        str(srtm_tile_id_filepath))
-
-        with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
-            srtm_zipfile.extractall(out_dirpath)
-
-        srtm_tile_id_filepath.unlink()
-
 def download_s3file(s3_full_key,out_file, bucket):
     """
     Download file from s3 object storage
@@ -291,10 +199,3 @@ def download_s3file(s3_full_key,out_file, bucket):
                             ExtraArgs=dict(RequestPayer='requester'))
 
 
-if __name__ == "__main__":
-    download_s2_prd_from_creodias('S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE',
-                                  Path('/tmp'))
-    download_s2_prd_from_creodias('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE',
-                                  Path('/tmp'))
-    download_s1_prd_from_creodias('S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE',
-                                  Path('/tmp'))

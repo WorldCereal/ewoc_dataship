@@ -7,7 +7,9 @@ import requests
 from eotile.eotile_module import main
 
 from ewoc_dag.s3man import download_s3file as dwnld_s3file
-from ewoc_dag.s3man import download_srtm_tiles_from_ewoc, download_srtm_tiles_from_creodias
+from ewoc_dag.provider.creodias import download_srtm_tiles_from_creodias
+from ewoc_dag.provider.ewoc import download_srtm_tiles_from_ewoc
+
 
 logger = logging.getLogger(__name__)
 
