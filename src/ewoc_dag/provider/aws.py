@@ -151,19 +151,27 @@ class AWSDataProvider(EODataProvider):
 
 
     def download_copdem_tiles(self, copdem_tile_ids:List[str], out_dirpath:Path,
-                              resolution:int=30) -> None:
-        if resolution == '30':
+                              resolution:str='1s') -> None:
+        copdem_suffix='_00_DEM'
+        if resolution == '1s':
             bucket_name = 'copernicus-dem-30m'
-        elif resolution == '90':
+            copdem_prefix='Copernicus_DSM_COG_10_'
+        elif resolution == '3s':
             bucket_name = 'copernicus-dem-90m'
+            copdem_prefix='Copernicus_DSM_COG_30_'
         else:
-            logger.error('Resolution of Copernicus DEM is 30 or 90 meters!')
+            logger.error('Resolution of Copernicus DEM is 1s or 3s!')
             return
 
         for copdem_tile_id in copdem_tile_ids:
-            copdem_tile_id_filename = copdem_tile_id + '.tif'
+            print(copdem_tile_id)
+
+            copdem_tile_id_aws = copdem_prefix + \
+                                    copdem_tile_id[:3] + '_00_'+ \
+                                    copdem_tile_id[3:] + copdem_suffix
+            copdem_tile_id_filename = copdem_tile_id_aws + '.tif'
             copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename
-            copdem_object_key = copdem_tile_id + '/' + copdem_tile_id_filename
+            copdem_object_key = copdem_tile_id_aws + '/' + copdem_tile_id_filename
             logger.info('Try to download %s to %s', copdem_object_key, copdem_tile_id_filepath)
             self._s3_client.download_file(Bucket=bucket_name,
                                           Key=copdem_object_key,
