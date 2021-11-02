@@ -11,7 +11,6 @@ class L8C2PrdIdInfo:
         # https://www.usgs.gov/media/files/landsat-8-9-olitirs-collection-2-level-2-data-format-control-book
         self._l8_c2_prd_id=l8_c2_prd_id
         elt_prd_id = self._l8_c2_prd_id.split('_')
-        print(elt_prd_id)
         if len(elt_prd_id) == 7:
             self.platform_id = elt_prd_id[0][3:4]
             self.processing_level = elt_prd_id[1]

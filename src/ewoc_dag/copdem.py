@@ -31,8 +31,8 @@ def get_copdem_tiles(srtm_tile_ids: List[str], out_dir: Path,
     :param source: Source where to retrieve the cop dem data
     """
     if source == "creodias":
-            logger.info("Use creodias bucket to retrieve cop dem data!")
-            CREODIASDataProvider().download_copdem_tiles(srtm_tile_ids, out_dir)
+        logger.info("Use creodias bucket to retrieve cop dem data!")
+        CREODIASDataProvider().download_copdem_tiles(srtm_tile_ids, out_dir)
     elif source == "aws":
         logger.info("Use AWS bucket to retrieve cop dem data!")
         AWSDataProvider().download_copdem_tiles(srtm_tile_ids, out_dir,
