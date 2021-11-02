@@ -5,7 +5,7 @@ from pathlib import Path
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 from ewoc_dag.provider.aws import AWSDataProvider
 from ewoc_dag.provider.creodias import CREODIASDataProvider
-from ewoc_dag.utils import get_product_by_id
+from ewoc_dag.provider.eodag_utils import get_product_by_id
 
 
 logger = logging.getLogger(__name__)

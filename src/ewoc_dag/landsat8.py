@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 from ewoc_dag.provider.aws import AWSDataProvider
-from ewoc_dag.utils import get_product_by_id
+from ewoc_dag.provider.eodag_utils import get_product_by_id
 
 
 logger = logging.getLogger(__name__)

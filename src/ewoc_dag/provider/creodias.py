@@ -9,6 +9,11 @@ from ewoc_dag.provider.eodata import EODataProvider
 logger = logging.getLogger(__name__)
 
 class CREODIASDataProvider(EODataProvider):
+    '''
+    https://creodias.eu/faq-s3/-/asset_publisher/SIs09LQL6Gct/content/how-to-download-a-eo-data-file-using-boto3-?inheritRedirect=true
+    '''
+
+
     _CREODIAS_BUCKET_FORMAT_PREFIX='/%Y/%m/%d/'
 
     def __init__(self) -> None:

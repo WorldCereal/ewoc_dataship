@@ -9,6 +9,10 @@ from ewoc_dag.provider.eodata import EODataProvider
 logger = logging.getLogger(__name__)
 
 class EWOCDataProvider(EODataProvider):
+    '''
+    https://creodias.eu/-/how-to-access-private-object-storage-using-s3cmd-or-boto3-?inheritRedirect=true&redirect=%2Ffaq-s3
+    '''
+
     # Currently the EWOC_ENDPOINT is hosted by Creodias
     _CREODIAS_EWOC_ENDPOINT_URL= 'https://s3.waw2-1.cloudferro.com'
 
