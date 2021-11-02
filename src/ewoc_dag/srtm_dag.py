@@ -35,13 +35,13 @@ def get_srtm_tiles(srtm_tile_ids: List[str], out_dir: Path,
     :param source: Source where to retrieve the srtm 1s data
     """
     if source == "esa":
-        if resolution != "1s":
+        if resolution == "1s":
             logger.info("Use ESA website to retrieve the srtm 1s data!")
             get_srtm_from_esa(srtm_tile_ids, out_dir)
         else:
             raise ValueError(f"Source SRTM{resolution} not available on ESA website!")
     elif source == "creodias":
-        if resolution != "1s":
+        if resolution == "1s":
             logger.info("Use creodias bucket to retrieve srtm 1s data!")
             CREODIASDataProvider().download_srtm1s_tiles(srtm_tile_ids, out_dir)
         else:

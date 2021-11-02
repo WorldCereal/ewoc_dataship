@@ -152,9 +152,9 @@ class AWSDataProvider(EODataProvider):
 
     def download_copdem_tiles(self, copdem_tile_ids:List[str], out_dirpath:Path,
                               resolution:int=30) -> None:
-        if resolution == 30:
+        if resolution == '30':
             bucket_name = 'copernicus-dem-30m'
-        elif resolution == 90:
+        elif resolution == '90':
             bucket_name = 'copernicus-dem-90m'
         else:
             logger.error('Resolution of Copernicus DEM is 30 or 90 meters!')
