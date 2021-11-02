@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 import boto3
+import botocore
 
 logger = logging.getLogger(__name__)
 
@@ -52,3 +53,17 @@ class EODataProvider:
                                           Key=obj['Key'],
                                           Filename=str(output_filepath),
                                           ExtraArgs=extra_args)
+
+    def _check_bucket(self, bucket_name):
+
+        try:
+            self._s3_client.head_bucket(Bucket=bucket_name)
+        except botocore.exceptions.ClientError as err:
+            error_code = err.response['Error']['Code']
+            if error_code == '404':
+                logger.critical('Bucket %s does not exist!', bucket_name)
+            elif error_code == '403':
+                logger.critical('Acces forbidden to %s bucket!', bucket_name)
+            return False
+
+        return True

@@ -43,18 +43,20 @@ def get_srtm_tiles(srtm_tile_ids: List[str], out_dir: Path,
     elif source == "creodias":
         if resolution == "1s":
             logger.info("Use creodias bucket to retrieve srtm 1s data!")
-            CREODIASDataProvider().download_srtm1s_tiles(srtm_tile_ids, out_dir)
+            creo_s3 = CREODIASDataProvider()
+            creo_s3.download_srtm1s_tiles(srtm_tile_ids, out_dir)
         else:
             raise ValueError(f"Source SRTM{resolution} not available on CREODIAS bucket!")
     elif source == "ewoc":
         logger.info("Use EWoC bucket to retrieve srtm data!")
-        EWOCDataProvider().download_srtm_tiles(srtm_tile_ids, out_dir,
+        ewoc_s3 = EWOCDataProvider()
+        ewoc_s3.download_srtm_tiles(srtm_tile_ids, out_dir,
                                                resolution=resolution)
     elif source == "usgs":
         logger.info("Use usgs EE to retrieve srtm 1s data!")
         raise NotImplementedError
     else:
-        raise ValueError(f"Source {source} not supported!")
+        raise ValueError(f"Source {source} not supported for srtm!")
 
 def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
     """

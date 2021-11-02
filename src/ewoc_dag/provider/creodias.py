@@ -17,6 +17,11 @@ class CREODIASDataProvider(EODataProvider):
                          endpoint_url='http://data.cloudferro.com')
         self._bucket_name = 'DIAS'
 
+        if not self._check_bucket(self._bucket_name):
+            raise ValueError('Creodias data provider not correctly intialized!')
+
+        logger.debug('Creodias data provider correctly initialized')
+
     def download_s1_prd(self, prd_id:str, out_dirpath:Path) -> None:
         """ Download Sentinel-1 product from creodias eodata object storage
 

@@ -17,7 +17,7 @@ class EWOCDataProvider(EODataProvider):
         ewoc_access_key_id = os.getenv('EWOC_S3_ACCESS_KEY_ID')
         ewoc_secret_access_key_id = os.getenv('EWOC_S3_SECRET_ACCESS_KEY')
 
-        ewoc_endpoint_url = os.getenv('EWOC_ENDPOINT_URL', 
+        ewoc_endpoint_url = os.getenv('EWOC_ENDPOINT_URL',
                                      self._CREODIAS_EWOC_ENDPOINT_URL)
         logging.debug('EWoC endpoint URL: %s', ewoc_endpoint_url)
 
@@ -30,14 +30,19 @@ class EWOCDataProvider(EODataProvider):
                          endpoint_url=ewoc_endpoint_url)
         self._bucket_name = 'world-cereal' # ewoc_aux_data
 
+        if not self._check_bucket(self._bucket_name):
+            raise ValueError('EWoC data provider not correctly intialized!')
+
+        logger.debug('EWoC data provider correctly initialized')
+
     def download_srtm_tiles(self, srtm_tile_ids:List[str], out_dirpath:Path,
                             resolution:str='1s')-> None:
         if resolution == '1s':
             srtm_prefix = 'srtm30/'
-            srtm_suffix = '.zip'
+            srtm_suffix = '.SRTMGL1.hgt.zip'
         elif resolution == '3s':
             srtm_prefix = 'srtm90/'
-            srtm_suffix = '.SRTMGL1.hgt.zip'
+            srtm_suffix = '.zip'
         else:
             logger.error('Resolution of SRTM tiles is 1s or 3s!')
             return
