@@ -29,85 +29,6 @@ def get_s3_client():
     return s3_client
 
 
-def create_s3_resource(s3_resource_name):
-    """ Create s3 resource from boto3 for supported object storage
-
-    We suport AWS, creodias eodata and ewoc object storage.
-
-    The following env variables are needed:
-      - for ewoc:
-        - EWOC_S3_ACCESS_KEY_ID
-        - EWOC_S3_SECRET_ACCESS_KEY
-        - EWOC_ENDPOINT_URL
-      - for aws
-        - AWS_ACCESS_KEY_ID
-        - AWS_SECRET_ACCESS_KEY
-
-    For more information:
-     - for creodias eodata case: https://creodias.eu/faq-s3/-/asset_publisher/SIs09LQL6Gct/content/how-to-download-a-eo-data-file-using-boto3-?inheritRedirect=true
-     - for creodias ewo case: https://creodias.eu/-/how-to-access-private-object-storage-using-s3cmd-or-boto3-?inheritRedirect=true&redirect=%2Ffaq-s3
-
-    Args:
-      s3 resource name: str
-        Resource name supported: aws, creodias_eodata, ewoc.
-
-    Returns:
-      A boto3 Subclass of ServiceResource
-
-    Raises:
-      ValueError: When the resource name is not provided or the env variable not set for ewoc case.
-      NotImplementedError: When the resource name is not supported
-    """
-    if s3_resource_name is None:
-        logging.critical('S3 ressource name not provided!')
-        raise ValueError
-    elif s3_resource_name == 'aws':
-        return boto3.resource('s3')
-    elif s3_resource_name == 'creodias_eodata':
-        return boto3.resource('s3',
-                              aws_access_key_id=str(None),
-                              aws_secret_access_key=str(None),
-                              endpoint_url='http://data.cloudferro.com')
-    elif s3_resource_name == 'ewoc':
-        ewoc_access_key_id = os.getenv('EWOC_S3_ACCESS_KEY_ID')
-        ewoc_secret_access_key_id = os.getenv('EWOC_S3_SECRET_ACCESS_KEY')
-        CREODIAS_EWOC_ENDPOINT_URL= 'https://s3.waw2-1.cloudferro.com'
-        ewoc_endpoint_url = os.getenv('EWOC_ENDPOINT_URL', CREODIAS_EWOC_ENDPOINT_URL)
-        logging.debug('EWoC endpoint URL: %s', ewoc_endpoint_url)
-
-        if ewoc_access_key_id is None or ewoc_secret_access_key_id is None:
-            logging.critical('S3 resource credentials not provided for EWoC object storage!')
-            raise ValueError
-        return boto3.resource('s3',
-                              aws_access_key_id=ewoc_access_key_id,
-                              aws_secret_access_key=ewoc_secret_access_key_id,
-                              endpoint_url=ewoc_endpoint_url)
-    else:
-        logging.critical('S3 resource %s not supported', s3_resource_name)
-        raise NotImplementedError
-
-
-def download_object(bucket, object_name: str, filepath: Path, request_payer: bool=False):
-    """ Download a object from a bucket
-
-    Args:
-        bucket (boto3 bucket): bucket object creates with boto3
-        object_name (str): key in the object storage of the object
-        filepath (Path): Filepath where the object will be writen
-        request_payer (bool, optional): [description]. Defaults to False.
-    """
-    extra_args=None
-    if request_payer is True:
-        extra_args=dict(RequestPayer='requester')
-
-    try:
-        bucket.download_file(object_name, filepath, ExtraArgs=extra_args)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "404":
-            logger.error("The object does not exist.")
-        else:
-            raise
-
 
 def upload_object(bucket, filepath: Path, object_name: str)-> bool:
     """ Upload a object to a bucket
@@ -197,5 +118,3 @@ def download_s3file(s3_full_key,out_file, bucket):
     s3_client = get_s3_client()
     s3_client.download_file(Bucket=bucket, Key=s3_full_key, Filename=out_file,
                             ExtraArgs=dict(RequestPayer='requester'))
-
-
