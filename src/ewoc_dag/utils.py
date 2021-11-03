@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta
 import json
 import logging
 import os
 import re
+from datetime import datetime, timedelta
 
 import boto3
-from eodag import EODataAccessGateway
-from eotile.eotile_module import main
 import numpy as np
 import rasterio
+from eodag import EODataAccessGateway
+from eotile.eotile_module import main
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def get_dates_from_prod_id(product_id):
     :param product_id: Product ID from EOdag
     :return: date string and type of sensor
     """
-    #TODO update this function to use the direct eodag id search
+    # TODO update this function to use the direct eodag id search
     pid = product_id.split("_")
     sat_name = pid[0]
     sensor = ""
@@ -167,6 +167,7 @@ def copy_tirs_s3(s3_full_key, out_dir, s2_tile):
     # TODO Use logger instead
     print("Done for TIRS copy")
 
+
 def get_product_by_id(
     product_id, out_dir, provider=None, config_file=None, product_type=None
 ):
@@ -241,10 +242,11 @@ def find_l2a_band(l2a_folder, band_num, res):
     :return: path to band
     """
     band_path = None
-    id = f"{band_num}_{str(res)}m.jp2"
+    id_jp2 = f"{band_num}_{str(res)}m.jp2"
+    id_tif = f"{band_num}_{str(res)}m.tif"
     for root, dirs, files in os.walk(l2a_folder):
         for file in files:
-            if file.endswith(id):
+            if file.endswith((id_jp2, id_tif)):
                 band_path = os.path.join(root, file)
     return band_path
 
