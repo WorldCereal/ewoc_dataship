@@ -1,33 +1,31 @@
 import logging
 from pathlib import Path
+from tempfile import gettempdir
 import zipfile
 
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
-from ewoc_dag.provider.eodata import EODataProvider
+from ewoc_dag.bucket.eobucket import EOBucket
+
 
 logger = logging.getLogger(__name__)
 
-class CREODIASDataProvider(EODataProvider):
-    '''
-    https://creodias.eu/faq-s3/-/asset_publisher/SIs09LQL6Gct/content/how-to-download-a-eo-data-file-using-boto3-?inheritRedirect=true
-    '''
-
+class CreodiasBucket(EOBucket):
 
     _CREODIAS_BUCKET_FORMAT_PREFIX='/%Y/%m/%d/'
 
     def __init__(self) -> None:
-        super().__init__(s3_access_key_id='anystring',
+        super().__init__('DIAS',
+                         s3_access_key_id='anystring',
                          s3_secret_access_key='anystring',
                          endpoint_url='http://data.cloudferro.com')
-        self._bucket_name = 'DIAS'
 
-        if not self._check_bucket(self._bucket_name):
-            raise ValueError('Creodias data provider not correctly intialized!')
+        if not self._check_bucket():
+            raise ValueError('Creodias DIAS bucket not correctly intialized!')
 
-        logger.debug('Creodias data provider correctly initialized')
+        logger.info('Creodias DIAS bucket ready to use!')
 
-    def download_s1_prd(self, prd_id:str, out_dirpath:Path) -> None:
+    def download_s1_prd(self, prd_id:str, out_dirpath:Path=Path(gettempdir())) -> None:
         """ Download Sentinel-1 product from creodias eodata object storage
 
         Args:
@@ -41,8 +39,7 @@ class CREODIASDataProvider(EODataProvider):
                     + prd_id + '/'
         self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
 
-
-    def download_s2_prd(self, prd_id:str, out_dirpath:Path,
+    def download_s2_prd(self, prd_id:str, out_dirpath:Path=Path(gettempdir()),
                         l2_mask_only:bool=False) -> None:
         """ Download Sentinel-2 product from creodias eodata object storage
 
@@ -59,6 +56,7 @@ class CREODIASDataProvider(EODataProvider):
             self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
         else:
             if s2_prd_info.product_level == "L2A":
+                #TODO suport mask only mode
                 mask_key = prd_prefix + 'path/to/mask'
                 mask_filepath = out_dirpath / 'mask.tif'
                 self._s3_client.download_file(Bucket=self._bucket_name,
@@ -67,7 +65,7 @@ class CREODIASDataProvider(EODataProvider):
             else:
                 logger.warning('Not possible!')
 
-    def download_srtm1s_tiles(self, srtm_tile_ids, out_dirpath):
+    def download_srtm1s_tiles(self, srtm_tile_ids, out_dirpath:Path=Path(gettempdir())):
 
         srtm_prefix = 'auxdata/SRTMGL1/dem/'
         for srtm_tile_id in srtm_tile_ids:
@@ -85,15 +83,13 @@ class CREODIASDataProvider(EODataProvider):
             srtm_tile_id_filepath.unlink()
 
     def download_copdem_tiles(self, copdem_tiles_id, out_dirpath, resolution=30)-> None:
+        # TODO support copdem retrieval
         pass
 
 if __name__ == "__main__":
-    creo_data_provider = CREODIASDataProvider()
-    creo_data_provider.download_s2_prd('S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE',
-                                        Path('/tmp'))
-    creo_data_provider.download_s2_prd('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE',
-                                  Path('/tmp'))
-    creo_data_provider.download_s2_prd('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE',
-                                  Path('/tmp'), l2_mask_only=True)
-    creo_data_provider.download_s1_prd('S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE',
-                                  Path('/tmp'))
+    creo_bucket = CreodiasBucket()
+    creo_bucket.download_s2_prd('S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE')
+    creo_bucket.download_s2_prd('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE')
+    creo_bucket.download_s2_prd('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE',
+                                l2_mask_only=True)
+    creo_bucket.download_s1_prd('S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE')
