@@ -1,9 +1,11 @@
-
+# -*- coding: utf-8 -*-
+""" CLI to retrieve EO data identifiy by their product ID to EO data provider.
+"""
 import argparse
 import logging
 from pathlib import Path
 import sys
-import tempfile
+from tempfile import gettempdir
 
 from ewoc_dag import __version__
 from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
@@ -20,27 +22,50 @@ __license__ = "MIT"
 
 logger = logging.getLogger(__name__)
 
-def get_eo_data(prd_id:str, out_dirpath:Path=Path(tempfile.gettempdir()),
-             eo_data_source:str='creodias',
-             eodata_config_filepath=None,
-             only_l2a_mask=False,
-             use_s2_cogs=False)-> None:
 
+def get_eo_data(
+    prd_id: str,
+    out_dirpath: Path = Path(gettempdir()),
+    eo_data_source: str = "creodias",
+    eodata_config_filepath: Path = None,
+    only_l2a_mask: bool = False,
+    use_s2_cogs: bool = False,
+) -> None:
+    """Retrieve EO data from the product ID
+
+    Args:
+        prd_id (str): Product ID
+        out_dirpath (Path, optional): Directory to write the product. Defaults to
+            Path(gettempdir()).
+        eo_data_source (str, optional): Data provider. Defaults to "creodias".
+        eodata_config_filepath (Path, optional): EODAG configuration file. Defaults to None.
+        only_l2a_mask (bool, optional): For S2 L2A products retrieve only mask . Defaults to False.
+        use_s2_cogs (bool, optional): Force to use Sentinel-2 L2A COGS bucket. Defaults to False.
+    """
     if L8C2PrdIdInfo.is_valid(prd_id):
-        get_l8_product(prd_id, out_dirpath,
-                       source=eo_data_source,
-                       eodag_config_file=eodata_config_filepath,
-                       l2_mask_only=only_l2a_mask)
+        get_l8_product(
+            prd_id,
+            out_dirpath,
+            source=eo_data_source,
+            eodag_config_file=eodata_config_filepath,
+            l2_mask_only=only_l2a_mask,
+        )
     elif S1PrdIdInfo.is_valid(prd_id):
-        get_s1_product(prd_id, out_dirpath,
-                       source=eo_data_source,
-                       eodag_config_file=eodata_config_filepath)
+        get_s1_product(
+            prd_id,
+            out_dirpath,
+            source=eo_data_source,
+            eodag_config_file=eodata_config_filepath,
+        )
     elif S2PrdIdInfo.is_valid(prd_id):
-        get_s2_product(prd_id, out_dirpath,
-                       source=eo_data_source,
-                       eodag_config_file=eodata_config_filepath,
-                       l2_mask_only=only_l2a_mask,
-                       aws_l2a_cogs=use_s2_cogs)
+        get_s2_product(
+            prd_id,
+            out_dirpath,
+            source=eo_data_source,
+            eodag_config_file=eodata_config_filepath,
+            l2_mask_only=only_l2a_mask,
+            aws_l2a_cogs=use_s2_cogs,
+        )
 
 
 # ---- CLI ----
@@ -66,13 +91,20 @@ def parse_args(args):
         version=f"ewoc_dag {__version__}",
     )
     parser.add_argument(dest="prd_ids", help="EO product ID")
-    parser.add_argument("-o",dest="out_dirpath", help="Output Dirpath",
-                        type=Path,
-                        default=Path(tempfile.gettempdir()))
-    parser.add_argument("--data-source", dest="data_source",
-                        help= 'Source of the EO data',
-                        type=str,
-                        default='creodias')
+    parser.add_argument(
+        "-o",
+        dest="out_dirpath",
+        help="Output Dirpath",
+        type=Path,
+        default=Path(gettempdir()),
+    )
+    parser.add_argument(
+        "--data-source",
+        dest="data_source",
+        help="Source of the EO data",
+        type=str,
+        default="creodias",
+    )
     parser.add_argument(
         "-v",
         "--verbose",
@@ -116,10 +148,13 @@ def main(args):
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
-    logger.info("Start retrieve %s from %s to %s !",
-                args.prd_ids, args.data_source, args.out_dirpath)
-    get_eo_data(args.prd_ids, args.out_dirpath,
-                eo_data_source=args.data_source)
+    logger.info(
+        "Start retrieve %s from %s to %s !",
+        args.prd_ids,
+        args.data_source,
+        args.out_dirpath,
+    )
+    get_eo_data(args.prd_ids, args.out_dirpath, eo_data_source=args.data_source)
     logger.info("Data are available at %s!", args.out_dirpath)
 
 
