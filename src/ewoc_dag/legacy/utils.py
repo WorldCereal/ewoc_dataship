@@ -10,7 +10,7 @@ from eotile.eotile_module import main
 import numpy as np
 import rasterio
 
-from ewoc_dag.provider.eodag_utils import get_product_by_id
+from ewoc_dag.eodag_utils import get_product_by_id
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ def get_geom_from_id(tile_id):
     res = main(tile_id)
     return res[0]
 
+
 def get_bounds(tile_id):
     """
     Get S2 tile bounds
@@ -36,6 +37,7 @@ def get_bounds(tile_id):
     # Return LL, UR tuple
     return (UL0, UL1 - 109800, UL0 + 109800, UL1)
 
+
 # DEPRECATED cf. eo_prd_id
 def get_dates_from_prod_id(product_id):
     """
@@ -43,7 +45,7 @@ def get_dates_from_prod_id(product_id):
     :param product_id: Product ID from EOdag
     :return: date string and type of sensor
     """
-    #TODO update this function to use the direct eodag id search
+    # TODO update this function to use the direct eodag id search
     pid = product_id.split("_")
     sat_name = pid[0]
     sensor = ""
@@ -65,6 +67,7 @@ def get_dates_from_prod_id(product_id):
     start_date = date - timedelta(days=1)
     end_date = date + timedelta(days=1)
     return start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), sensor
+
 
 # TODO: Move to AWS provider ?
 def donwload_s1tiling_style(dag, eodag_product, out_dir):
@@ -102,6 +105,7 @@ def donwload_s1tiling_style(dag, eodag_product, out_dir):
     )
     os.system(f"rm -r {tmp_dir}")
 
+
 # TODO: to be removed!
 def download_s3file(s3_full_key, out_file, bucket):
     """
@@ -121,6 +125,7 @@ def download_s3file(s3_full_key, out_file, bucket):
         for chunk in iter(lambda: resp["Body"].read(4096), b""):
             f.write(chunk)
 
+
 def get_l8_rasters(data_folder):
     """
     Find Landsat 8 rasters
@@ -132,6 +137,7 @@ def get_l8_rasters(data_folder):
             if file.endswith((".tif", ".TIF")) and "LC08" in file:
                 l8_rasters.append(os.path.join(root, file))
     return l8_rasters
+
 
 def copy_tirs_s3(s3_full_key, out_dir, s2_tile):
     """
