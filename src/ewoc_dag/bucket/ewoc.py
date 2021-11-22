@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+""" EWoC private data bucket management module
+"""
 from datetime import datetime
 from distutils.util import strtobool
 import logging
 import os
 from pathlib import Path
 from tempfile import gettempdir
-from typing import List
+from typing import List, Tuple
 import zipfile
 
 import pandas as pd
@@ -19,7 +22,18 @@ from ewoc_dag.eo_prd_id.ewoc_prd_id import (
 _logger = logging.getLogger(__name__)
 
 
-def split_tile_id(tile_id):
+def split_tile_id(tile_id: str) -> Tuple[str]:
+    """Split the S2 Tile ID into MGRS parts
+
+    Args:
+        tile_id (str): S2 MGRS tile ID
+
+    Raises:
+        ValueError: if the tile ID is not correct
+
+    Returns:
+        Tuple[str]: Part of the tile ID (exemple for 31TCJ: {31, TC, J})
+    """
     if len(tile_id) == 5:
         return tile_id[:2], tile_id[2], tile_id[3:]
 
@@ -29,7 +43,15 @@ def split_tile_id(tile_id):
     raise ValueError(f"Tile ID {tile_id} is not valid !")
 
 
-def tileid_to_ard_path_component(tile_id):
+def tileid_to_ard_path_component(tile_id: str) -> str:
+    """Part of the ARD key related to S2 Tile ID
+
+    Args:
+        tile_id (str): S2 MGRS tile ID
+
+    Returns:
+        str: tile ID converted to ARD parth component (exemple for 31TCJ: "31/TC/J")
+    """
     part1, part2, part3 = split_tile_id(tile_id)
     return f"{part1}/{part2}/{part3}"
 
@@ -95,6 +117,13 @@ class EWOCAuxDataBucket(EWOCBucket):
     def download_srtm3s_tiles(
         self, srtm_tile_ids: List[str], out_dirpath: Path = Path(gettempdir())
     ) -> None:
+        """Download srtm 3s (90m) tiles according a S2 tile ID
+
+        Args:
+            srtm_tile_ids (List[str]): List of S2 MGRS tile ID
+            out_dirpath (Path, optional): Output directry to write SRTM tiles.
+                Defaults to Path(gettempdir()).
+        """
 
         for srtm_tile_id in srtm_tile_ids:
             srtm_tile_id_filename = srtm_tile_id + ".zip"
@@ -114,14 +143,23 @@ class EWOCAuxDataBucket(EWOCBucket):
 
             srtm_tile_id_filepath.unlink()
 
-    def _list_agera5_prd(self):
-        # TODO add in the bucket the 20190516
+    def _list_agera5_prd(self) -> List[str]:
+        """list all AgERA5 prodcuts inside the AUX data bucket
 
+        Returns:
+            List[str]: list of AgERA5 products in the bucket
+        """
         return self._list_prds_key("AgERA5/")
 
     def agera5_to_satio_csv(
         self, filepath: Path = Path(gettempdir()) / "satio_agera5.csv"
-    ):
+    ) -> None:
+        """Write SatIO Collection file for AgERA5
+
+        Args:
+            filepath (Path, optional): SatIO Collection output filepath.
+                Defaults to Path(gettempdir())/"satio_agera5.csv".
+        """
 
         agera5_paths = []
         agera5_dates = []
@@ -146,7 +184,7 @@ class EWOCAuxDataBucket(EWOCBucket):
         ).to_csv(filepath)
 
     def upload_agera5_prd(self):
-        raise NotImplementedError()
+        raise NotImplementedError("Currently not implemented")
 
 
 class EWOCARDBucket(EWOCBucket):
@@ -163,7 +201,15 @@ class EWOCARDBucket(EWOCBucket):
         tile_id: str,
         production_id: str,
         filepath: Path = Path(gettempdir()) / "satio_sar.csv",
-    ):
+    ) -> None:
+        """Generate SatIO Collection file for SAR products
+
+        Args:
+            tile_id (str): S2 MGRS tile id
+            production_id (str): production ID related to Workplan
+            filepath (Path, optional): Filepath of the output file for satio.
+                Defaults to Path(gettempdir())/"satio_tir.csv".
+        """
         prds_path = []
         prds_datetime = []
 
@@ -188,7 +234,15 @@ class EWOCARDBucket(EWOCBucket):
         tile_id: str,
         production_id: str,
         filepath: Path = Path(gettempdir()) / "satio_optical.csv",
-    ):
+    ) -> None:
+        """Generate SatIO Collection file for Optical products
+
+        Args:
+            tile_id (str): S2 MGRS tile id
+            production_id (str): production ID related to Workplan
+            filepath (Path, optional): Filepath of the output file for satio.
+                Defaults to Path(gettempdir())/"satio_tir.csv".
+        """
         prds_path = []
         prds_datetime = []
 
@@ -208,18 +262,18 @@ class EWOCARDBucket(EWOCBucket):
         tile_id: str,
         production_id: str,
         filepath: Path = Path(gettempdir()) / "satio_tir.csv",
-    ):
-        """[summary]
+    ) -> None:
+        """Generate SatIO Collection file for TIR products
 
         Args:
-            tile_id (str): [description]
-            production_id (str): [description]
-            filepath (Path, optional): [description]. Defaults to Path(gettempdir())/"satio_tir.csv".
+            tile_id (str): S2 MGRS tile id
+            production_id (str): production ID related to Workplan
+            filepath (Path, optional): Filepath of the output file for satio.
+                Defaults to Path(gettempdir())/"satio_tir.csv".
         """
         prds_path = []
         prds_datetime = []
 
-        #'0000_0_09112021223005/TIR/31/T/CJ/'
         for prd_key in self._list_prds_key(
             f"{production_id}/TIR/{tileid_to_ard_path_component(tile_id)}"
         ):
@@ -265,11 +319,11 @@ class EWOCPRDBucket(EWOCBucket):
 if __name__ == "__main__":
     import sys
 
-    logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
+    _LOGFORMAT = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
     logging.basicConfig(
         level=logging.INFO,
         stream=sys.stdout,
-        format=logformat,
+        format=_LOGFORMAT,
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     ewoc_auxdata_bucket = EWOCAuxDataBucket()
