@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+""" EODAG utilities to retrieve EO data based on their Produc ID
+"""
 import logging
 import os
 
@@ -13,8 +16,10 @@ def get_product_by_id(
     Get satellite product with id using eodag
     :param product_id: id like S2A_MSIL1C_20200518T135121_N0209_R024_T21HTC_20200518T153019
     :param out_dir: Ouput directory
-    :param provider: This is your data provider needed by eodag, could be different from the cloud provider
-    :param config_file: Credentials for eodag, if none provided the credentials will be selected from env vars
+    :param provider: This is your data provider needed by eodag, could be different from
+        the cloud provider
+    :param config_file: Credentials for eodag, if none provided the credentials will be selected
+        from env vars
     :param product_type: Product type, extra arg for eodag useful for creodias
     """
     if config_file is None:
