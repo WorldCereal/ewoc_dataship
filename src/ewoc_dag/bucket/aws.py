@@ -265,12 +265,13 @@ class AWSCopDEMBucket(AWSEOBucket):
         else:
             ValueError("Resolution of Copernicus DEM is 1s or 3s!")
 
+        self._copdem_suffix = "_00_DEM"
+
     def download_tiles(
         self,
         copdem_tile_ids: List[str],
         out_dirpath: Path = Path(gettempdir()),
     ) -> None:
-        copdem_suffix = "_00_DEM"
 
         for copdem_tile_id in copdem_tile_ids:
 
@@ -279,7 +280,7 @@ class AWSCopDEMBucket(AWSEOBucket):
                 + copdem_tile_id[:3]
                 + "_00_"
                 + copdem_tile_id[3:]
-                + copdem_suffix
+                + self._copdem_suffix
             )
             copdem_tile_id_filename = copdem_tile_id_aws + ".tif"
             copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename
@@ -292,6 +293,15 @@ class AWSCopDEMBucket(AWSEOBucket):
                 Key=copdem_object_key,
                 Filename=str(copdem_tile_id_filepath),
             )
+
+    def _compute_key(self, copdem_tile_id: str) -> str:
+        copdem_tile_id_aws = f"{self._copdem_prefix}{copdem_tile_id[:3]}\
+_00_{copdem_tile_id[3:]}{self._copdem_suffix}"
+        copdem_tile_id_filename = f"{copdem_tile_id_aws}.tif"
+        return f"{copdem_tile_id_aws}/{copdem_tile_id_filename}"
+
+    def to_gdal_path(self, copdem_tile_id: str) -> str:
+        return f"/vsis3/{self._bucket_name}/{self._compute_key(copdem_tile_id)}"
 
 
 if __name__ == "__main__":
@@ -306,16 +316,30 @@ if __name__ == "__main__":
     )
     # TODO: add the possibility to filter the file downloaded: full or subset
 
-    # AWSS1Bucket().download_prd('S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE')
-    # AWSS2L1CBucket().download_prd('S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE')
-    # AWSS2L2ABucket().download_prd('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE')
-    # AWSS2L2ABucket().download_prd('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE',
-    #                               l2a_mask_only=True)
-    # AWSS2L2ACOGSBucket().download_prd('S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE')
-    AWSS2L2ACOGSBucket().download_prd(
-        "S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE",
-        l2a_mask_only=True,
-    )
-    # AWSCopDEMBucket().download_tiles(['Copernicus_DSM_COG_10_S90_00_W157_00_DEM',
-    #                                 'Copernicus_DSM_COG_10_S90_00_W156_00_DEM'])
-    # AWSS2L8C2Bucket().download_prd('LC08_L2SP_227099_20211017_20211026_02_T2')
+    # AWSS1Bucket().download_prd(
+    #     "S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE"
+    # )
+    # AWSS2L1CBucket().download_prd(
+    #     "S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE"
+    # )
+    # AWSS2L2ABucket().download_prd(
+    #     "S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE"
+    # )
+    # AWSS2L2ABucket().download_prd(
+    #     "S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE",
+    #     l2a_mask_only=True,
+    # )
+    # AWSS2L2ACOGSBucket().download_prd(
+    #     "S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE"
+    # )
+    # AWSS2L2ACOGSBucket().download_prd(
+    #     "S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE",
+    #     l2a_mask_only=True,
+    # )
+    # AWSCopDEMBucket().download_tiles(
+    #     [
+    #         "Copernicus_DSM_COG_10_S90_00_W157_00_DEM",
+    #         "Copernicus_DSM_COG_10_S90_00_W156_00_DEM",
+    #     ]
+    # )
+    # AWSS2L8C2Bucket().download_prd("LC08_L2SP_227099_20211017_20211026_02_T2")

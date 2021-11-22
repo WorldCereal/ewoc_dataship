@@ -142,6 +142,9 @@ class CreodiasBucket(EOBucket):
         # TODO support copdem retrieval
         raise NotImplementedError("Currently not supported!")
 
+    def to_copdem_gdal_path(self, copdem_tile_id: str, resolution="1s") -> str:
+        pass
+
 
 if __name__ == "__main__":
     creo_bucket = CreodiasBucket()
