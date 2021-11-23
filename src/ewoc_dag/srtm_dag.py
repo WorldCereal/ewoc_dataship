@@ -90,8 +90,8 @@ def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
                 srtm_tile_id_url,
             )
             continue
-        else:
-            logger.info("%s downloaded!", srtm_tile_id_filename)
+
+        logger.info("%s downloaded!", srtm_tile_id_filename)
 
         srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
         with open(srtm_tile_id_filepath, "wb") as srtm_file:

@@ -56,6 +56,8 @@ try to continue with other authentifcation methods!"
 
 
 class AWSS1Bucket(AWSEOBucket):
+    """Class to handle access to Sentinel-1 data"""
+
     def __init__(self) -> None:
         super().__init__("sentinel-s1-l1c")
 
@@ -86,6 +88,8 @@ class AWSS1Bucket(AWSEOBucket):
 
 
 class AWSS2Bucket(AWSEOBucket):
+    """Base class to handle access to Sentinel-2 data"""
+
     def _download_s2_prd(
         self,
         prd_id: str,
@@ -182,6 +186,8 @@ class AWSS2Bucket(AWSEOBucket):
 
 
 class AWSS2L1CBucket(AWSS2Bucket):
+    """Class to handle access to Sentinel-2 L1C data"""
+
     def __init__(self) -> None:
         super().__init__("sentinel-s2-l1c")
 
@@ -192,6 +198,8 @@ class AWSS2L1CBucket(AWSS2Bucket):
 
 
 class AWSS2L2ABucket(AWSS2Bucket):
+    """Class to handle access to Sentinel-2 L2A data"""
+
     def __init__(self) -> None:
         super().__init__("sentinel-s2-l2a")
 
@@ -207,6 +215,8 @@ class AWSS2L2ABucket(AWSS2Bucket):
 
 
 class AWSS2L2ACOGSBucket(AWSS2Bucket):
+    """Class to handle access to Sentinel-2 L2A COG data"""
+
     def __init__(self) -> None:
         super().__init__("sentinel-cogs")
 
@@ -222,6 +232,7 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
 
 
 class AWSS2L8C2Bucket(AWSEOBucket):
+    """Class to handle access to Landsatdata"""
     def __init__(self) -> None:
         super().__init__("usgs-landsat")
 

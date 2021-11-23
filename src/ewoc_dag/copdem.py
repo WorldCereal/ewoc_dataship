@@ -130,11 +130,7 @@ def get_gdal_vrt_files(
         for copdem_tile_id in copdem_tile_ids:
             copdem_gdal_paths.append(copdem_bucket.to_gdal_path(copdem_tile_id))
     elif copdem_provider == "creodias":
-        copdem_bucket = CreodiasBucket()
-        for copdem_tile_id in copdem_tile_ids:
-            copdem_gdal_paths.append(
-                copdem_bucket.to_copdem_gdal_path(copdem_tile_id, resolution=resolution)
-            )
+        raise NotImplementedError("Currently not implemented")
     else:
         raise ValueError(f"Source {copdem_provider} not supported {_COPDEM_SOURCES}!")
 

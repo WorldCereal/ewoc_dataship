@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class UploadFileError(Exception):
+    """Exception raised when file upload failed"""
+
     def __init__(self, client_error: ClientError, filepath, bucket_name, key):
         self.filepath = filepath
         self.bucket_name = bucket_name
@@ -23,6 +25,8 @@ class UploadFileError(Exception):
 
 
 class UploadProductError(Exception):
+    """Exception raised when product upload failed"""
+
     def __init__(self, upload_file_error: UploadFileError, prd_dirpath, object_prefix):
         self.prd_dirpath = prd_dirpath
         self.object_prefix = object_prefix
@@ -33,6 +37,8 @@ class UploadProductError(Exception):
 
 
 class DownloadFileError(Exception):
+    """Exception raised when file download failed"""
+
     def __init__(self, client_error: ClientError, filepath, bucket_name, key):
         self.filepath = filepath
         self.bucket_name = bucket_name

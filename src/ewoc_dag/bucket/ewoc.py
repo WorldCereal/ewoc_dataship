@@ -57,10 +57,11 @@ def tileid_to_ard_path_component(tile_id: str) -> str:
 
 
 class EWOCBucket(EOBucket):
+    """Base class for EWoC data buckets"""
 
     _CREODIAS_EWOC_ENDPOINT_URL = "https://s3.waw2-1.cloudferro.com"
 
-    def __init__(self, bucket_name) -> None:
+    def __init__(self, bucket_name: str) -> None:
 
         ewoc_access_key_id = os.getenv("EWOC_S3_ACCESS_KEY_ID")
         ewoc_secret_access_key_id = os.getenv("EWOC_S3_SECRET_ACCESS_KEY")
@@ -111,6 +112,8 @@ class EWOCBucket(EOBucket):
 
 
 class EWOCAuxDataBucket(EWOCBucket):
+    """Class to handle access to EWoC Auxiliary datas"""
+
     def __init__(self) -> None:
         super().__init__("ewoc-aux-data")
 
@@ -188,6 +191,8 @@ class EWOCAuxDataBucket(EWOCBucket):
 
 
 class EWOCARDBucket(EWOCBucket):
+    """Class to handle access of EWoC ARD data bucket"""
+
     def __init__(self, ewoc_dev_mode=None) -> None:
         if ewoc_dev_mode is None:
             ewoc_dev_mode = strtobool(os.getenv("EWOC_DEV_MODE", "False"))
@@ -299,12 +304,10 @@ class EWOCARDBucket(EWOCBucket):
 
 
 class EWOCPRDBucket(EWOCBucket):
-    def __init__(self, ewoc_dev_mode=None) -> None:
-        """[summary]
+    """Class to handle access of EWoC final products"""
 
-        Args:
-            ewoc_dev_mode ([type], optional): [description]. Defaults to None.
-        """
+    def __init__(self, ewoc_dev_mode=None) -> None:
+
         if ewoc_dev_mode is None:
             ewoc_dev_mode = strtobool(os.getenv("EWOC_DEV_MODE", "False"))
         if not ewoc_dev_mode:
@@ -312,8 +315,14 @@ class EWOCPRDBucket(EWOCBucket):
         elif ewoc_dev_mode:
             super().__init__("ewoc-prd-dev")
 
-    def upload_ewoc_prd(self):
-        super()._upload_prd(Path("todo"), "TODO")
+    def upload_ewoc_prd(self, prd_path: Path, prd_prefix: str) -> None:
+        """Upload EWoC product
+
+        Args:
+            prd_path (Path): Path to the product to upload
+            prd_prefix (str): Product prefix where to put the product
+        """
+        super()._upload_prd(prd_path, prd_prefix, file_suffix=[])
 
 
 if __name__ == "__main__":
