@@ -1,58 +1,69 @@
+# -*- coding: utf-8 -*-
+""" DAG for Sentinel-1 GRD products
+"""
 import logging
 import os
 from pathlib import Path
+from tempfile import gettempdir
 
-from ewoc_dag.s3man import download_s1_prd_from_creodias
-from ewoc_dag.utils import get_product_by_id
+from ewoc_dag.bucket.aws import AWSS1Bucket
+from ewoc_dag.bucket.creodias import CreodiasBucket
+from ewoc_dag.eodag_utils import get_product_by_id
 
 logger = logging.getLogger(__name__)
 
+_S1_SOURCES = ["eodag", "aws", "creodias"]
 
-def get_s1_product(prd_id:str, out_root_dirpath:Path,
-                   source:str='creodias_eodata', eodag_config_file=None):
+
+def get_s1_default_provider() -> str:
+    """Return the default provider according the computation of two env variables:
+        - EWOC_CLOUD_PROVIDER
+        - EWOC_S1_PROVIDER
+    The first superseed the second one
+
+    Returns:
+        str: s1 data provider
+    """
+    return os.getenv(
+        "EWOC_CLOUD_PROVIDER", os.getenv("EWOC_S1_PROVIDER", _S1_SOURCES[0])
+    )
+
+
+def get_s1_product(
+    prd_id: str,
+    out_root_dirpath: Path = Path(gettempdir()),
+    source: str = None,
+    eodag_config_file=None,
+):
     """
     Retrieve Sentinel-1 data via eodag or directly from a object storage
+    :param prd_id: ex. S1B_IW_GRDH_1SDV_20200510T092220_20200510T092245_021517_028DAB_A416
+    :param out_root_dirpath: Ouptut directory
+    :param source: Data provider:
+    :param eodag_config_file: eodag config file, if None the creds will be selected from env vars
     """
+
     if source is None:
-        source = os.getenv('EWOC_DATA_SOURCE')
-
-    if source == 'creodias_finder':
-        get_s1_product_by_id(prd_id, out_root_dirpath,
-                             provider='creodias', config_file=eodag_config_file)
-    elif source == 'creodias_eodata':
-        logging.info('Use creodias EODATA object storage!',)
-        download_s1_prd_from_creodias(prd_id, out_root_dirpath)
-    elif source == 'aws_s3':
-        raise NotImplementedError('Get S1 product from AWS bucket is not currently implemented!')
+        s1_provider = get_s1_default_provider()
     else:
-        if eodag_config_file is not None:
-            data_provider=os.getenv('EWOC_DATA_PROVIDER')
-            logging.info('Use EODAG to retrieve the Sentinel-1 product with the following data provider %s.',
-                         data_provider)
-            get_product_by_id(prd_id, out_root_dirpath, provider=data_provider)
-        else:
-            raise NotImplementedError
+        s1_provider = source
 
-def get_s1_product_by_id(product_id, out_dir, provider=None, config_file=None):
-    """
-    Wrapper around get_product_by_id adapted for Sentinel-1 on creodias
-    :param product_id: ex. S1B_IW_GRDH_1SDV_20200510T092220_20200510T092245_021517_028DAB_A416
-    :param out_dir: Ouptut directory
-    :param provider: Data provider (creodias)
-    :param config_file: eodag config file, if None the creds will be selected from env vars
-    """
-    if provider is None:
-        provider = os.getenv("EWOC_DATA_PROVIDER")
-
-    if provider == "creodias":
+    if s1_provider == "eodag":
+        logging.info(
+            "Use EODAG to retrieve S1 product!",
+        )
         get_product_by_id(
-            product_id,
-            out_dir,
-            provider=provider,
-            config_file=config_file,
+            prd_id,
+            out_root_dirpath,
+            provider="creodias",  # TODO Keep eodag manage
+            config_file=eodag_config_file,
             product_type="S1_SAR_GRD",
         )
+    elif s1_provider == "creodias":
+        logging.info("Use CREODIAS object storage to retrieve S1 product!")
+        CreodiasBucket().download_s1_prd(prd_id, out_root_dirpath)
+    elif s1_provider == "aws":
+        logging.info("Use AWS object storage to retrieve S1 product!")
+        AWSS1Bucket().download_prd(prd_id, out_root_dirpath)
     else:
-        get_product_by_id(
-            product_id, out_dir, provider=provider, config_file=config_file
-        )
+        raise ValueError(f"Source {s1_provider} is not supported")

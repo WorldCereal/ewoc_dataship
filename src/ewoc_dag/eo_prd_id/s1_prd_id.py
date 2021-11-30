@@ -168,7 +168,7 @@ absolute_orbit_number={self.absolute_orbit_number}, mission_datatake_id={self._m
 product_unique_id={self._product_unique_id}'
 
     def __repr__(self):
-         return f'S1PrdIdInfo(s1_prd_id={self._s1_prd_id})'
+        return f'S1PrdIdInfo(s1_prd_id={self._s1_prd_id})'
 
     @staticmethod
     def is_valid(s1_prd_id): 
