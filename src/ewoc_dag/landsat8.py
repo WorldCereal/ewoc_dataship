@@ -31,10 +31,7 @@ def get_l8_product(
     :param config_file: eodag config file, if None the creds will be selected from env vars
     """
 
-    if source is None:
-        source = os.getenv("EWOC_L8C2_PROVIDER", "eodag")
-
-    if source == "eodag":
+    if source == _L8C2_SOURCES[0]:
         logging.info("Use EODAG to retrieve Landsat 8 L2 C2 product!")
         if l2_mask_only:
             logger.warning("EODAG does not support to retrieve l2 mask only!")
@@ -45,11 +42,11 @@ def get_l8_product(
             config_file=eodag_config_file,
             product_type="TODO",
         )
-    elif source == "aws":
+    elif source == _L8C2_SOURCES[1]:
         logging.info("Use AWS to retrieve Landsat 8 L2 C2 product!")
         AWSS2L8C2Bucket().download_prd(prd_id, out_root_dirpath)
     else:
-        raise ValueError(f"Source {source} is not supported")
+        raise ValueError(f"Source {source} is not supported: not in {_L8C2_SOURCES}")
 
 
 if __name__ == "__main__":

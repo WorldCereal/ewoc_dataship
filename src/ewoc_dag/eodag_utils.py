@@ -27,7 +27,7 @@ def get_product_by_id(
     else:
         dag = EODataAccessGateway(config_file)
     if provider is None:
-        provider = os.getenv("EWOC_DATA_PROVIDER")
+        provider = os.getenv("EWOC_EODAG_PROVIDER")
     dag.set_preferred_provider(provider)
     if product_type is not None:
         products, _ = dag.search(
