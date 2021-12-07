@@ -290,17 +290,14 @@ class EWOCARDBucket(EWOCBucket):
             {"date": prds_datetime, "tile": tile_id, "level": "L2SP", "path": prds_path}
         ).to_csv(filepath)
 
-    def _upload_ard_prd(self):
-        super()._upload_prd(Path("todo"), "TODO")
+    def upload_ard_prd(self, ard_prd_path: Path, ard_prd_prefix: str) -> None:
+        """Upload EWoC ARD tif files to EWoC ARD bucket
 
-    def upload_ard_s1_prd(self):
-        self._upload_ard_prd()
-
-    def upload_ard_s2_prd(self):
-        self._upload_ard_prd()
-
-    def upload_ard_tir_prd(self):
-        self._upload_ard_prd()
+        Args:
+            ard_prd_path (Path): Path to the directory which contain ARD data
+            ard_prd_prefix (str): Bucket prefix where store data
+        """
+        super()._upload_prd(ard_prd_path, ard_prd_prefix)
 
 
 class EWOCPRDBucket(EWOCBucket):
