@@ -322,7 +322,7 @@ class EWOCPRDBucket(EWOCBucket):
             prd_path (Path): Path to the product to upload
             prd_prefix (str): Product prefix where to put the product
         """
-        super()._upload_prd(prd_path, prd_prefix, file_suffix=[])
+        super()._upload_prd(prd_path, prd_prefix, file_suffix=None)
 
 
 if __name__ == "__main__":
