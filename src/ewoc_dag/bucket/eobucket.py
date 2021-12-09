@@ -84,6 +84,10 @@ class EOBucket:
 
         self._bucket_name = bucket_name
 
+    @property
+    def bucket_name(self):
+        return self._bucket_name
+
     def _check_bucket(self) -> bool:
         """[summary]
 
