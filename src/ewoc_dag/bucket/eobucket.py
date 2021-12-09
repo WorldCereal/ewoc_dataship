@@ -115,7 +115,7 @@ class EOBucket:
         return f"s3://{self._bucket_name}"
 
     def _download_prd(
-        self, prd_prefix: str, out_dirpath: Path, request_payer: bool = False
+        self, prd_prefix: str, out_dirpath: Path, request_payer: bool = False, filter_band:str = None
     ) -> None:
         """Download product from object storage
 
@@ -136,19 +136,20 @@ class EOBucket:
         )
 
         for obj in response["Contents"]:
-            logger.debug("obj.key: %s", obj["Key"])
-            filename = obj["Key"].split(
-                sep="/", maxsplit=len(prd_prefix.split("/")) - 1
-            )[-1]
-            output_filepath = out_dirpath / filename
-            (output_filepath.parent).mkdir(parents=True, exist_ok=True)
-            logging.info("Try to download %s to %s", obj["Key"], output_filepath)
-            self._s3_client.download_file(
-                Bucket=self._bucket_name,
-                Key=obj["Key"],
-                Filename=str(output_filepath),
-                ExtraArgs=extra_args,
-            )
+            if filter_band is None or filter_band in obj["Key"]:
+                logger.debug("obj.key: %s", obj["Key"])
+                filename = obj["Key"].split(
+                    sep="/", maxsplit=len(prd_prefix.split("/")) - 1
+                )[-1]
+                output_filepath = out_dirpath / filename
+                (output_filepath.parent).mkdir(parents=True, exist_ok=True)
+                logging.info("Try to download %s to %s", obj["Key"], output_filepath)
+                self._s3_client.download_file(
+                    Bucket=self._bucket_name,
+                    Key=obj["Key"],
+                    Filename=str(output_filepath),
+                    ExtraArgs=extra_args,
+                )
 
     def _upload_file(self, filepath: Path, key: str) -> bool:
         """Upload a object to a bucket
