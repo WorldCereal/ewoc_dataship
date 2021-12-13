@@ -85,11 +85,16 @@ class EOBucket:
         self._bucket_name = bucket_name
 
     @property
-    def bucket_name(self):
+    def bucket_name(self) -> str:
+        """Returns the bucket name
+
+        Returns:
+            str: bucket name
+        """
         return self._bucket_name
 
     def _check_bucket(self) -> bool:
-        """[summary]
+        """Check if the bucket is usable
 
         Returns:
             bool: return True if the bucket is accessible and False otherwise
@@ -115,7 +120,11 @@ class EOBucket:
         return f"s3://{self._bucket_name}"
 
     def _download_prd(
-        self, prd_prefix: str, out_dirpath: Path, request_payer: bool = False, filter_bands:list = None
+        self,
+        prd_prefix: str,
+        out_dirpath: Path,
+        request_payer: bool = False,
+        filter_bands: list = None,
     ) -> None:
         """Download product from object storage
 
