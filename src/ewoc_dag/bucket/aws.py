@@ -237,7 +237,7 @@ class AWSS2L8C2Bucket(AWSEOBucket):
         super().__init__("usgs-landsat")
 
     def download_prd(
-        self, prd_id: str, out_dirpath_root: Path = Path(gettempdir()), filter_band: str = None
+        self, prd_id: str, out_dirpath_root: Path = Path(gettempdir()), filter_bands: list = None
     ) -> None:
         # TODO add mask only mode
         # TODO support level 1? support other collections?
@@ -262,7 +262,7 @@ class AWSS2L8C2Bucket(AWSEOBucket):
             + "/"
         )
         logger.debug("prd_prefix: %s", prd_prefix)
-        return super()._download_prd(prd_prefix, out_dirpath, request_payer=True, filter_band=filter_band)
+        return super()._download_prd(prd_prefix, out_dirpath, request_payer=True, filter_bands=filter_bands)
 
 
 class AWSCopDEMBucket(AWSEOBucket):

@@ -115,7 +115,7 @@ class EOBucket:
         return f"s3://{self._bucket_name}"
 
     def _download_prd(
-        self, prd_prefix: str, out_dirpath: Path, request_payer: bool = False, filter_band:str = None
+        self, prd_prefix: str, out_dirpath: Path, request_payer: bool = False, filter_bands:list = None
     ) -> None:
         """Download product from object storage
 
@@ -136,7 +136,14 @@ class EOBucket:
         )
 
         for obj in response["Contents"]:
-            if filter_band is None or filter_band in obj["Key"]:
+            # Should we use select this object?
+            is_selected = filter_bands is None
+            if filter_bands is not None:
+                for filter_band in filter_bands:
+                    if filter_band in obj["Key"]:
+                        is_selected = True
+
+            if is_selected:
                 logger.debug("obj.key: %s", obj["Key"])
                 filename = obj["Key"].split(
                     sep="/", maxsplit=len(prd_prefix.split("/")) - 1
