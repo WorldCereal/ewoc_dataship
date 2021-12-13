@@ -132,6 +132,7 @@ class EOBucket:
             prd_prefix (str): prd key prefix
             out_dirpath (Path): directory where to write the objects of the product
             request_payer (bool): requester activation
+            filter_bands (list): Applies a filter on which bands to download
         """
         extra_args = None
         request_payer_arg = str()

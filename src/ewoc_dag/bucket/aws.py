@@ -239,6 +239,13 @@ class AWSS2L8C2Bucket(AWSEOBucket):
     def download_prd(
         self, prd_id: str, out_dirpath_root: Path = Path(gettempdir()), filter_bands: list = None
     ) -> None:
+        """Download product from object storage
+
+        Args:
+            prd_prefix (str): prd key prefix
+            out_dirpath (Path): directory where to write the objects of the product
+            filter_bands (list): Applies a filter on which bands to download
+        """
         # TODO add mask only mode
         # TODO support level 1? support other collections?
         out_dirpath = out_dirpath_root / prd_id.split(".")[0]
