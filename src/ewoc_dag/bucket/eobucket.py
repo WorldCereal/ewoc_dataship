@@ -124,7 +124,7 @@ class EOBucket:
         prd_prefix: str,
         out_dirpath: Path,
         request_payer: bool = False,
-        filter_bands: list = None,
+        prd_items: List[str] = None,
     ) -> None:
         """Download product from object storage
 
@@ -132,7 +132,7 @@ class EOBucket:
             prd_prefix (str): prd key prefix
             out_dirpath (Path): directory where to write the objects of the product
             request_payer (bool): requester activation
-            filter_bands (list): Applies a filter on which bands to download
+            prd_items (List[str]): Applies a filter on which bands to download
         """
         extra_args = None
         request_payer_arg = str()
@@ -147,9 +147,9 @@ class EOBucket:
 
         for obj in response["Contents"]:
             # Should we use select this object?
-            is_selected = filter_bands is None
-            if filter_bands is not None:
-                for filter_band in filter_bands:
+            is_selected = prd_items is None
+            if prd_items is not None:
+                for filter_band in prd_items:
                     if filter_band in obj["Key"]:
                         is_selected = True
 
