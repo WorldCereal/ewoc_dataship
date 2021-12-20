@@ -3,6 +3,7 @@
 """
 import logging
 from pathlib import Path
+from typing import List
 
 import boto3
 from botocore.exceptions import ClientError
