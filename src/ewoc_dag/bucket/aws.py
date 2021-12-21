@@ -233,6 +233,7 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
 
 class AWSS2L8C2Bucket(AWSEOBucket):
     """Class to handle access to Landsatdata"""
+
     def __init__(self) -> None:
         super().__init__("usgs-landsat")
 
