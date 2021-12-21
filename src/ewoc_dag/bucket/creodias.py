@@ -96,7 +96,7 @@ class CreodiasBucket(EOBucket):
                     Bucket=self._bucket_name, Key=mask_key, Filename=str(mask_filepath)
                 )
             else:
-                logger.warning("Not possible!")
+                logger.error("Not possible to download L2A mask from a L1C product ID!")
 
     def download_srtm1s_tiles(
         self, srtm_tile_ids: List[str], out_dirpath: Path = Path(gettempdir())
