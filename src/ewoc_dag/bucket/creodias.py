@@ -89,9 +89,23 @@ class CreodiasBucket(EOBucket):
             self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
         else:
             if s2_prd_info.product_level == "L2A":
-                # TODO support mask only mode
-                mask_key = prd_prefix + "path/to/mask"
-                mask_filepath = out_dirpath / "mask.tif"
+                # TODO support mask only mode: issue with one item of the mask key
+                logger.error(
+                    "Download S2 L2A SCL mask from Creodias bucket is not currently supported!"
+                )
+                # /GRANULE/L2A_T28WDB_A022744_20210714T131716/IMG_DATA/R20m/T28WDB_20210714T131719_SCL_20m.jp2
+                mask_key_filename = f"T{s2_prd_info.tile_id}_{s2_prd_info.datatake_sensing_start_time}_SCL_20m.jp2"
+                orbit_direction = "A"  # always ascending
+                orbit_number = (
+                    "todo"  # could be found in manifest.safe key= safe:orbitNumber
+                )
+                mask_key = f"{prd_prefix}GRANULE/L2A_T{s2_prd_info.tile_id}_{orbit_direction}{orbit_number}_{s2_prd_info.datatake_sensing_start_time}/IMG_DATA/R20m/{mask_key_filename}"
+                mask_filepath = out_dirpath / mask_key_filename
+                logging.info(
+                    "Try to download %s to %s",
+                    f"{mask_key}",
+                    out_dirpath / mask_key_filename,
+                )
                 self._s3_client.download_file(
                     Bucket=self._bucket_name, Key=mask_key, Filename=str(mask_filepath)
                 )
