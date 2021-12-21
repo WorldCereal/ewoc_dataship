@@ -135,16 +135,21 @@ class EOBucket:
             request_payer (bool): requester activation
             prd_items (List[str]): Applies a filter on which bands to download
         """
+        logger.debug("Product prefix: %s", prd_prefix)
+
         extra_args = None
-        request_payer_arg = str()
         if request_payer is True:
             extra_args = dict(RequestPayer="requester")
-            request_payer_arg = "requester"
-
-        logger.debug("Product prefix: %s", prd_prefix)
-        response = self._s3_client.list_objects_v2(
-            Bucket=self._bucket_name, Prefix=prd_prefix, RequestPayer=request_payer_arg
-        )
+            response = self._s3_client.list_objects_v2(
+                Bucket=self._bucket_name,
+                Prefix=prd_prefix,
+                RequestPayer="requester",
+            )
+        else:
+            response = self._s3_client.list_objects_v2(
+                Bucket=self._bucket_name,
+                Prefix=prd_prefix,
+            )
 
         for obj in response["Contents"]:
             # Should we use select this object?
