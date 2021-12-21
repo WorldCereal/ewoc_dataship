@@ -142,7 +142,7 @@ class EWOCAuxDataBucket(EWOCBucket):
             )
 
             with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
-                srtm_zipfile.extractall(out_dirpath / "srtm1s")
+                srtm_zipfile.extractall(out_dirpath / "srtm3s")
 
             srtm_tile_id_filepath.unlink()
 
