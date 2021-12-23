@@ -57,7 +57,7 @@ def get_srtm_tiles(
     elif source == "ewoc":
         if resolution == "3s":
             logger.info("Use EWoC bucket to retrieve srtm data!")
-            EWOCAuxDataBucket.download_srtm3s_tiles(srtm_tile_ids, out_dir)
+            EWOCAuxDataBucket().download_srtm3s_tiles(srtm_tile_ids, out_dir)
         else:
             raise ValueError(
                 f"Source SRTM{resolution} not available on EWoC Aux Data bucket!"

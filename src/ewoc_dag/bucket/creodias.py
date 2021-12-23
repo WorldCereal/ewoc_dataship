@@ -59,7 +59,7 @@ class CreodiasBucket(EOBucket):
             + prd_id
             + "/"
         )
-        self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
+        self._download_prd(prd_prefix, out_dirpath)
 
     def download_s2_prd(
         self,
@@ -86,7 +86,7 @@ class CreodiasBucket(EOBucket):
             + "/"
         )
         if not l2_mask_only:
-            self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
+            self._download_prd(prd_prefix, out_dirpath)
         else:
             if s2_prd_info.product_level == "L2A":
                 # TODO support mask only mode: issue with one item of the mask key
