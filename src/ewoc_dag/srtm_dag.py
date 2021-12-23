@@ -103,7 +103,7 @@ def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
         srtm_tile_id_filepath.unlink()
 
 
-def get_srtm1s_ids(s2_tile_id: str) -> None:
+def get_srtm1s_ids(s2_tile_id: str) -> List[str]:
     """
     Get srtm 1s id for an S2 tile
     :param s2 tile_id:

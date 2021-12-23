@@ -90,7 +90,7 @@ def get_copdem_tiles(
         raise ValueError(f"Source {copdem_provider} not supported {_COPDEM_SOURCES}!")
 
 
-def get_copdem_ids(s2_tile_id: str) -> None:
+def get_copdem_ids(s2_tile_id: str) -> List[str]:
     """
     Get coptem id for an S2 tile
     :param s2 tile_id:
@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
     _TILE_ID = "31TCJ"
     logger.info(get_copdem_ids(_TILE_ID))
-    logger.info(get_gdal_vrt_files(_TILE_ID))
+    logger.info(get_gdal_vrt_files([_TILE_ID]))
     to_gdal_vrt_input_file_list(get_copdem_ids(_TILE_ID))
     get_copdem_from_s2_tile_id(_TILE_ID, source="aws")
     get_copdem_from_s2_tile_id(

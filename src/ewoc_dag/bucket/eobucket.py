@@ -3,7 +3,7 @@
 """
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
@@ -174,7 +174,7 @@ class EOBucket:
                     ExtraArgs=extra_args,
                 )
 
-    def _upload_file(self, filepath: Path, key: str) -> bool:
+    def _upload_file(self, filepath: Path, key: str) -> int:
         """Upload a object to a bucket
 
         Args:
@@ -201,7 +201,7 @@ class EOBucket:
         return filepath.stat().st_size
 
     def _upload_prd(
-        self, prd_dirpath: Path, object_prefix: str, file_suffix: str = ".tif"
+        self, prd_dirpath: Path, object_prefix: str, file_suffix: Optional[str] = ".tif"
     ):
         """Upload a set of objects from a directory to a bucket
 
