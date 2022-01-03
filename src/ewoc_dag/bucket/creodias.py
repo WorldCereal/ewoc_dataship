@@ -2,15 +2,14 @@
 """ Creodias DIAS bucket management module
 """
 import logging
+import zipfile
 from pathlib import Path
 from tempfile import gettempdir
 from typing import List
-import zipfile
 
+from ewoc_dag.bucket.eobucket import EOBucket
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
-from ewoc_dag.bucket.eobucket import EOBucket
-
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +73,8 @@ class CreodiasBucket(EOBucket):
             out_dirpath (Path, optional): Directory where to write the product.
                 Defaults to Path(gettempdir()).
         """
+        out_dirpath = out_dirpath / prd_id.split(".")[0]
+        out_dirpath.mkdir(exist_ok=True)
         s2_prd_info = S2PrdIdInfo(prd_id)
         s2_bucket_prefix = "Sentinel-2/MSI/"
         prd_prefix = (
