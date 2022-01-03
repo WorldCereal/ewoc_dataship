@@ -8,7 +8,6 @@ from typing import List, Optional
 import boto3
 from botocore.exceptions import ClientError
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -158,8 +157,11 @@ class EOBucket:
                 for filter_band in prd_items:
                     if filter_band in obj["Key"]:
                         is_selected = True
-
-            if is_selected:
+            if obj["Key"].endswith("/"):
+                is_file = False
+            else:
+                is_file = True
+            if is_selected and is_file:
                 logger.debug("obj.key: %s", obj["Key"])
                 filename = obj["Key"].split(
                     sep="/", maxsplit=len(prd_prefix.split("/")) - 1
