@@ -22,7 +22,7 @@ from ewoc_dag.eo_prd_id.ewoc_prd_id import (
 _logger = logging.getLogger(__name__)
 
 
-def split_tile_id(tile_id: str) -> Tuple[str]:
+def split_tile_id(tile_id: str) -> Tuple[str, str, str]:
     """Split the S2 Tile ID into MGRS parts
 
     Args:
