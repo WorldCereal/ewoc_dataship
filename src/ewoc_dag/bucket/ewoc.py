@@ -353,10 +353,6 @@ if __name__ == "__main__":
 
     ewoc_ard_bucket.upload_ard_prd(Path("/tmp/upload_test_dir"), "test_up_dir")
 
-    ewoc_ard_bucket.upload_ard_prd(
-        Path("/tmp/upload_test_dir"), "test_up_dir", file_suffix=None
-    )
-
     ewoc_ard_bucket.sar_to_satio_csv("31TCJ", "0000_0_09112021223005")
     ewoc_ard_bucket.optical_to_satio_csv("31TCJ", "0000_0_09112021223005")
     ewoc_ard_bucket.tir_to_satio_csv("31TCJ", "0000_0_09112021223005")
