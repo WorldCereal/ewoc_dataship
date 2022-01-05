@@ -90,7 +90,7 @@ class CreodiasBucket(EOBucket):
             self._download_prd(prd_prefix, out_dirpath)
         else:
             if s2_prd_info.product_level == "L2A":
-                # TODO support mask only mode: issue with one item of the mask key
+                # TODO support mask only mode: issue with one item of the mask key #51
                 logger.error(
                     "Download S2 L2A SCL mask from Creodias bucket is not currently supported!"
                 )
@@ -154,7 +154,7 @@ class CreodiasBucket(EOBucket):
             out_dirpath (Path, optional): [description]. Defaults to Path(gettempdir()).
             resolution (str, optional): [description]. Defaults to "1s".
         """
-        # TODO support copdem retrieval
+        # TODO support copdem retrieval #52
         raise NotImplementedError("Currently not supported!")
 
 
