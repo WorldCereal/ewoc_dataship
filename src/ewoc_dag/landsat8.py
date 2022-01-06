@@ -2,7 +2,6 @@
 """ DAG for Landsat8 Collection 2 products
 """
 import logging
-import os
 from pathlib import Path
 from tempfile import gettempdir
 
