@@ -12,7 +12,6 @@ from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -98,7 +97,11 @@ class AWSS2Bucket(AWSEOBucket):
         l2a_cogs: bool = False,
     ) -> None:
         out_dirpath = out_dirpath_root / prd_id.split(".")[0]
+        out_prod = out_dirpath / "product"
+        out_tile = out_dirpath / "tile"
         out_dirpath.mkdir(exist_ok=True)
+        out_prod.mkdir(exist_ok=True)
+        out_tile.mkdir(exist_ok=True)
 
         s2_prd_info = S2PrdIdInfo(prd_id)
         prefix_components = [
@@ -178,11 +181,11 @@ class AWSS2Bucket(AWSEOBucket):
                         ExtraArgs=dict(RequestPayer="requester"),
                     )
                 else:
-                    super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
-                    super()._download_prd(tile_prefix, out_dirpath, request_payer=True)
+                    super()._download_prd(prd_prefix, out_prod, request_payer=True)
+                    super()._download_prd(tile_prefix, out_tile, request_payer=True)
             else:
-                super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
-                super()._download_prd(tile_prefix, out_dirpath, request_payer=True)
+                super()._download_prd(prd_prefix, out_tile, request_payer=True)
+                super()._download_prd(tile_prefix, out_prod, request_payer=True)
 
 
 class AWSS2L1CBucket(AWSS2Bucket):
