@@ -27,9 +27,14 @@ jobs:
         pip uninstall ewoc_dag -y --no-input
         pip install build
         pip install pylint
+        pip install mypy
 
     - name: Analysing the code with pylint
       run: pylint --output-format=text $(find -type f -name "*.py" ! -path "**/venv/**")
+
+    - name: Analysing the code with mypy
+      run: mypy src/ --ignore-missing-type-hints
+
 
     - name: Build package
       run: python -m build
