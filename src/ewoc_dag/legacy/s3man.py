@@ -50,31 +50,6 @@ def upload_object(bucket, filepath: Path, object_name: str)-> bool:
     return True
 
 
-def upload_objects(bucket, dirpath: Path, object_prefix:str, file_suffix :str='.tif'):
-    """ Upload a set of objects from a directory to a bucket
-
-    Args:
-        bucket (boto3 bucket): bucket object creates with boto3
-        dirpath (Path): Directory which contains the files to upload
-        object_prefix (str): where to put the objects
-        file_suffix (str, optional): extension use to filter the files in the directory. Defaults to '.tif'.
-
-    Returns:
-        [type]: [description]
-    """
-    filepaths = sorted(dirpath.glob(file_suffix))
-    upload_object_size = 0
-    for filepath in filepaths:
-        upload_object_size += filepath.stat().st_size
-        object_name = object_prefix + '/' + filepath
-        upload_object(bucket, filepath, object_name)
-
-    logging.info('Uploaded %s tif files for a total size of %s.', len(filepaths),
-                                                                  upload_object_size)
-
-    return len(filepaths), upload_object_size
-
-
 def upload_file(s3_client, local_file, bucket, s3_obj):
     try:
         s3_client.upload_file(local_file, bucket, s3_obj)
