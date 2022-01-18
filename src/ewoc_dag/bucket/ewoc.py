@@ -299,14 +299,14 @@ class EWOCARDBucket(EWOCBucket):
         """
         super()._upload_prd(ard_prd_path, ard_prd_prefix)
 
-    def upload_ard_raster(self, ard_raster_path: Path, ard_raster_key: str) -> None:
+    def upload_ard_raster(self, ard_raster_path: Path, ard_raster_key: str) -> int:
         """Upload EWoC ARD raster individually to EWoC ARD bucket
 
         Args:
             ard_raster_path (Path): Path to the ard raster to upload
             ard_raster_key (str): Key where to upload the ard raster
         """
-        super()._upload_file(ard_raster_path, ard_raster_key)
+        return super()._upload_file(ard_raster_path, ard_raster_key)
 
 
 class EWOCPRDBucket(EWOCBucket):
