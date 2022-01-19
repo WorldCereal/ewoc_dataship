@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """ AWS pulic EO data bucket management module
 """
+import json
 import logging
 import os
 from pathlib import Path
+import shutil
 from tempfile import gettempdir
 from typing import List
 
@@ -55,14 +57,31 @@ try to continue with other authentifcation methods!"
 
 
 class AWSS1Bucket(AWSEOBucket):
-    """Class to handle access to Sentinel-1 data"""
+    """Class to handle access to Sentinel-1 data from AWS
+    cf. https://registry.opendata.aws/sentinel-1/
+    """
 
     def __init__(self) -> None:
         super().__init__("sentinel-s1-l1c")
 
     def download_prd(
-        self, prd_id: str, out_dirpath_root: Path = Path(gettempdir())
-    ) -> None:
+        self,
+        prd_id: str,
+        out_dirpath_root: Path = Path(gettempdir()),
+        safe_format: bool = False,
+    ) -> Path:
+        """Download S1 products from AWS open data bucket
+
+        Args:
+            prd_id (str): Sentinel-1 product ID (with or whitout SAFE extension)
+            out_dirpath_root (Path, optional): Directory where to write the product.\
+                 Defaults to Path(gettempdir()).
+            safe_format (bool, optional): Convert to ESA SAFE format. Defaults to False.
+
+        Returns:
+            Path: Directory where product is written. The directory is suffixed by .SAFE\
+                when the safe format option is set to True
+        """
         out_dirpath = out_dirpath_root / prd_id.split(".")[0]
         out_dirpath.mkdir(exist_ok=True)
 
@@ -83,7 +102,38 @@ class AWSS1Bucket(AWSEOBucket):
             + "/"
         )
         logger.debug("prd_prefix: %s", prd_prefix)
-        return super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
+        super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
+
+        if safe_format:
+            return self._to_safe(out_dirpath, prd_id)
+
+        return out_dirpath
+
+    def _to_safe(self, out_dirpath: Path, prd_id: str) -> Path:
+
+        if len(prd_id.split(".")) == 1:
+            safe_prd_id = prd_id + ".SAFE"
+        else:
+            safe_prd_id = prd_id
+
+        out_safe_dirpath = out_dirpath.parent / safe_prd_id
+        out_safe_dirpath.mkdir(exist_ok=True)
+
+        with open(
+            out_dirpath / "productInfo.json", mode="r", encoding="utf8"
+        ) as prd_info_file:
+            prd_info = json.load(prd_info_file)
+
+        for filename_key, filename_value in prd_info["filenameMap"].items():
+            source_filepath = out_dirpath / filename_value
+            target_filepath = out_safe_dirpath / filename_key
+            logger.info("Rename from %s to %s", source_filepath, target_filepath)
+            (target_filepath.parent).mkdir(exist_ok=True, parents=True)
+            (source_filepath).rename(target_filepath)
+
+        shutil.rmtree(out_dirpath)
+
+        return out_safe_dirpath
 
 
 class AWSS2Bucket(AWSEOBucket):
@@ -341,9 +391,12 @@ if __name__ == "__main__":
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    # AWSS1Bucket().download_prd(
-    #     "S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE"
-    # )
+    logger.info(
+        AWSS1Bucket().download_prd(
+            "S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE",
+            safe_format=True,
+        )
+    )
     # AWSS2L1CBucket().download_prd(
     #     "S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE"
     # )
