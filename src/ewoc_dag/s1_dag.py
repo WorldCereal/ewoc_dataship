@@ -33,7 +33,8 @@ def get_s1_product(
     prd_id: str,
     out_root_dirpath: Path = Path(gettempdir()),
     source: str = None,
-    eodag_config_file=None,
+    eodag_config_file: Path = None,
+    safe_format: bool = False,
 ):
     """
     Retrieve Sentinel-1 data via eodag or directly from a object storage
@@ -41,6 +42,7 @@ def get_s1_product(
     :param out_root_dirpath: Ouptut directory
     :param source: Data provider:
     :param eodag_config_file: eodag config file, if None the creds will be selected from env vars
+    :param safe_format: set to output the s1 product with the ESA SAFE format
     """
 
     if source is None:
@@ -64,6 +66,6 @@ def get_s1_product(
         CreodiasBucket().download_s1_prd(prd_id, out_root_dirpath)
     elif s1_provider == "aws":
         logging.info("Use AWS object storage to retrieve S1 product!")
-        AWSS1Bucket().download_prd(prd_id, out_root_dirpath)
+        AWSS1Bucket().download_prd(prd_id, out_root_dirpath, safe_format=safe_format)
     else:
         raise ValueError(f"Source {s1_provider} is not supported")
