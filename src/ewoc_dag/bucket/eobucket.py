@@ -168,13 +168,23 @@ class EOBucket:
                 )[-1]
                 output_filepath = out_dirpath / filename
                 (output_filepath.parent).mkdir(parents=True, exist_ok=True)
-                logging.info("Try to download %s to %s", obj["Key"], output_filepath)
-                self._s3_client.download_file(
-                    Bucket=self._bucket_name,
-                    Key=obj["Key"],
-                    Filename=str(output_filepath),
-                    ExtraArgs=extra_args,
-                )
+                if not output_filepath.exists():
+                    logging.info(
+                        "Try to download from %s to %s", obj["Key"], output_filepath
+                    )
+                    self._s3_client.download_file(
+                        Bucket=self._bucket_name,
+                        Key=obj["Key"],
+                        Filename=str(output_filepath),
+                        ExtraArgs=extra_args,
+                    )
+                    logging.info(
+                        "Download from %s to %s succeed!", obj["Key"], output_filepath
+                    )
+                else:
+                    logging.info(
+                        "%s already available, skip downloading!", output_filepath
+                    )
 
     def _upload_file(self, filepath: Path, key: str) -> int:
         """Upload a object to a bucket
