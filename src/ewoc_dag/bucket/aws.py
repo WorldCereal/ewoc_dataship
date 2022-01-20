@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 """ AWS pulic EO data bucket management module
 """
-import json
 import logging
 import os
 from pathlib import Path
-import shutil
 from tempfile import gettempdir
 from typing import List
+
 
 from ewoc_dag.bucket.eobucket import EOBucket
 from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
+from ewoc_dag.safe_format import aws_to_safe
 
 logger = logging.getLogger(__name__)
 
@@ -105,35 +105,9 @@ class AWSS1Bucket(AWSEOBucket):
         super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
 
         if safe_format:
-            return self._to_safe(out_dirpath, prd_id)
+            return aws_to_safe(out_dirpath, prd_id)
 
         return out_dirpath
-
-    def _to_safe(self, out_dirpath: Path, prd_id: str) -> Path:
-
-        if len(prd_id.split(".")) == 1:
-            safe_prd_id = prd_id + ".SAFE"
-        else:
-            safe_prd_id = prd_id
-
-        out_safe_dirpath = out_dirpath.parent / safe_prd_id
-        out_safe_dirpath.mkdir(exist_ok=True)
-
-        with open(
-            out_dirpath / "productInfo.json", mode="r", encoding="utf8"
-        ) as prd_info_file:
-            prd_info = json.load(prd_info_file)
-
-        for filename_key, filename_value in prd_info["filenameMap"].items():
-            source_filepath = out_dirpath / filename_value
-            target_filepath = out_safe_dirpath / filename_key
-            logger.info("Rename from %s to %s", source_filepath, target_filepath)
-            (target_filepath.parent).mkdir(exist_ok=True, parents=True)
-            (source_filepath).rename(target_filepath)
-
-        shutil.rmtree(out_dirpath)
-
-        return out_safe_dirpath
 
 
 class AWSS2Bucket(AWSEOBucket):
@@ -145,7 +119,7 @@ class AWSS2Bucket(AWSEOBucket):
         out_dirpath_root: Path,
         l2_mask_only: bool = False,
         l2a_cogs: bool = False,
-    ) -> None:
+    ) -> Path:
         out_dirpath = out_dirpath_root / prd_id.split(".")[0]
         out_prod = out_dirpath / "product"
         out_tile = out_dirpath / "tile"
@@ -236,6 +210,7 @@ class AWSS2Bucket(AWSEOBucket):
             else:
                 super()._download_prd(prd_prefix, out_tile, request_payer=True)
                 super()._download_prd(tile_prefix, out_prod, request_payer=True)
+        return out_dirpath
 
 
 class AWSS2L1CBucket(AWSS2Bucket):
@@ -245,9 +220,19 @@ class AWSS2L1CBucket(AWSS2Bucket):
         super().__init__("sentinel-s2-l1c")
 
     def download_prd(
-        self, prd_id: str, out_dirpath_root: Path = Path(gettempdir())
+        self,
+        prd_id: str,
+        out_dirpath_root: Path = Path(gettempdir()),
+        safe_format=False,
     ) -> None:
-        return super()._download_s2_prd(prd_id, out_dirpath_root)
+
+        out_dirpath = super()._download_s2_prd(prd_id, out_dirpath_root)
+
+        safe_format = True
+        if safe_format:
+            return aws_to_safe(out_dirpath, prd_id)
+
+        return out_dirpath
 
 
 class AWSS2L2ABucket(AWSS2Bucket):
@@ -391,15 +376,15 @@ if __name__ == "__main__":
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    logger.info(
-        AWSS1Bucket().download_prd(
-            "S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE",
-            safe_format=True,
-        )
-    )
-    # AWSS2L1CBucket().download_prd(
-    #     "S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE"
+    # logger.info(
+    #     AWSS1Bucket().download_prd(
+    #         "S1B_IW_GRDH_1SSH_20210714T083244_20210714T083309_027787_0350EB_E62C.SAFE",
+    #         safe_format=True,
+    #     )
     # )
+    AWSS2L1CBucket().download_prd(
+        "S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE"
+    )
     # AWSS2L2ABucket().download_prd(
     #     "S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE"
     # )

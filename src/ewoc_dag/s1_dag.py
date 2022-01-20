@@ -19,7 +19,7 @@ def get_s1_default_provider() -> str:
     """Return the default provider according the computation of two env variables:
         - EWOC_CLOUD_PROVIDER
         - EWOC_S1_PROVIDER
-    The first superseed the second one
+    The first superseed the second one. By default the source used is EODAG.
 
     Returns:
         str: s1 data provider
@@ -35,14 +35,24 @@ def get_s1_product(
     source: str = None,
     eodag_config_file: Path = None,
     safe_format: bool = False,
-):
-    """
-    Retrieve Sentinel-1 data via eodag or directly from a object storage
-    :param prd_id: ex. S1B_IW_GRDH_1SDV_20200510T092220_20200510T092245_021517_028DAB_A416
-    :param out_root_dirpath: Ouptut directory
-    :param source: Data provider:
-    :param eodag_config_file: eodag config file, if None the creds will be selected from env vars
-    :param safe_format: set to output the s1 product with the ESA SAFE format
+) -> None:
+    """Retrieve Sentinel-1 product according to the product id and the source
+
+    Args:
+        prd_id (str): Sentinel-1 product ID
+        out_root_dirpath (Path, optional): Path where to write the S2 product.
+         Defaults to Path(gettempdir()).
+        source (str, optional): Source used to retrieve the S1 product.
+         Defaults to None.
+         If None, the source is computed thanks to get_s1_default_provider method
+        eodag_config_file (Path, optional): Path to the EODAG config file.
+         Defaults to None.
+        safe_format (bool, optional): Translate from format used in AWS bucket to SAFE format.
+         Used only with AWS source.
+         Defaults to False.
+
+    Raises:
+        ValueError: if the source is not supported
     """
 
     if source is None:
