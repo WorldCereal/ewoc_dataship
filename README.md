@@ -83,9 +83,9 @@ Two cli are provided:
 If you want to acess to EO data from other python code you can use directly the get functions in the python module. For example:
 
 ```python
-from ewoc_dag.landsat8 import get_l8_product
+from ewoc_dag.landsat8 import get_l8c2l2_product
 
-get_l8_product('l8_c2l2_prd_id')
+get_l8c2l2_product('l8_c2l2_prd_id')
 ```
 
 :grey_exclamation: Don't forget to set crendentials associated to the provider used.

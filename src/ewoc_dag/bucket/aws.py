@@ -328,7 +328,7 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
         )
 
 
-class AWSS2L8C2Bucket(AWSEOBucket):
+class AWSL8C2L2Bucket(AWSEOBucket):
     """Class to handle access to Landsat 8 Collection 2 Level 2 data
     from AWS open data bucket: https://registry.opendata.aws/usgs-landsat/"""
 

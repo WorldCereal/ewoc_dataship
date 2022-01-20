@@ -6,7 +6,7 @@ from pathlib import Path
 from tempfile import gettempdir
 
 
-from ewoc_dag.bucket.aws import AWSS2L8C2Bucket
+from ewoc_dag.bucket.aws import AWSL8C2L2Bucket
 from ewoc_dag.eodag_utils import get_product_by_id
 
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 _L8C2_SOURCES = ["eodag", "aws"]
 
 
-def get_l8_product(
+def get_l8c2l2_product(
     prd_id: str,
     out_root_dirpath: Path = Path(gettempdir()),
     source: str = _L8C2_SOURCES[1],
@@ -43,7 +43,7 @@ def get_l8_product(
         )
     elif source == _L8C2_SOURCES[1]:
         logging.info("Use AWS to retrieve Landsat 8 L2 C2 product!")
-        out_prd_path = AWSS2L8C2Bucket().download_prd(prd_id, out_root_dirpath)
+        out_prd_path = AWSL8C2L2Bucket().download_prd(prd_id, out_root_dirpath)
     else:
         raise ValueError(f"Source {source} is not supported: not in {_L8C2_SOURCES}")
 
