@@ -11,7 +11,7 @@ from ewoc_dag import __version__
 from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
-from ewoc_dag.landsat8 import get_l8_product
+from ewoc_dag.landsat8 import get_l8c2l2_product, _L8C2_SOURCES
 from ewoc_dag.s1_dag import get_s1_product
 from ewoc_dag.s2_dag import get_s2_product
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 def get_eo_data(
     prd_id: str,
     out_dirpath: Path = Path(gettempdir()),
-    eo_data_source: str = "creodias",
+    eo_data_source: str = "eodag",
     eodata_config_filepath: Path = None,
     only_l2a_mask: bool = False,
     use_s2_cogs: bool = False,
@@ -43,12 +43,11 @@ def get_eo_data(
         use_s2_cogs (bool, optional): Force to use Sentinel-2 L2A COGS bucket. Defaults to False.
     """
     if L8C2PrdIdInfo.is_valid(prd_id):
-        get_l8_product(
+        get_l8c2l2_product(
             prd_id,
             out_dirpath,
-            source=eo_data_source,
+            source=_L8C2_SOURCES[1],
             eodag_config_file=eodata_config_filepath,
-            l2_mask_only=only_l2a_mask,
         )
     elif S1PrdIdInfo.is_valid(prd_id):
         get_s1_product(
@@ -103,7 +102,7 @@ def parse_args(args):
         dest="data_source",
         help="Source of the EO data",
         type=str,
-        default="creodias",
+        default="eodag",
     )
     parser.add_argument(
         "-v",

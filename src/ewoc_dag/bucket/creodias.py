@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class CreodiasBucket(EOBucket):
-    """Class to describe the access (download, upload and list)
-    to the DIAS bucket on Creodias."""
+    """Class to handle access to Sentinel-1 data from Creodias DIAS bucket.
+    cf https://creodias.eu/faq-s3 for more information"""
 
     _CREODIAS_BUCKET_FORMAT_PREFIX = "/%Y/%m/%d/"
 
@@ -40,13 +40,18 @@ class CreodiasBucket(EOBucket):
 
     def download_s1_prd(
         self, prd_id: str, out_dirpath: Path = Path(gettempdir())
-    ) -> None:
+    ) -> Path:
         """Download Sentinel-1 product from DIAS bucket
 
         Args:
             prd_id (str): Sentinel-1 product id
-            out_dirpath (Path, optional): Directory where to put the product
+            out_dirpath (Path, optional): Path where to write the product
+
+        Returns:
+            Path: Path to the S1 product
         """
+        out_dirpath = out_dirpath / prd_id.split(".")[0]
+        out_dirpath.mkdir(exist_ok=True)
         s1_prd_info = S1PrdIdInfo(prd_id)
         s1_bucket_prefix = "Sentinel-1/SAR/"
         prd_prefix = (
@@ -59,19 +64,25 @@ class CreodiasBucket(EOBucket):
             + "/"
         )
         self._download_prd(prd_prefix, out_dirpath)
+        return out_dirpath
 
     def download_s2_prd(
         self,
         prd_id: str,
         out_dirpath: Path = Path(gettempdir()),
         l2_mask_only: bool = False,
-    ) -> None:
+    ) -> Path:
         """Download Sentinel-2 product from DIAS bucket
 
         Args:
             prd_id (str): Sentinel-2 product id
-            out_dirpath (Path, optional): Directory where to write the product.
-                Defaults to Path(gettempdir()).
+            out_dirpath (Path, optional): Path where to write the product.
+             Defaults to Path(gettempdir()).
+            l2_mask_only (bool, optional): Retrieve only the mask from the product.
+             Defaults to False.
+             Used only for L2 product
+        Returns:
+            Path: Path to the S2 product
         """
         out_dirpath = out_dirpath / prd_id.split(".")[0]
         out_dirpath.mkdir(exist_ok=True)
@@ -112,6 +123,8 @@ class CreodiasBucket(EOBucket):
                 )
             else:
                 logger.error("Not possible to download L2A mask from a L1C product ID!")
+
+        return out_dirpath
 
     def download_srtm1s_tiles(
         self, srtm_tile_ids: List[str], out_dirpath: Path = Path(gettempdir())

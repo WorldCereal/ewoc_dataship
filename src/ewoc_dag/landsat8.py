@@ -4,9 +4,10 @@
 import logging
 from pathlib import Path
 from tempfile import gettempdir
+from typing import List
 
 
-from ewoc_dag.bucket.aws import AWSS2L8C2Bucket
+from ewoc_dag.bucket.aws import AWSL8C2L2Bucket
 from ewoc_dag.eodag_utils import get_product_by_id
 
 
@@ -15,13 +16,13 @@ logger = logging.getLogger(__name__)
 _L8C2_SOURCES = ["eodag", "aws"]
 
 
-def get_l8_product(
+def get_l8c2l2_product(
     prd_id: str,
     out_root_dirpath: Path = Path(gettempdir()),
-    source: str = "aws",
+    source: str = _L8C2_SOURCES[1],
     eodag_config_file: Path = None,
-    l2_mask_only: bool = False,
-) -> None:
+    prd_items: List[str] = False,
+) -> Path:
     """
     Retrieve Landsat 8 L2 C2 product via eodag or directly from a object storage
     :param product_id: Landsat 8 L2 C2 product id
@@ -34,7 +35,7 @@ def get_l8_product(
         logging.info("Use EODAG to retrieve Landsat 8 L2 C2 product!")
         if l2_mask_only:
             logger.warning("EODAG does not support to retrieve l2 mask only!")
-        get_product_by_id(
+        out_prd_path = get_product_by_id(
             prd_id,
             out_root_dirpath,
             provider="usgs",  # TODO Keep manage EODAG
@@ -43,9 +44,11 @@ def get_l8_product(
         )
     elif source == _L8C2_SOURCES[1]:
         logging.info("Use AWS to retrieve Landsat 8 L2 C2 product!")
-        AWSS2L8C2Bucket().download_prd(prd_id, out_root_dirpath)
+        out_prd_path = AWSL8C2L2Bucket().download_prd(prd_id, out_root_dirpath)
     else:
         raise ValueError(f"Source {source} is not supported: not in {_L8C2_SOURCES}")
+
+    return out_prd_path
 
 
 if __name__ == "__main__":
