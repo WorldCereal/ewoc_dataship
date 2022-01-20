@@ -35,7 +35,7 @@ def get_s1_product(
     source: str = None,
     eodag_config_file: Path = None,
     safe_format: bool = False,
-) -> None:
+) -> Path:
     """Retrieve Sentinel-1 product according to the product id and the source
 
     Args:
