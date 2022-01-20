@@ -28,6 +28,9 @@ jobs:
         pip install build
         pip install pylint
         pip install mypy
+        pip install boto3-stubs
+        pip install pandas-stubs
+        pip install types-requests
 
     - name: Analysing the code with pylint
       run: pylint --output-format=text $(find -type f -name "*.py" ! -path "**/venv/**")
