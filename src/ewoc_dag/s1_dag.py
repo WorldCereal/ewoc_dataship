@@ -40,7 +40,7 @@ def get_s1_product(
 
     Args:
         prd_id (str): Sentinel-1 product ID
-        out_root_dirpath (Path, optional): Path where to write the S2 product.
+        out_root_dirpath (Path, optional): Path where to write the S1 product.
          Defaults to Path(gettempdir()).
         source (str, optional): Source used to retrieve the S1 product.
          Defaults to None.

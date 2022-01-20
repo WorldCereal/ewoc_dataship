@@ -4,6 +4,7 @@
 import logging
 from pathlib import Path
 from tempfile import gettempdir
+from typing import List
 
 
 from ewoc_dag.bucket.aws import AWSL8C2L2Bucket
@@ -20,7 +21,7 @@ def get_l8c2l2_product(
     out_root_dirpath: Path = Path(gettempdir()),
     source: str = _L8C2_SOURCES[1],
     eodag_config_file: Path = None,
-    l2_mask_only: bool = False,
+    prd_items: List[str] = False,
 ) -> Path:
     """
     Retrieve Landsat 8 L2 C2 product via eodag or directly from a object storage
