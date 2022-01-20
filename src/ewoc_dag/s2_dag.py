@@ -20,7 +20,7 @@ def get_s2_default_provider() -> str:
     """Return the default provider according the computation of two env variables:
         - EWOC_CLOUD_PROVIDER
         - EWOC_S2_PROVIDER
-    The first superseed the second one
+    The first superseed the second one. By default the source used is EODAG.
 
     Returns:
         str: s2 data provider
@@ -45,7 +45,9 @@ def get_s2_product(
         prd_id (str): Sentinel-2 product ID
         out_root_dirpath (Path, optional): Path where to write the S2 product.
          Defaults to Path(gettempdir()).
-        source (str, optional): Source used to retrieve the S2 product. Defaults to None.
+        source (str, optional): Source used to retrieve the S2 product.
+         Defaults to None.
+         If None, the source is computed thanks to get_s2_default_provider method
         eodag_config_file (Path, optional): Path to the EODAG config file. Defaults to None.
         l2_mask_only (bool, optional): Retrieve the L2 mask only. Defaults to False.
         aws_l2a_cogs (bool, optional): Use the AWS L2A COGS bucket. Defaults to True.
