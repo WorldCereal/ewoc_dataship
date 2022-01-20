@@ -18,7 +18,7 @@ _L8C2_SOURCES = ["eodag", "aws"]
 def get_l8_product(
     prd_id: str,
     out_root_dirpath: Path = Path(gettempdir()),
-    source: str = "aws",
+    source: str = _L8C2_SOURCES[1],
     eodag_config_file: Path = None,
     l2_mask_only: bool = False,
 ) -> None:

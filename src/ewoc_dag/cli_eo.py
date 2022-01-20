@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 def get_eo_data(
     prd_id: str,
     out_dirpath: Path = Path(gettempdir()),
-    eo_data_source: str = "creodias",
+    eo_data_source: str = "eodag",
     eodata_config_filepath: Path = None,
     only_l2a_mask: bool = False,
     use_s2_cogs: bool = False,
@@ -103,7 +103,7 @@ def parse_args(args):
         dest="data_source",
         help="Source of the EO data",
         type=str,
-        default="creodias",
+        default="eodag",
     )
     parser.add_argument(
         "-v",

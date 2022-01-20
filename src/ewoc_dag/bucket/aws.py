@@ -57,8 +57,8 @@ try to continue with other authentifcation methods!"
 
 
 class AWSS1Bucket(AWSEOBucket):
-    """Class to handle access to Sentinel-1 data from AWS
-    cf. https://registry.opendata.aws/sentinel-1/
+    """Class to handle access to Sentinel-1 data from AWS open data bucket:
+    https://registry.opendata.aws/sentinel-1/
     """
 
     def __init__(self) -> None:
@@ -70,7 +70,7 @@ class AWSS1Bucket(AWSEOBucket):
         out_dirpath_root: Path = Path(gettempdir()),
         safe_format: bool = False,
     ) -> Path:
-        """Download S1 products from AWS open data bucket
+        """Download S1 products from AWS open data bucket: https://registry.opendata.aws/sentinel-1/
 
         Args:
             prd_id (str): Sentinel-1 product ID (with or whitout SAFE extension)
@@ -111,15 +111,35 @@ class AWSS1Bucket(AWSEOBucket):
 
 
 class AWSS2Bucket(AWSEOBucket):
-    """Base class to handle access to Sentinel-2 data"""
+    """Class to handle access to Sentinel-2 data from AWS open data buckets:
+    - https://registry.opendata.aws/sentinel-2/ for L1C and L2A data
+    - https://registry.opendata.aws/sentinel-2-l2a-cogs/ for L2A data
+    """
 
     def _download_s2_prd(
         self,
         prd_id: str,
-        out_dirpath_root: Path,
+        out_dirpath_root: Path = Path(gettempdir()),
         l2_mask_only: bool = False,
         l2a_cogs: bool = False,
     ) -> Path:
+        """Download S2 product according to the product ID from the AWS buckets:
+            - https://registry.opendata.aws/sentinel-2/ for L1C and L2A data
+            - https://registry.opendata.aws/sentinel-2-l2a-cogs/ for L2A data
+
+        Args:
+            prd_id (str): Sentinel-2 product ID
+            out_dirpath_root (Path, optional): Path where to write the product.
+             Defaults to Path(gettempdir()).
+            l2_mask_only (bool, optional): Retrieve only the mask from the product.
+             Defaults to False.
+             Used only for L2 product
+            l2a_cogs (bool, optional): Use AWS bucket which provided COG products.
+             Defaults to False.
+
+        Returns:
+            Path: Path to the S2 product
+        """
         out_dirpath = out_dirpath_root / prd_id.split(".")[0]
         out_prod = out_dirpath / "product"
         out_tile = out_dirpath / "tile"
@@ -214,7 +234,8 @@ class AWSS2Bucket(AWSEOBucket):
 
 
 class AWSS2L1CBucket(AWSS2Bucket):
-    """Class to handle access to Sentinel-2 L1C data"""
+    """Class to handle access to Sentinel-2 L1C data from AWS open data
+    bucket: https://registry.opendata.aws/sentinel-2/"""
 
     def __init__(self) -> None:
         super().__init__("sentinel-s2-l1c")
@@ -224,7 +245,19 @@ class AWSS2L1CBucket(AWSS2Bucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         safe_format=False,
-    ) -> None:
+    ) -> Path:
+        """Download S2 L1C product according to the product ID from the
+         bucket: https://registry.opendata.aws/sentinel-2/
+
+        Args:
+            prd_id (str): Sentinel-2 L1C product ID
+            out_dirpath_root (Path, optional): Path where to write the product.
+             Defaults to Path(gettempdir()).
+            safe_format (bool, optional): Translate to SAFE format. Defaults to False.
+
+        Returns:
+            Path: Path to the Sentinel-2 L1C product
+        """
 
         out_dirpath = super()._download_s2_prd(prd_id, out_dirpath_root)
 
@@ -236,7 +269,8 @@ class AWSS2L1CBucket(AWSS2Bucket):
 
 
 class AWSS2L2ABucket(AWSS2Bucket):
-    """Class to handle access to Sentinel-2 L2A data"""
+    """Class to handle access to Sentinel-2 L2A data from AWS open data
+    bucket: https://registry.opendata.aws/sentinel-2/"""
 
     def __init__(self) -> None:
         super().__init__("sentinel-s2-l2a")
@@ -246,14 +280,27 @@ class AWSS2L2ABucket(AWSS2Bucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         l2a_mask_only: bool = False,
-    ) -> None:
+    ) -> Path:
+        """Download S2 L2A product according to the product ID from the
+         bucket: https://registry.opendata.aws/sentinel-2/
+
+        Args:
+            prd_id (str): Sentinel-2 L2A product ID
+            out_dirpath_root (Path, optional): Path where to write the product.
+             Defaults to Path(gettempdir()).
+            l2a_mask_only (bool, optional): Retrieve only the L2A mask. Defaults to False.
+
+        Returns:
+            Path:  Path to the Sentinel-2 L2A product
+        """
         return super()._download_s2_prd(
             prd_id, out_dirpath_root, l2_mask_only=l2a_mask_only
         )
 
 
 class AWSS2L2ACOGSBucket(AWSS2Bucket):
-    """Class to handle access to Sentinel-2 L2A COG data"""
+    """Class to handle access to Sentinel-2 L2A data from AWS open data
+    bucket: https://registry.opendata.aws/sentinel-2-l2a-cogs/"""
 
     def __init__(self) -> None:
         super().__init__("sentinel-cogs")
@@ -263,14 +310,27 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         l2a_mask_only: bool = False,
-    ) -> None:
+    ) -> Path:
+        """Download S2 L2A product according to the product ID from the
+         bucket: https://registry.opendata.aws/sentinel-2-l2a-cogs/
+
+        Args:
+            prd_id (str): Sentinel-2 L2A product ID
+            out_dirpath_root (Path, optional): Path where to write the product.
+             Defaults to Path(gettempdir()).
+            l2a_mask_only (bool, optional): Retrieve only the L2A mask. Defaults to False.
+
+        Returns:
+            Path: Path to the Sentinel-2 L2A product
+        """
         return super()._download_s2_prd(
             prd_id, out_dirpath_root, l2_mask_only=l2a_mask_only, l2a_cogs=True
         )
 
 
 class AWSS2L8C2Bucket(AWSEOBucket):
-    """Class to handle access to Landsatdata"""
+    """Class to handle access to Landsat 8 Collection 2 Level 2 data
+    from AWS open data bucket: https://registry.opendata.aws/usgs-landsat/"""
 
     def __init__(self) -> None:
         super().__init__("usgs-landsat")
@@ -280,13 +340,18 @@ class AWSS2L8C2Bucket(AWSEOBucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         prd_items: List[str] = None,
-    ) -> None:
-        """Download product from object storage
+    ) -> Path:
+        """Download Landsat 8 Collection 2 Level 2 product according to the product ID
+         from the bucket: https://registry.opendata.aws/usgs-landsat/
 
         Args:
-            prd_prefix (str): prd key prefix
-            out_dirpath (Path): directory where to write the objects of the product
-            prd_items (List[str]): Applies a filter on which bands to download
+            prd_id (str): Landsat 8 Collection 2 Level 2 product ID
+            out_dirpath_root (Path, optional): Path where to write the product.
+             Defaults to Path(gettempdir()).
+            prd_items (List[str], optional): List of product items to download. Defaults to None.
+
+        Returns:
+            Path: Path to the Landsat 8 Collection 2 Level 2 product
         """
 
         out_dirpath = out_dirpath_root / prd_id.split(".")[0]
@@ -310,9 +375,11 @@ class AWSS2L8C2Bucket(AWSEOBucket):
             + "/"
         )
         logger.debug("prd_prefix: %s", prd_prefix)
-        return super()._download_prd(
+        super()._download_prd(
             prd_prefix, out_dirpath, request_payer=True, prd_items=prd_items
         )
+
+        return out_dirpath
 
 
 class AWSCopDEMBucket(AWSEOBucket):
