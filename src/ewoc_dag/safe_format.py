@@ -5,6 +5,7 @@ import logging
 import json
 from pathlib import Path
 import shutil
+from typing import List, Dict
 import xml.etree.ElementTree as ET
 
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
@@ -83,7 +84,7 @@ def aws_s1_to_safe(
 
 def aws_s2_l1c_to_safe(
     out_dirpath: Path,
-    out_safe_dirpath: Path = None,
+    out_safe_dirpath: Path,
 ) -> Path:
     """Translate from AWS S2 L1C format to SAFE format
 
@@ -100,10 +101,20 @@ def aws_s2_l1c_to_safe(
 
     # Parse the manifest
 
-    safe_struct = {"DATASTRIP": [], "GRANULE": [], "root": [], "HTML": []}
+    safe_struct: Dict["str", List[Path]] = {
+        "DATASTRIP": [],
+        "GRANULE": [],
+        "root": [],
+        "HTML": [],
+    }
 
     for file_loc in ET.parse(manifest_safe).getroot().findall(".//fileLocation"):
-        loc = Path(file_loc.get("href"))
+
+        loc_elt = file_loc.get("href")
+        if loc_elt is None:
+            raise ValueError("No href key in manifest.safe")
+
+        loc = Path(loc_elt)
         loc_parts = loc.parts
         if len(loc_parts) == 1:
             safe_struct["root"].append(loc)

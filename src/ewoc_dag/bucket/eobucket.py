@@ -18,7 +18,8 @@ class UploadFileError(Exception):
         self.filepath = filepath
         self.bucket_name = bucket_name
         self.key = key
-        super().__init__(client_error.response["Error"]["Message"])
+        self.message = client_error.response["Error"]["Message"]
+        super().__init__(self.message)
 
     def __str__(self):
         return f"{self.filepath} is not uploaded to {self.bucket_name} at {self.key}!"
