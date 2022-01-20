@@ -58,7 +58,9 @@ def get_l8c2l2_product(
         )
     elif source == _L8C2_SOURCES[1]:
         _logger.info("Use AWS to retrieve Landsat 8 L2 C2 product!")
-        out_prd_path = AWSL8C2L2Bucket().download_prd(prd_id, out_root_dirpath)
+        out_prd_path = AWSL8C2L2Bucket().download_prd(
+            prd_id, out_root_dirpath, prd_items=prd_items
+        )
     else:
         raise ValueError(f"Source {source} is not supported: not in {_L8C2_SOURCES}")
 
