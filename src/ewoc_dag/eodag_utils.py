@@ -38,9 +38,11 @@ def get_product_by_id(
     if not products:
         logging.error("No results return by eodag!")
         raise ValueError
-    dag.download(products[0], outputs_prefix=out_dir)
+    out_prd_path = dag.download(products[0], outputs_prefix=out_dir)
     # delete zip file
     list_out = os.listdir(out_dir)
     for item in list_out:
         if product_id in item and item.endswith("zip"):
             os.remove(os.path.join(out_dir, item))
+
+    return out_prd_path

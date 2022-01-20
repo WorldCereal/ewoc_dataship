@@ -38,7 +38,7 @@ def get_s2_product(
     l2_mask_only: bool = False,
     aws_l2a_cogs: bool = True,
     aws_l1c_safe: bool = False,
-) -> None:
+) -> Path:
     """Retrieve Sentinel-2 product according to the product id and the source
 
     Args:
@@ -54,6 +54,9 @@ def get_s2_product(
         aws_l1c_safe (bool, optional): Translate from L1C format used in AWS bucket to SAFE format.
          Used only with AWS source
          Defaults to False.
+
+    Returns:
+        Path: Path to the S2 product
 
     Raises:
         ValueError: if the source is not supported
@@ -73,7 +76,7 @@ def get_s2_product(
                 logger.error("EODAG does not support to retrieve l2a mask only")
 
             product_type = "S2_MSI_L2A"
-        get_product_by_id(
+        out_prd_path = get_product_by_id(
             prd_id,
             out_root_dirpath,
             provider="creodias",  # TODO keep eodag manage
@@ -82,24 +85,24 @@ def get_s2_product(
         )
     elif s2_provider == "creodias":
         logging.info("Use CREODIAS object storage to retrieve Sentinel-2 product!")
-        CreodiasBucket().download_s2_prd(
+        out_prd_path = CreodiasBucket().download_s2_prd(
             prd_id, out_root_dirpath, l2_mask_only=l2_mask_only
         )
     elif s2_provider == "aws":
         logging.info("Use AWS object storage to retrieve Sentinel-2 product!")
         if S2PrdIdInfo.is_l1c(prd_id):
-            AWSS2L1CBucket().download_prd(
+            out_prd_path = AWSS2L1CBucket().download_prd(
                 prd_id, out_root_dirpath, safe_format=aws_l1c_safe
             )
         else:
             if aws_l2a_cogs:
-                AWSS2L2ACOGSBucket().download_prd(
+                out_prd_path = AWSS2L2ACOGSBucket().download_prd(
                     prd_id,
                     out_dirpath_root=out_root_dirpath,
                     l2a_mask_only=l2_mask_only,
                 )
             else:
-                AWSS2L2ABucket().download_prd(
+                out_prd_path = AWSS2L2ABucket().download_prd(
                     prd_id,
                     out_dirpath_root=out_root_dirpath,
                     l2a_mask_only=l2_mask_only,
@@ -107,6 +110,8 @@ def get_s2_product(
 
     else:
         raise ValueError(f"Source {s2_provider} is not supported")
+
+    return out_prd_path
 
 
 if __name__ == "__main__":
