@@ -12,7 +12,7 @@ from ewoc_dag.bucket.eobucket import EOBucket
 from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
-from ewoc_dag.safe_format import aws_s1_to_safe, aws_s2_l1c_to_safe
+from ewoc_dag.safe_format import aws_to_safe
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ class AWSS1Bucket(AWSEOBucket):
         super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
 
         if safe_format:
-            return aws_s1_to_safe(out_dirpath, prd_id)
+            return aws_to_safe(out_dirpath, prd_id)
 
         return out_dirpath
 
@@ -230,7 +230,7 @@ class AWSS2L1CBucket(AWSS2Bucket):
 
         safe_format = True
         if safe_format:
-            return aws_s2_l1c_to_safe(out_dirpath, prd_id)
+            return aws_to_safe(out_dirpath, prd_id)
 
         return out_dirpath
 

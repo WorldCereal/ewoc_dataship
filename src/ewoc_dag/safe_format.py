@@ -7,19 +7,65 @@ from pathlib import Path
 import shutil
 import xml.etree.ElementTree as ET
 
+from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
+from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
+
 logger = logging.getLogger(__name__)
 
 
-def aws_s1_to_safe(out_dirpath: Path, prd_id: str) -> Path:
+def aws_to_safe(
+    out_dirpath: Path,
+    prd_id: str,
+    out_safe_dirroot: Path = None,
+) -> Path:
+    """Translate from format used by some AWS buckets to SAFE format
+
+
+    Args:
+        out_dirpath (Path): Path to the AWS product
+        prd_id (str): Product ID
+        out_safe_dirroot (Path, optional): Path where to write the SAFE product.
+            Defaults to None.
+            If None, the product will be written side by side of the original one.
+    Returns:
+        Path: Path to the SAFE product directory
+    """
 
     if prd_id.endswith(".SAFE"):
         safe_prd_id = prd_id
     else:
         safe_prd_id = prd_id + ".SAFE"
 
-    out_safe_dirpath = out_dirpath.parent / safe_prd_id
+    if out_safe_dirroot is None:
+        out_safe_dirpath = out_dirpath.parent / safe_prd_id
+    else:
+        out_safe_dirpath = out_safe_dirroot / safe_prd_id
     out_safe_dirpath.mkdir(exist_ok=True)
 
+    if S1PrdIdInfo.is_valid(prd_id):
+        out_safe_dirpath = aws_s1_to_safe(out_dirpath, out_safe_dirpath)
+    elif S2PrdIdInfo.is_valid(prd_id) and S2PrdIdInfo.is_l1c(prd_id):
+        out_safe_dirpath = aws_s2_l1c_to_safe(out_dirpath, out_safe_dirpath)
+    else:
+        raise ValueError("Product ID not supported!")
+
+    shutil.rmtree(out_dirpath)
+
+    return out_safe_dirpath
+
+
+def aws_s1_to_safe(
+    out_dirpath: Path,
+    out_safe_dirpath: Path,
+) -> Path:
+    """Translate from AWS S1 product format to SAFE format
+
+    Args:
+        out_dirpath (Path): Path to the AWS S1 product
+        out_safe_dirroot (Path): Path where to write the S1 SAFE product.
+    Returns:
+        Path: Path to the S1 SAFE product directory
+    """
     with open(
         out_dirpath / "productInfo.json", mode="r", encoding="utf8"
     ) as prd_info_file:
@@ -28,42 +74,35 @@ def aws_s1_to_safe(out_dirpath: Path, prd_id: str) -> Path:
     for filename_key, filename_value in prd_info["filenameMap"].items():
         source_filepath = out_dirpath / filename_value
         target_filepath = out_safe_dirpath / filename_key
-        logger.info("Rename from %s to %s", source_filepath, target_filepath)
+        logger.debug("Rename from %s to %s", source_filepath, target_filepath)
         (target_filepath.parent).mkdir(exist_ok=True, parents=True)
         (source_filepath).rename(target_filepath)
-
-    shutil.rmtree(out_dirpath)
 
     return out_safe_dirpath
 
 
-def aws_s2_l1c_to_safe(out_dirpath: Path, prd_id: str) -> Path:
-    """
-    Create SAFE folder from an L1C Sentinel-2 product
-    from an AWS download
-    :param out_dirpath:
-    :param safe_dest_folder:
-    :return: SAFE folder path
-    """
-    # Create root folder
-    if prd_id.endswith(".SAFE"):
-        safe_prd_id = prd_id
-    else:
-        safe_prd_id = prd_id + ".SAFE"
+def aws_s2_l1c_to_safe(
+    out_dirpath: Path,
+    out_safe_dirpath: Path = None,
+) -> Path:
+    """Translate from AWS S2 L1C format to SAFE format
 
-    out_safe_dirpath = out_dirpath.parent / safe_prd_id
-    out_safe_dirpath.mkdir(exist_ok=True)
+    Args:
+        out_dirpath (Path): Path to the AWS S2 L1C product
+        prd_id (str): Sentinel-2 product ID
+        out_safe_dirpath (Path): Path where to write the S2 SAFE product.
+    Returns:
+        Path: Path to the S2 SAFE product directory
+    """
 
     # Find the manifest.safe file in the product folder
     manifest_safe = out_dirpath / "tile" / "manifest.safe"
-    # Parse the manifest
 
-    tree = ET.parse(manifest_safe)
-    root = tree.getroot()
+    # Parse the manifest
 
     safe_struct = {"DATASTRIP": [], "GRANULE": [], "root": [], "HTML": []}
 
-    for file_loc in root.findall(".//fileLocation"):
+    for file_loc in ET.parse(manifest_safe).getroot().findall(".//fileLocation"):
         loc = Path(file_loc.get("href"))
         loc_parts = loc.parts
         if len(loc_parts) == 1:
@@ -102,8 +141,10 @@ def aws_s2_l1c_to_safe(out_dirpath: Path, prd_id: str) -> Path:
         if ds_elt.name == "MTD_DS.xml":
             safe_ds_mtd = ds_elt
             break
-    aws_ds_mtd = sorted(out_dirpath.glob("tile/*/*/metadata.xml"))[0]
-    shutil.copy(aws_ds_mtd, out_safe_dirpath / safe_ds_mtd)
+    shutil.copy(
+        sorted(out_dirpath.glob("tile/*/*/metadata.xml"))[0],
+        out_safe_dirpath / safe_ds_mtd,
+    )
 
     # Copy report files
     for ds_elt in safe_struct["DATASTRIP"]:
@@ -119,22 +160,16 @@ def aws_s2_l1c_to_safe(out_dirpath: Path, prd_id: str) -> Path:
 
     ##########################
     # GRANULE
-    print(safe_struct["GRANULE"])
 
     # Create GRANULE folders
     for granule_loc in safe_struct["GRANULE"]:
         (out_safe_dirpath / granule_loc.parent).mkdir(parents=True, exist_ok=True)
 
     # Copy GRANULE/QI_DATA gml files
-    qi_data_gr_folder = [
-        el.parent for el in safe_struct["GRANULE"] if el.parts[-2] == "QI_DATA"
-    ][0]
-
     for gr_elt in safe_struct["GRANULE"]:
         if gr_elt.parts[-2] == "QI_DATA":
             safe_gr_qi_data_dir = gr_elt.parent
             break
-    print(safe_gr_qi_data_dir)
 
     aws_gr_gml = sorted(out_dirpath.glob("product/qi/*.gml"))
     for gr_gml in aws_gr_gml:
@@ -152,13 +187,14 @@ def aws_s2_l1c_to_safe(out_dirpath: Path, prd_id: str) -> Path:
         )
 
     # Copy GRANULE/AUX_DATA files
-    ecmwft = sorted(out_dirpath.glob("product/*/ECMWFT"))[0]
-
     for gr_elt in safe_struct["GRANULE"]:
         if gr_elt.parts[-2] == "AUX_DATA":
             safe_gr_aux_data_dir = gr_elt.parent
             break
-    shutil.copy(ecmwft, out_safe_dirpath / safe_gr_aux_data_dir / "AUX_ECMWFT")
+    shutil.copy(
+        sorted(out_dirpath.glob("product/*/ECMWFT"))[0],
+        out_safe_dirpath / safe_gr_aux_data_dir / "AUX_ECMWFT",
+    )
 
     # Copy GRANULE/IMG_DATA files
     img_jp2 = [el for el in safe_struct["GRANULE"] if el.parts[-2] == "IMG_DATA"]
@@ -176,7 +212,7 @@ def aws_s2_l1c_to_safe(out_dirpath: Path, prd_id: str) -> Path:
     # Copy product/metadata.xml to GRANULE/*/MTD_TL.xml
     shutil.copy(
         out_dirpath / "product" / "metadata.xml",
-        (out_safe_dirpath / qi_data_gr_folder).parent / "MTD_TL.xml",
+        (out_safe_dirpath / safe_gr_qi_data_dir).parent / "MTD_TL.xml",
     )
 
     return out_safe_dirpath
