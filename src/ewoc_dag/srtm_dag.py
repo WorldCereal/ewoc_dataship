@@ -116,7 +116,7 @@ def get_srtm1s_ids(s2_tile_id: str) -> List[str]:
 
 def get_srtm3s_ids(s2_tile_id: str) -> List[str]:
     """
-    Get srtm 1s id for an S2 tile
+    Get srtm 3s id for an S2 tile
     :param s2 tile_id:
     :return: List of srtm ids
     """
