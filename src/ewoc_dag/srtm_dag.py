@@ -2,16 +2,15 @@
 """ DAG for SRTM 1s and 3s tiles
 """
 import logging
+import zipfile
 from pathlib import Path
 from typing import List
-import zipfile
 
 import requests
 from eotile.eotile_module import main
 
 from ewoc_dag.bucket.creodias import CreodiasBucket
 from ewoc_dag.bucket.ewoc import EWOCAuxDataBucket
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +25,11 @@ def get_srtm_from_s2_tile_id(
     :param source: Source where to retrieve the srtm 1s data
     :param resolution: 1s or 3s for respectively 30m and 90m srtm
     """
-    get_srtm_tiles(
-        get_srtm1s_ids(s2_tile_id), out_dirpath, source=source, resolution=resolution
-    )
+    if resolution == "1s":
+        srtm_tile_ids = get_srtm1s_ids(s2_tile_id)
+    elif resolution == "3s":
+        srtm_tile_ids = get_srtm3s_ids(s2_tile_id)
+    get_srtm_tiles(srtm_tile_ids, out_dirpath, source=source, resolution=resolution)
 
 
 def get_srtm_tiles(
@@ -111,3 +112,13 @@ def get_srtm1s_ids(s2_tile_id: str) -> List[str]:
     """
     res = main(s2_tile_id, dem=True, overlap=True, no_l8=True, no_s2=True)
     return list(res[2].id)
+
+
+def get_srtm3s_ids(s2_tile_id: str) -> List[str]:
+    """
+    Get srtm 3s id for an S2 tile
+    :param s2 tile_id:
+    :return: List of srtm ids
+    """
+    res = main(s2_tile_id, srtm5x5=True, overlap=True, no_l8=True, no_s2=True)
+    return list(res[3]["id"].values)

@@ -84,7 +84,7 @@ class CreodiasBucket(EOBucket):
         Returns:
             Path: Path to the S2 product
         """
-        out_dirpath = out_dirpath / prd_id.split(".")[0]
+        out_dirpath = out_dirpath / prd_id
         out_dirpath.mkdir(exist_ok=True)
         s2_prd_info = S2PrdIdInfo(prd_id)
         s2_bucket_prefix = "Sentinel-2/MSI/"
