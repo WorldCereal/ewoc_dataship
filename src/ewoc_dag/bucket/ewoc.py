@@ -288,7 +288,7 @@ class EWOCARDBucket(EWOCBucket):
             {"date": prds_datetime, "tile": tile_id, "level": "L2SP", "path": prds_path}
         ).to_csv(filepath)
 
-    def upload_ard_prd(self, ard_prd_path: Path, ard_prd_prefix: str) -> None:
+    def upload_ard_prd(self, ard_prd_path: Path, ard_prd_prefix: str) -> Tuple[int, float]:
         """Upload EWoC ARD tif files to EWoC ARD bucket
 
         Args:
