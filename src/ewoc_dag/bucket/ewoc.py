@@ -1,23 +1,21 @@
 # -*- coding: utf-8 -*-
 """ EWoC private data bucket management module
 """
-from datetime import datetime
-from distutils.util import strtobool
 import logging
 import os
+import zipfile
+from datetime import datetime
+from distutils.util import strtobool
 from pathlib import Path
 from tempfile import gettempdir
 from typing import List, Tuple
-import zipfile
 
 import pandas as pd
 
 from ewoc_dag.bucket.eobucket import EOBucket
-from ewoc_dag.eo_prd_id.ewoc_prd_id import (
-    EwocArdPrdIdInfo,
-    EwocS1ArdPrdIdInfo,
-    EwocTirArdPrdIdInfo,
-)
+from ewoc_dag.eo_prd_id.ewoc_prd_id import (EwocArdPrdIdInfo,
+                                            EwocS1ArdPrdIdInfo,
+                                            EwocTirArdPrdIdInfo)
 
 _logger = logging.getLogger(__name__)
 
@@ -297,7 +295,7 @@ class EWOCARDBucket(EWOCBucket):
             ard_prd_path (Path): Path to the directory which contain ARD data
             ard_prd_prefix (str): Bucket prefix where store data
         """
-        super()._upload_prd(ard_prd_path, ard_prd_prefix)
+        return super()._upload_prd(ard_prd_path, ard_prd_prefix)
 
     def upload_ard_raster(self, ard_raster_path: Path, ard_raster_key: str) -> int:
         """Upload EWoC ARD raster individually to EWoC ARD bucket
