@@ -3,7 +3,7 @@
 """
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import boto3
 from botocore.exceptions import ClientError
@@ -215,7 +215,7 @@ class EOBucket:
 
     def _upload_prd(
         self, prd_dirpath: Path, object_prefix: str, file_suffix: Optional[str] = ".tif"
-    ):
+    ) -> Tuple[int, float]:
         """Upload a set of objects from a directory to a bucket
 
         Args:
@@ -225,7 +225,7 @@ class EOBucket:
                 Defaults to '.tif'.
 
         Returns:
-            [type]: [description]
+            Tuple[int, float]: Number of files uploaded and the total size
         """
         if file_suffix is None:
             paths = sorted(prd_dirpath.rglob("*"))
