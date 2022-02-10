@@ -383,6 +383,9 @@ class AWSL8C2L2Bucket(AWSEOBucket):
 
 
 class AWSCopDEMBucket(AWSEOBucket):
+    """Class to handle access to Copdem data
+    from AWS open data bucket: https://registry.opendata.aws/copernicus-dem/"""
+
     def __init__(self, resolution="1s") -> None:
         if resolution == "1s":
             super().__init__("copernicus-dem-30m")
@@ -399,7 +402,15 @@ class AWSCopDEMBucket(AWSEOBucket):
         self,
         copdem_tile_ids: List[str],
         out_dirpath: Path = Path(gettempdir()),
-    ) -> None:
+        to_sen2cor: bool = False,
+        ) -> None:
+        """
+        Download copdem tiles from AWS bucket
+        :param copdem_tile_ids: List of copdem tile ids
+        :param out_dirpath: Output directory
+        :param to_sen2cor: If True, rename copdem files to match sen2cor expectations
+        :return: None
+        """
 
         for copdem_tile_id in copdem_tile_ids:
 
@@ -411,7 +422,11 @@ class AWSCopDEMBucket(AWSEOBucket):
                 + self._copdem_suffix
             )
             copdem_tile_id_filename = copdem_tile_id_aws + ".tif"
-            copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename
+            if to_sen2cor:
+                copdem_tile_id_filepath = out_dirpath / \
+                    copdem_tile_id_filename.replace("_COG_", "_")
+            else:
+                copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename
             copdem_object_key = copdem_tile_id_aws + "/" + copdem_tile_id_filename
             logger.info(
                 "Try to download %s to %s", copdem_object_key, copdem_tile_id_filepath
