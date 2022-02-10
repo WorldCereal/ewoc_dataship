@@ -26,7 +26,7 @@ def get_copdem_default_provider() -> str:
     The first superseed the second one
 
     Returns:
-        str: the cop dem provider
+        str: the copdem provider
     """
 
     return os.getenv(
@@ -39,13 +39,15 @@ def get_copdem_from_s2_tile_id(
     out_dirpath: Path = Path(gettempdir()),
     source: str = None,
     resolution: str = _COPDEM_RESOLUTIONS[0],
+    to_sen2cor: bool = False
 ) -> None:
     """
     Retrieve copdem data for a Sentinel-2 tile id from the source into the output dir
     :param s2_tile_ids: Sentinel-2 tile id
-    :param out_dirpath: Output directory where the cop dem data is downloaded
-    :param source: Source where to retrieve the srtm 1s data
-    :param resolution: 30 or 90 for respectively 30m and 90m cop dem
+    :param out_dirpath: Output directory where the copdem data is downloaded
+    :param source: Source where to retrieve the copdem 1s data
+    :param resolution: 30 or 90 for respectively 30m and 90m copdem
+    :param to_sen2cor: If true, rename copdem files to match Sen2Cor expectations.
     """
     if source is None:
         copdem_provider = get_copdem_default_provider()
@@ -57,20 +59,22 @@ def get_copdem_from_s2_tile_id(
         out_dirpath,
         source=copdem_provider,
         resolution=resolution,
+        to_sen2cor=to_sen2cor
     )
 
 
 def get_copdem_tiles(
-    srtm_tile_ids: List[str],
+    copdem_tile_ids: List[str],
     out_dir: Path = Path(gettempdir()),
     source: str = None,
     resolution: str = _COPDEM_RESOLUTIONS[0],
+    to_sen2cor: bool = False
 ) -> None:
     """
-    Retrieve cop dem data from the source into the output dir
-    :param srtm_tile_ids: List of srtm tile ids
-    :param out_dirpath: Output directory where the srtm data is downloaded
-    :param source: Source where to retrieve the cop dem data
+    Retrieve copdem data from the source into the output dir
+    :param copdem_tile_ids: List of copdem tile ids
+    :param out_dirpath: Output directory where the copdem data is downloaded
+    :param source: Source where to retrieve the copdem data
     """
     if source is None:
         copdem_provider = get_copdem_default_provider()
@@ -79,22 +83,23 @@ def get_copdem_tiles(
         copdem_provider = source
 
     if copdem_provider == "creodias":
-        logger.info("Use creodias bucket to retrieve cop dem data!")
+        logger.info("Use creodias bucket to retrieve copdem data!")
         CreodiasBucket().download_copdem_tiles(
-            srtm_tile_ids, out_dirpath=out_dir, resolution=resolution
+            copdem_tile_ids, out_dirpath=out_dir, resolution=resolution
         )
     elif copdem_provider == "aws":
-        logger.info("Use AWS bucket to retrieve cop dem data!")
-        AWSCopDEMBucket(resolution=resolution).download_tiles(srtm_tile_ids, out_dir)
+        logger.info("Use AWS bucket to retrieve copdem data!")
+        AWSCopDEMBucket(resolution=resolution).download_tiles(copdem_tile_ids,\
+            out_dir, to_sen2cor=to_sen2cor)
     else:
         raise ValueError(f"Source {copdem_provider} not supported {_COPDEM_SOURCES}!")
 
 
 def get_copdem_ids(s2_tile_id: str) -> List[str]:
     """
-    Get coptem id for an S2 tile
+    Get copdem id for an S2 tile
     :param s2 tile_id:
-    :return: List of srtm ids
+    :return: List of copdem ids
     """
     res = main(s2_tile_id, dem=True, overlap=True, no_l8=True, no_s2=True)
     return list(res[2].id)
