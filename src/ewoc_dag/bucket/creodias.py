@@ -50,7 +50,9 @@ class CreodiasBucket(EOBucket):
         Returns:
             Path: Path to the S1 product
         """
-        out_dirpath = out_dirpath / prd_id.split(".")[0]
+        if not prd_id.endswith(".SAFE"):
+            prd_id = prd_id + ".SAFE"
+        out_dirpath = out_dirpath / prd_id
         out_dirpath.mkdir(exist_ok=True)
         s1_prd_info = S1PrdIdInfo(prd_id)
         s1_bucket_prefix = "Sentinel-1/SAR/"
@@ -84,6 +86,8 @@ class CreodiasBucket(EOBucket):
         Returns:
             Path: Path to the S2 product
         """
+        if not prd_id.endswith(".SAFE"):
+            prd_id = prd_id + ".SAFE"
         out_dirpath = out_dirpath / prd_id
         out_dirpath.mkdir(exist_ok=True)
         s2_prd_info = S2PrdIdInfo(prd_id)
