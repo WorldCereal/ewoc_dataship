@@ -411,7 +411,7 @@ class AWSCopDEMBucket(AWSEOBucket):
                 + self._copdem_suffix
             )
             copdem_tile_id_filename = copdem_tile_id_aws + ".tif"
-            copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename
+            copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename.replace("_COG_", "_")
             copdem_object_key = copdem_tile_id_aws + "/" + copdem_tile_id_filename
             logger.info(
                 "Try to download %s to %s", copdem_object_key, copdem_tile_id_filepath
