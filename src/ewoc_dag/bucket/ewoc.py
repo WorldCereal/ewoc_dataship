@@ -65,9 +65,9 @@ class EWOCBucket(EOBucket):
         ewoc_secret_access_key_id = os.getenv("EWOC_S3_SECRET_ACCESS_KEY")
 
         ewoc_cloud_provider = os.getenv("EWOC_CLOUD_PROVIDER", "CREODIAS")
-        if ewoc_cloud_provider == "CREODIAS":
+        if ewoc_cloud_provider == "creodias":
             ewoc_endpoint_url = self._CREODIAS_EWOC_ENDPOINT_URL
-        elif ewoc_cloud_provider == "AWS":
+        elif ewoc_cloud_provider == "aws":
             ewoc_endpoint_url = None
         else:
             raise ValueError(f"Cloud provider {ewoc_cloud_provider} not supported!")
