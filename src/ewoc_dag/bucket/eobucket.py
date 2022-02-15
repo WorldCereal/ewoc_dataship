@@ -215,7 +215,7 @@ class EOBucket:
 
     def _upload_prd(
         self, prd_dirpath: Path, object_prefix: str, file_suffix: Optional[str] = ".tif"
-    ) -> Tuple[int, float]:
+    ) -> Tuple[int, float, str]:
         """Upload a set of objects from a directory to a bucket
 
         Args:
@@ -238,7 +238,6 @@ class EOBucket:
                 nb_filepath -= 1
                 continue
             filepath = path
-            upload_object_size += filepath.stat().st_size
             key = object_prefix + "/" + str(filepath.relative_to(prd_dirpath))
             try:
                 upload_object_size += self._upload_file(filepath, key)
@@ -254,4 +253,8 @@ class EOBucket:
             object_prefix,
         )
 
-        return nb_filepath, upload_object_size
+        return (
+            nb_filepath,
+            upload_object_size,
+            "s3://" + self.bucket_name + "/" + object_prefix,
+        )
