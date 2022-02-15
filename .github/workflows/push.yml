@@ -10,7 +10,7 @@ on:
 jobs:
   build-python:
 
-    runs-on: ubuntu-20.04
+    runs-on: creodias
 
     steps:
     - uses: actions/checkout@v2
