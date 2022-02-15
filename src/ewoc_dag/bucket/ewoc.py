@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """ EWoC private data bucket management module
 """
-from datetime import datetime
-from distutils.util import strtobool
 import logging
 import os
+import zipfile
+from datetime import datetime
+from distutils.util import strtobool
 from pathlib import Path
 from tempfile import gettempdir
 from typing import List, Tuple
-import zipfile
 
 import pandas as pd
 
@@ -22,7 +22,7 @@ from ewoc_dag.eo_prd_id.ewoc_prd_id import (
 _logger = logging.getLogger(__name__)
 
 
-def split_tile_id(tile_id: str) -> Tuple[str]:
+def split_tile_id(tile_id: str) -> Tuple[str, str, str]:
     """Split the S2 Tile ID into MGRS parts
 
     Args:
@@ -66,10 +66,10 @@ class EWOCBucket(EOBucket):
         ewoc_access_key_id = os.getenv("EWOC_S3_ACCESS_KEY_ID")
         ewoc_secret_access_key_id = os.getenv("EWOC_S3_SECRET_ACCESS_KEY")
 
-        ewoc_cloud_provider = os.getenv("EWOC_CLOUD_PROVIDER", "CREODIAS")
-        if ewoc_cloud_provider == "CREODIAS":
+        ewoc_cloud_provider = os.getenv("EWOC_CLOUD_PROVIDER", "creodias")
+        if ewoc_cloud_provider == "creodias":
             ewoc_endpoint_url = self._CREODIAS_EWOC_ENDPOINT_URL
-        elif ewoc_cloud_provider == "AWS":
+        elif ewoc_cloud_provider == "aws":
             ewoc_endpoint_url = None
         else:
             raise ValueError(f"Cloud provider {ewoc_cloud_provider} not supported!")
@@ -142,7 +142,7 @@ class EWOCAuxDataBucket(EWOCBucket):
             )
 
             with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
-                srtm_zipfile.extractall(out_dirpath / "srtm1s")
+                srtm_zipfile.extractall(out_dirpath / "srtm3s")
 
             srtm_tile_id_filepath.unlink()
 
@@ -290,14 +290,25 @@ class EWOCARDBucket(EWOCBucket):
             {"date": prds_datetime, "tile": tile_id, "level": "L2SP", "path": prds_path}
         ).to_csv(filepath)
 
-    def upload_ard_prd(self, ard_prd_path: Path, ard_prd_prefix: str) -> None:
+    def upload_ard_prd(
+        self, ard_prd_path: Path, ard_prd_prefix: str
+    ) -> Tuple[int, float, str]:
         """Upload EWoC ARD tif files to EWoC ARD bucket
 
         Args:
             ard_prd_path (Path): Path to the directory which contain ARD data
             ard_prd_prefix (str): Bucket prefix where store data
         """
-        super()._upload_prd(ard_prd_path, ard_prd_prefix)
+        return super()._upload_prd(ard_prd_path, ard_prd_prefix)
+
+    def upload_ard_raster(self, ard_raster_path: Path, ard_raster_key: str) -> int:
+        """Upload EWoC ARD raster individually to EWoC ARD bucket
+
+        Args:
+            ard_raster_path (Path): Path to the ard raster to upload
+            ard_raster_key (str): Key where to upload the ard raster
+        """
+        return super()._upload_file(ard_raster_path, ard_raster_key)
 
 
 class EWOCPRDBucket(EWOCBucket):
@@ -335,15 +346,15 @@ if __name__ == "__main__":
     ewoc_auxdata_bucket = EWOCAuxDataBucket()
     ewoc_auxdata_bucket.download_srtm3s_tiles(["srtm_01_16", "srtm_01_21"])
 
-    ewoc_auxdata_bucket.agera5_to_satio_csv()
+    # ewoc_auxdata_bucket.agera5_to_satio_csv()
 
-    # TODO: to be replaced by test of public method
     ewoc_ard_bucket = EWOCARDBucket(ewoc_dev_mode=True)
-    # _logger.info(ewoc_ard_bucket._upload_file(Path('/tmp/upload.file'),'test.file'))
 
-    # ewoc_ard_bucket._upload_prd(Path('/tmp/upload_test_dir'),'test_up_dir')
+    upload_dirpath = Path(gettempdir()) / "srtm3s"
+    upload_filepath = upload_dirpath / "readme.txt"
+    _logger.info(ewoc_ard_bucket.upload_ard_raster(upload_filepath, "test_upload.file"))
 
-    # ewoc_ard_bucket._upload_prd(Path('/tmp/upload_test_dir'),'test_up_dir', file_suffix=None)
+    _logger.info(ewoc_ard_bucket.upload_ard_prd(upload_dirpath, "test_upload_dir"))
 
     ewoc_ard_bucket.sar_to_satio_csv("31TCJ", "0000_0_09112021223005")
     ewoc_ard_bucket.optical_to_satio_csv("31TCJ", "0000_0_09112021223005")

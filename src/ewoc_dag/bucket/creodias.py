@@ -2,22 +2,21 @@
 """ Creodias DIAS bucket management module
 """
 import logging
+import zipfile
 from pathlib import Path
 from tempfile import gettempdir
 from typing import List
-import zipfile
 
+from ewoc_dag.bucket.eobucket import EOBucket
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
-from ewoc_dag.bucket.eobucket import EOBucket
-
 
 logger = logging.getLogger(__name__)
 
 
 class CreodiasBucket(EOBucket):
-    """Class to describe the access (download, upload and list)
-    to the DIAS bucket on Creodias."""
+    """Class to handle access to Sentinel-1 data from Creodias DIAS bucket.
+    cf https://creodias.eu/faq-s3 for more information"""
 
     _CREODIAS_BUCKET_FORMAT_PREFIX = "/%Y/%m/%d/"
 
@@ -41,13 +40,20 @@ class CreodiasBucket(EOBucket):
 
     def download_s1_prd(
         self, prd_id: str, out_dirpath: Path = Path(gettempdir())
-    ) -> None:
+    ) -> Path:
         """Download Sentinel-1 product from DIAS bucket
 
         Args:
             prd_id (str): Sentinel-1 product id
-            out_dirpath (Path, optional): Directory where to put the product
+            out_dirpath (Path, optional): Path where to write the product
+
+        Returns:
+            Path: Path to the S1 product
         """
+        if not prd_id.endswith(".SAFE"):
+            prd_id = prd_id + ".SAFE"
+        out_dirpath = out_dirpath / prd_id
+        out_dirpath.mkdir(exist_ok=True)
         s1_prd_info = S1PrdIdInfo(prd_id)
         s1_bucket_prefix = "Sentinel-1/SAR/"
         prd_prefix = (
@@ -59,21 +65,31 @@ class CreodiasBucket(EOBucket):
             + prd_id
             + "/"
         )
-        self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
+        self._download_prd(prd_prefix, out_dirpath)
+        return out_dirpath
 
     def download_s2_prd(
         self,
         prd_id: str,
         out_dirpath: Path = Path(gettempdir()),
         l2_mask_only: bool = False,
-    ) -> None:
+    ) -> Path:
         """Download Sentinel-2 product from DIAS bucket
 
         Args:
             prd_id (str): Sentinel-2 product id
-            out_dirpath (Path, optional): Directory where to write the product.
-                Defaults to Path(gettempdir()).
+            out_dirpath (Path, optional): Path where to write the product.
+             Defaults to Path(gettempdir()).
+            l2_mask_only (bool, optional): Retrieve only the mask from the product.
+             Defaults to False.
+             Used only for L2 product
+        Returns:
+            Path: Path to the S2 product
         """
+        if not prd_id.endswith(".SAFE"):
+            prd_id = prd_id + ".SAFE"
+        out_dirpath = out_dirpath / prd_id
+        out_dirpath.mkdir(exist_ok=True)
         s2_prd_info = S2PrdIdInfo(prd_id)
         s2_bucket_prefix = "Sentinel-2/MSI/"
         prd_prefix = (
@@ -86,17 +102,33 @@ class CreodiasBucket(EOBucket):
             + "/"
         )
         if not l2_mask_only:
-            self._download_prd(prd_prefix, out_dirpath, self._bucket_name)
+            self._download_prd(prd_prefix, out_dirpath)
         else:
             if s2_prd_info.product_level == "L2A":
-                # TODO support mask only mode
-                mask_key = prd_prefix + "path/to/mask"
-                mask_filepath = out_dirpath / "mask.tif"
+                # TODO support mask only mode: issue with one item of the mask key #51
+                logger.error(
+                    "Download S2 L2A SCL mask from Creodias bucket is not currently supported!"
+                )
+                # /GRANULE/L2A_T28WDB_A022744_20210714T131716/IMG_DATA/R20m/T28WDB_20210714T131719_SCL_20m.jp2
+                mask_key_filename = f"T{s2_prd_info.tile_id}_{s2_prd_info.datatake_sensing_start_time}_SCL_20m.jp2"
+                orbit_direction = "A"  # always ascending
+                orbit_number = (
+                    "todo"  # could be found in manifest.safe key= safe:orbitNumber
+                )
+                mask_key = f"{prd_prefix}GRANULE/L2A_T{s2_prd_info.tile_id}_{orbit_direction}{orbit_number}_{s2_prd_info.datatake_sensing_start_time}/IMG_DATA/R20m/{mask_key_filename}"
+                mask_filepath = out_dirpath / mask_key_filename
+                logging.info(
+                    "Try to download %s to %s",
+                    f"{mask_key}",
+                    out_dirpath / mask_key_filename,
+                )
                 self._s3_client.download_file(
                     Bucket=self._bucket_name, Key=mask_key, Filename=str(mask_filepath)
                 )
             else:
-                logger.warning("Not possible!")
+                logger.error("Not possible to download L2A mask from a L1C product ID!")
+
+        return out_dirpath
 
     def download_srtm1s_tiles(
         self, srtm_tile_ids: List[str], out_dirpath: Path = Path(gettempdir())
@@ -139,7 +171,7 @@ class CreodiasBucket(EOBucket):
             out_dirpath (Path, optional): [description]. Defaults to Path(gettempdir()).
             resolution (str, optional): [description]. Defaults to "1s".
         """
-        # TODO support copdem retrieval
+        # TODO support copdem retrieval #52
         raise NotImplementedError("Currently not supported!")
 
 

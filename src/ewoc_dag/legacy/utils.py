@@ -69,43 +69,6 @@ def get_dates_from_prod_id(product_id):
     return start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), sensor
 
 
-# TODO: Move to AWS provider ?
-def donwload_s1tiling_style(dag, eodag_product, out_dir):
-    """
-    Reformat the downloaded data for s1tiling
-    :param dag: EOdag EODataAccessGateway
-    :param eodag_product: EOdag product from the seach results
-    :param out_dir: Output directory
-    """
-    tmp_dir = os.path.join(out_dir, "tmp_" + eodag_product.properties["id"])
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir)
-    dag.download(eodag_product, outputs_prefix=tmp_dir)
-    prod = os.listdir(tmp_dir)[0]
-    prod_id = prod.split("_")
-    dwn_prod = os.path.join(tmp_dir, prod)
-    os.system(f"mv {dwn_prod} {dwn_prod}.SAFE")
-    os.system(f"mkdir {dwn_prod}")
-    os.system(f"mv {dwn_prod}.SAFE {dwn_prod}")
-    os.system(f"mv {dwn_prod} {out_dir}")
-    vv_name = f"s1a-iw-grd-vv-{prod_id[4].lower()}-{prod_id[5].lower()}-{prod_id[6].lower()}-{prod_id[7].lower()}-{prod_id[8].lower()}-001"
-    vh_name = f"s1a-iw-grd-vh-{prod_id[4].lower()}-{prod_id[5].lower()}-{prod_id[6].lower()}-{prod_id[7].lower()}-{prod_id[8].lower()}-002"
-    base = f"{out_dir}/{prod}/{prod}.SAFE"
-    os.rename(
-        f'{base}/{"annotation"}/iw-vh.xml', f'{base}/{"annotation"}/{vh_name}.xml'
-    )
-    os.rename(
-        f'{base}/{"annotation"}/iw-vv.xml', f'{base}/{"annotation"}/{vv_name}.xml'
-    )
-    os.rename(
-        f'{base}/{"measurement"}/iw-vh.tiff', f'{base}/{"measurement"}/{vh_name}.tiff'
-    )
-    os.rename(
-        f'{base}/{"measurement"}/iw-vv.tiff', f'{base}/{"measurement"}/{vv_name}.tiff'
-    )
-    os.system(f"rm -r {tmp_dir}")
-
-
 # TODO: to be removed!
 def download_s3file(s3_full_key, out_file, bucket):
     """

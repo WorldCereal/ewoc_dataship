@@ -3,10 +3,10 @@
 """
 import logging
 from pathlib import Path
+from typing import List, Optional, Tuple
 
 import boto3
 from botocore.exceptions import ClientError
-
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,8 @@ class UploadFileError(Exception):
         self.filepath = filepath
         self.bucket_name = bucket_name
         self.key = key
-        super().__init__(client_error.response["Error"]["Message"])
+        self.message = client_error.response["Error"]["Message"]
+        super().__init__(self.message)
 
     def __str__(self):
         return f"{self.filepath} is not uploaded to {self.bucket_name} at {self.key}!"
@@ -84,8 +85,17 @@ class EOBucket:
 
         self._bucket_name = bucket_name
 
+    @property
+    def bucket_name(self) -> str:
+        """Returns the bucket name
+
+        Returns:
+            str: bucket name
+        """
+        return self._bucket_name
+
     def _check_bucket(self) -> bool:
-        """[summary]
+        """Check if the bucket is usable
 
         Returns:
             bool: return True if the bucket is accessible and False otherwise
@@ -111,7 +121,11 @@ class EOBucket:
         return f"s3://{self._bucket_name}"
 
     def _download_prd(
-        self, prd_prefix: str, out_dirpath: Path, request_payer: bool = False
+        self,
+        prd_prefix: str,
+        out_dirpath: Path,
+        request_payer: bool = False,
+        prd_items: List[str] = None,
     ) -> None:
         """Download product from object storage
 
@@ -119,34 +133,61 @@ class EOBucket:
             prd_prefix (str): prd key prefix
             out_dirpath (Path): directory where to write the objects of the product
             request_payer (bool): requester activation
+            prd_items (List[str]): Applies a filter on which bands to download
         """
+        logger.debug("Product prefix: %s", prd_prefix)
+
         extra_args = None
-        request_payer_arg = str()
         if request_payer is True:
             extra_args = dict(RequestPayer="requester")
-            request_payer_arg = "requester"
-
-        logger.debug("Product prefix: %s", prd_prefix)
-        response = self._s3_client.list_objects_v2(
-            Bucket=self._bucket_name, Prefix=prd_prefix, RequestPayer=request_payer_arg
-        )
-
-        for obj in response["Contents"]:
-            logger.debug("obj.key: %s", obj["Key"])
-            filename = obj["Key"].split(
-                sep="/", maxsplit=len(prd_prefix.split("/")) - 1
-            )[-1]
-            output_filepath = out_dirpath / filename
-            (output_filepath.parent).mkdir(parents=True, exist_ok=True)
-            logging.info("Try to download %s to %s", obj["Key"], output_filepath)
-            self._s3_client.download_file(
+            response = self._s3_client.list_objects_v2(
                 Bucket=self._bucket_name,
-                Key=obj["Key"],
-                Filename=str(output_filepath),
-                ExtraArgs=extra_args,
+                Prefix=prd_prefix,
+                RequestPayer="requester",
+            )
+        else:
+            response = self._s3_client.list_objects_v2(
+                Bucket=self._bucket_name,
+                Prefix=prd_prefix,
             )
 
-    def _upload_file(self, filepath: Path, key: str) -> bool:
+        for obj in response["Contents"]:
+            # Should we use select this object?
+            is_selected = prd_items is None
+            if prd_items is not None:
+                for filter_band in prd_items:
+                    if filter_band in obj["Key"]:
+                        is_selected = True
+            if obj["Key"].endswith("/"):
+                is_file = False
+            else:
+                is_file = True
+            if is_selected and is_file:
+                logger.debug("obj.key: %s", obj["Key"])
+                filename = obj["Key"].split(
+                    sep="/", maxsplit=len(prd_prefix.split("/")) - 1
+                )[-1]
+                output_filepath = out_dirpath / filename
+                (output_filepath.parent).mkdir(parents=True, exist_ok=True)
+                if not output_filepath.exists():
+                    logging.info(
+                        "Try to download from %s to %s", obj["Key"], output_filepath
+                    )
+                    self._s3_client.download_file(
+                        Bucket=self._bucket_name,
+                        Key=obj["Key"],
+                        Filename=str(output_filepath),
+                        ExtraArgs=extra_args,
+                    )
+                    logging.info(
+                        "Download from %s to %s succeed!", obj["Key"], output_filepath
+                    )
+                else:
+                    logging.info(
+                        "%s already available, skip downloading!", output_filepath
+                    )
+
+    def _upload_file(self, filepath: Path, key: str) -> int:
         """Upload a object to a bucket
 
         Args:
@@ -173,8 +214,8 @@ class EOBucket:
         return filepath.stat().st_size
 
     def _upload_prd(
-        self, prd_dirpath: Path, object_prefix: str, file_suffix: str = ".tif"
-    ):
+        self, prd_dirpath: Path, object_prefix: str, file_suffix: Optional[str] = ".tif"
+    ) -> Tuple[int, float, str]:
         """Upload a set of objects from a directory to a bucket
 
         Args:
@@ -184,7 +225,7 @@ class EOBucket:
                 Defaults to '.tif'.
 
         Returns:
-            [type]: [description]
+            Tuple[int, float]: Number of files uploaded and the total size
         """
         if file_suffix is None:
             paths = sorted(prd_dirpath.rglob("*"))
@@ -197,7 +238,6 @@ class EOBucket:
                 nb_filepath -= 1
                 continue
             filepath = path
-            upload_object_size += filepath.stat().st_size
             key = object_prefix + "/" + str(filepath.relative_to(prd_dirpath))
             try:
                 upload_object_size += self._upload_file(filepath, key)
@@ -213,4 +253,8 @@ class EOBucket:
             object_prefix,
         )
 
-        return nb_filepath, upload_object_size
+        return (
+            nb_filepath,
+            upload_object_size,
+            "s3://" + self.bucket_name + "/" + object_prefix,
+        )
