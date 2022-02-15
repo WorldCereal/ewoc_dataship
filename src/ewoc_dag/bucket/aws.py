@@ -381,6 +381,47 @@ class AWSL8C2L2Bucket(AWSEOBucket):
 
         return out_dirpath
 
+    @staticmethod
+    def compute_prd_key(prd_id: str):
+        l8_prd_info = L8C2PrdIdInfo(prd_id)
+        prd_key = (
+            "/".join(
+                [
+                    "collection02",
+                    "level-2",
+                    "standard",
+                    "oli-tirs",
+                    str(l8_prd_info.acquisition_date.year),
+                    l8_prd_info.wrs2_path,
+                    l8_prd_info.wrs2_row,
+                    prd_id,
+                ]
+            )
+            + "/"
+        )
+
+        return prd_key
+
+    @staticmethod
+    def compute_prd_item_key(prd_id: str, prd_item: str):
+        prd_key = AWSL8C2L2Bucket.compute_prd_key(prd_id)
+        from ewoc_dag.eo_prd_id.l8_prd_id import L8C2Prd
+
+        return prd_key + "/" + L8C2Prd(prd_id).get_prd_item(prd_item)
+
+    def to_gdal_path(self, prd_id: str, prd_item: str) -> str:
+        """Compute the gdal path to the L8 C2 L2 prd item
+
+            To use the path, don't forget export AWS_REQUEST_PAYER=requester
+        Args:
+            prd_id (str): L8C2L2 product ID
+            prd_item (str): L8C2L2 product item
+
+        Returns:
+            str: vsis3 path for gdal command
+        """
+        return f"/vsis3/{self._bucket_name}/{AWSL8C2L2Bucket.compute_prd_item_key(prd_id, prd_item)}"
+
 
 class AWSCopDEMBucket(AWSEOBucket):
     """Class to handle access to Copdem data
@@ -403,7 +444,7 @@ class AWSCopDEMBucket(AWSEOBucket):
         copdem_tile_ids: List[str],
         out_dirpath: Path = Path(gettempdir()),
         to_sen2cor: bool = False,
-        ) -> None:
+    ) -> None:
         """
         Download copdem tiles from AWS bucket
         :param copdem_tile_ids: List of copdem tile ids
@@ -423,8 +464,9 @@ class AWSCopDEMBucket(AWSEOBucket):
             )
             copdem_tile_id_filename = copdem_tile_id_aws + ".tif"
             if to_sen2cor:
-                copdem_tile_id_filepath = out_dirpath / \
-                    copdem_tile_id_filename.replace("_COG_", "_")
+                copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename.replace(
+                    "_COG_", "_"
+                )
             else:
                 copdem_tile_id_filepath = out_dirpath / copdem_tile_id_filename
             copdem_object_key = copdem_tile_id_aws + "/" + copdem_tile_id_filename
@@ -464,9 +506,9 @@ if __name__ == "__main__":
     #         safe_format=True,
     #     )
     # )
-    AWSS2L1CBucket().download_prd(
-        "S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE"
-    )
+    # AWSS2L1CBucket().download_prd(
+    #    "S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE"
+    # )
     # AWSS2L2ABucket().download_prd(
     #     "S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE"
     # )
@@ -487,4 +529,7 @@ if __name__ == "__main__":
     #         "Copernicus_DSM_COG_10_S90_00_W156_00_DEM",
     #     ]
     # )
-    # AWSS2L8C2Bucket().download_prd("LC08_L2SP_227099_20211017_20211026_02_T2")
+    _L8C2L2_PRD_ID = "LC08_L2SP_227099_20211017_20211026_02_T2"
+    # AWSL8C2L2Bucket().download_prd(_L8C2L2_PRD_ID)
+    logger.info(AWSL8C2L2Bucket.compute_prd_item_key(_L8C2L2_PRD_ID, "ST_QA"))
+    logger.info(AWSL8C2L2Bucket().to_gdal_path(_L8C2L2_PRD_ID, "ST_QA"))
