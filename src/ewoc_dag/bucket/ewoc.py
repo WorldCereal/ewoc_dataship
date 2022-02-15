@@ -66,7 +66,7 @@ class EWOCBucket(EOBucket):
         ewoc_access_key_id = os.getenv("EWOC_S3_ACCESS_KEY_ID")
         ewoc_secret_access_key_id = os.getenv("EWOC_S3_SECRET_ACCESS_KEY")
 
-        ewoc_cloud_provider = os.getenv("EWOC_CLOUD_PROVIDER", "creodias")
+        ewoc_cloud_provider = os.getenv("EWOC_CLOUD_PROVIDER", "CREODIAS")
         if ewoc_cloud_provider == "creodias":
             ewoc_endpoint_url = self._CREODIAS_EWOC_ENDPOINT_URL
         elif ewoc_cloud_provider == "aws":
