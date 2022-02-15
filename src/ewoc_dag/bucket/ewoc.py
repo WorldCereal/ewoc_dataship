@@ -292,7 +292,7 @@ class EWOCARDBucket(EWOCBucket):
 
     def upload_ard_prd(
         self, ard_prd_path: Path, ard_prd_prefix: str
-    ) -> Tuple[int, float]:
+    ) -> Tuple[int, float, str]:
         """Upload EWoC ARD tif files to EWoC ARD bucket
 
         Args:
@@ -346,14 +346,15 @@ if __name__ == "__main__":
     ewoc_auxdata_bucket = EWOCAuxDataBucket()
     ewoc_auxdata_bucket.download_srtm3s_tiles(["srtm_01_16", "srtm_01_21"])
 
-    ewoc_auxdata_bucket.agera5_to_satio_csv()
+    # ewoc_auxdata_bucket.agera5_to_satio_csv()
 
     ewoc_ard_bucket = EWOCARDBucket(ewoc_dev_mode=True)
-    _logger.info(
-        ewoc_ard_bucket.upload_ard_raster(Path("/tmp/upload.file"), "test.file")
-    )
 
-    ewoc_ard_bucket.upload_ard_prd(Path("/tmp/upload_test_dir"), "test_up_dir")
+    upload_dirpath = Path(gettempdir()) / "srtm3s"
+    upload_filepath = upload_dirpath / "readme.txt"
+    _logger.info(ewoc_ard_bucket.upload_ard_raster(upload_filepath, "test_upload.file"))
+
+    _logger.info(ewoc_ard_bucket.upload_ard_prd(upload_dirpath, "test_upload_dir"))
 
     ewoc_ard_bucket.sar_to_satio_csv("31TCJ", "0000_0_09112021223005")
     ewoc_ard_bucket.optical_to_satio_csv("31TCJ", "0000_0_09112021223005")
