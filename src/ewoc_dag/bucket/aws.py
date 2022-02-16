@@ -384,20 +384,17 @@ class AWSL8C2L2Bucket(AWSEOBucket):
     @staticmethod
     def compute_prd_key(prd_id: str):
         l8_prd_info = L8C2PrdIdInfo(prd_id)
-        prd_key = (
-            "/".join(
-                [
-                    "collection02",
-                    "level-2",
-                    "standard",
-                    "oli-tirs",
-                    str(l8_prd_info.acquisition_date.year),
-                    l8_prd_info.wrs2_path,
-                    l8_prd_info.wrs2_row,
-                    prd_id,
-                ]
-            )
-            + "/"
+        prd_key = "/".join(
+            [
+                "collection02",
+                "level-2",
+                "standard",
+                "oli-tirs",
+                str(l8_prd_info.acquisition_date.year),
+                l8_prd_info.wrs2_path,
+                l8_prd_info.wrs2_row,
+                prd_id,
+            ]
         )
 
         return prd_key
