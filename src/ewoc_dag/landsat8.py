@@ -67,6 +67,19 @@ def get_l8c2l2_product(
     return out_prd_path
 
 
+def get_l8c2l2_gdal_path(prd_id: str, prd_item: str) -> str:
+    """_summary_
+
+    Args:
+        prd_id (str): landsat8 C2 L2 product ID
+        prd_item (str): Item of the landsat8 C2 L2 product
+
+    Returns:
+        str: the gdal vsi path to the item in the AWS USGS bucket
+    """
+    return AWSL8C2L2Bucket().to_gdal_path(prd_id, prd_item)
+
+
 if __name__ == "__main__":
     import sys
 
@@ -80,3 +93,5 @@ if __name__ == "__main__":
 
     _PRD_ID = "LC08_L2SP_227099_20211017_20211026_02_T2"
     get_l8c2l2_product(_PRD_ID)
+    get_l8c2l2_product(_PRD_ID, prd_items=["ST_TRAD", "QA_PIXEL"])
+    _logger.info(get_l8c2l2_gdal_path(_PRD_ID, "ST_B10"))
