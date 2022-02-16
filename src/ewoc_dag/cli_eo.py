@@ -11,7 +11,7 @@ from ewoc_dag import __version__
 from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
-from ewoc_dag.landsat8 import get_l8c2l2_product, _L8C2_SOURCES
+from ewoc_dag.l8c2l2_dag import get_l8c2l2_product, _L8C2_SOURCES
 from ewoc_dag.s1_dag import get_s1_product
 from ewoc_dag.s2_dag import get_s2_product
 
