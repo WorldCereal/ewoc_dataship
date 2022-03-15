@@ -13,11 +13,9 @@ from typing import List, Tuple
 import pandas as pd
 
 from ewoc_dag.bucket.eobucket import EOBucket
-from ewoc_dag.eo_prd_id.ewoc_prd_id import (
-    EwocArdPrdIdInfo,
-    EwocS1ArdPrdIdInfo,
-    EwocTirArdPrdIdInfo,
-)
+from ewoc_dag.eo_prd_id.ewoc_prd_id import (EwocArdPrdIdInfo,
+                                            EwocS1ArdPrdIdInfo,
+                                            EwocTirArdPrdIdInfo)
 
 _logger = logging.getLogger(__name__)
 
@@ -323,14 +321,16 @@ class EWOCPRDBucket(EWOCBucket):
         elif ewoc_dev_mode:
             super().__init__("ewoc-prd-dev")
 
-    def upload_ewoc_prd(self, prd_path: Path, prd_prefix: str) -> None:
+    def upload_ewoc_prd(
+        self, prd_path: Path, prd_prefix: str
+    ) -> Tuple[int, float, str]:
         """Upload EWoC product
 
         Args:
             prd_path (Path): Path to the product to upload
             prd_prefix (str): Product prefix where to put the product
         """
-        super()._upload_prd(prd_path, prd_prefix, file_suffix=None)
+        return super()._upload_prd(prd_path, prd_prefix, file_suffix=None)
 
 
 if __name__ == "__main__":
