@@ -215,11 +215,10 @@ class EWOCARDBucket(EWOCBucket):
         """
         prds_path = []
         prds_datetime = []
-
         for prd_key in self._list_prds_key(
             f"{production_id}/SAR/{tileid_to_ard_path_component(tile_id)}"
         ):
-            prd_info = EwocS1ArdPrdIdInfo(prd_key.split("/")[8])
+            prd_info = EwocS1ArdPrdIdInfo(prd_key.split("/")[-1])
             prds_path.append(f"{self._s3_basepath()}{prd_key}")
             prds_datetime.append(prd_info.acquisition_datetime)
 
@@ -248,11 +247,10 @@ class EWOCARDBucket(EWOCBucket):
         """
         prds_path = []
         prds_datetime = []
-
         for prd_key in self._list_prds_key(
             f"{production_id}/OPTICAL/{tileid_to_ard_path_component(tile_id)}"
         ):
-            prd_info = EwocArdPrdIdInfo(prd_key.split("/")[8])
+            prd_info = EwocArdPrdIdInfo(prd_key.split("/")[-1])
             prds_path.append(f"{self._s3_basepath()}{prd_key}")
             prds_datetime.append(prd_info.acquisition_datetime)
 
@@ -280,7 +278,7 @@ class EWOCARDBucket(EWOCBucket):
         for prd_key in self._list_prds_key(
             f"{production_id}/TIR/{tileid_to_ard_path_component(tile_id)}"
         ):
-            prd_info = EwocTirArdPrdIdInfo(prd_key.split("/")[8])
+            prd_info = EwocTirArdPrdIdInfo(prd_key.split("/")[-1])
             prds_path.append(f"{self._s3_basepath()}{prd_key}")
             prds_datetime.append(prd_info.acquisition_datetime)
 
