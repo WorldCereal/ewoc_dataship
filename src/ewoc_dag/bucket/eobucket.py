@@ -120,6 +120,32 @@ class EOBucket:
         """
         return f"s3://{self._bucket_name}"
 
+    def _find_product(self, prd_path: str, prd_date: str) -> str:
+        """Find the product name in the bucket
+
+        Args:
+            prd_path (str): prd path
+            prd_date (str): prd date
+        
+        Returns:
+            str: product name
+        """
+
+        def list_folders(s3_client, bucket_name, prefix):
+            response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix, Delimiter='/')
+            for content in response.get('CommonPrefixes', []):
+                yield content.get('Prefix')
+
+        folder_list = list_folders(self._s3_client, self._bucket_name, prefix=prd_path)
+        for folder in folder_list:
+            logger.debug('Folder found: %s', folder.split('/')[-2])
+            
+            if prd_date in folder.split('/')[-2]:
+                prd_name = folder.split('/')[-2]
+                logger.debug('Product name: %s', prd_name)
+
+        return prd_name
+
     def _download_prd(
         self,
         prd_prefix: str,

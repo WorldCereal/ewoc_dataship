@@ -12,8 +12,8 @@ repos:
         args: ['--maxkb=1600']
     -   id: debug-statements
     -   id: check-merge-conflict
--   repo: 'https://github.com/ambv/black'
-    rev: 20.8b1
+-   repo: 'https://github.com/psf/black'
+    rev: 22.1.0
     hooks:
     -   id: black
         args: ['--safe']
