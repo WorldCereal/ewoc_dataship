@@ -130,14 +130,26 @@ class EOBucket:
 
         return True
 
-    def _check_product(self, prefix) -> bool:
+    def _check_product(self, prefix, threshold, request_payer: bool = False) -> bool:
         """Check if the product is usable
 
         Returns:
             bool: return True if the product is accessible and False otherwise
         """
-        s3_result =  self._s3_client.list_objects_v2(Bucket=self._bucket_name, Prefix=prefix, Delimiter = "/")
-        
+        if request_payer is True:
+            s3_result = self._s3_client.list_objects_v2(
+                Bucket=self._bucket_name,
+                Prefix=prefix,
+                Delimiter = "/",
+                RequestPayer="requester"
+            )
+        else:
+            s3_result = self._s3_client.list_objects_v2(
+                Bucket=self._bucket_name,
+                Prefix=prefix,
+                Delimiter = "/"
+            )
+
         if 'Contents' not in s3_result:
             logger.critical("Path %s/%s does not exist!" % (self._bucket_name, prefix))
             return False
@@ -147,7 +159,7 @@ class EOBucket:
             for obj in s3_result.get('Contents'): 
                 list_product_files.append(obj.get('Key'))
 
-            if len(list_product_files)>15:
+            if len(list_product_files)>threshold:
                 logger.debug("Path %s/%s is full with %s files \n" % (self._bucket_name, prefix, len(list_product_files)))
                 return True
             else:
