@@ -151,19 +151,21 @@ class EOBucket:
             )
 
         if 'Contents' not in s3_result:
-            logger.critical("Path %s/%s does not exist!" % (self._bucket_name, prefix))
+            logger.critical("Path %s/%s does not exist!", self._bucket_name, prefix)
             return False
         else:
 
             list_product_files = []
-            for obj in s3_result.get('Contents'): 
+            for obj in s3_result.get('Contents'):
                 list_product_files.append(obj.get('Key'))
 
             if len(list_product_files)>threshold:
-                logger.debug("Path %s/%s is full with %s files \n" % (self._bucket_name, prefix, len(list_product_files)))
+                logger.debug("Path %s/%s is full with %s files \n", \
+                    self._bucket_name, prefix, len(list_product_files))
                 return True
             else:
-                logger.debug("Path %s/%s is partial with %s files \n" % (self._bucket_name, prefix, len(list_product_files)))
+                logger.debug("Path %s/%s is partial with %s files \n", \
+                    self._bucket_name, prefix, len(list_product_files))
                 return False
 
     def _s3_basepath(self) -> str:
@@ -180,7 +182,7 @@ class EOBucket:
         Args:
             prd_path (str): prd path
             prd_date (str): prd date
-        
+
         Returns:
             str: product name
         """
@@ -193,7 +195,7 @@ class EOBucket:
         folder_list = list_folders(self._s3_client, self._bucket_name, prefix=prd_path)
         for folder in folder_list:
             logger.debug('Folder found: %s', folder.split('/')[-2])
-            
+
             if prd_date in folder.split('/')[-2]:
                 prd_name = folder.split('/')[-2]
                 logger.debug('Product name: %s', prd_name)
