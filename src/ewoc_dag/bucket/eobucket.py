@@ -112,23 +112,30 @@ class EOBucket:
 
         return True
 
+    def _check_product_file(self, prefix) -> bool:
+        """Check if the product contains a given file
+
+        Returns:
+            bool: return True if the product file is accessible and False otherwise
+        """
+        try:
+            self._s3_client.head_object(Bucket=self._bucket_name, Key=prefix)
+        except ClientError as err:
+            error_code = err.response["Error"]["Code"]
+            if error_code == "404":
+                logger.critical("Path %s/%s does not exist!", self._bucket_name, prefix)
+            elif error_code == "403":
+                logger.critical("Acces forbidden to %s/%s path!", self._bucket_name, prefix)
+            return False
+
+        return True
+
     def _check_product(self, prefix) -> bool:
         """Check if the product is usable
 
         Returns:
             bool: return True if the product is accessible and False otherwise
         """
-        # # !! Only works to check a file (eg. B12.tif), not working for a folder !!
-        # try:
-        #     self._s3_client.head_object(Bucket=self._bucket_name, Key=prefix)
-        # except ClientError as err:
-        #     error_code = err.response["Error"]["Code"]
-        #     if error_code == "404":
-        #         logger.critical("Path %s/%s does not exist!", self._bucket_name, prefix)
-        #     return False
-
-        # return True
-
         s3_result =  self._s3_client.list_objects_v2(Bucket=self._bucket_name, Prefix=prefix, Delimiter = "/")
         
         if 'Contents' not in s3_result:
