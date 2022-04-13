@@ -154,13 +154,14 @@ class AWSS2Bucket(AWSEOBucket):
             str(s2_prd_info.datatake_sensing_start_time.date().year),
             str(s2_prd_info.datatake_sensing_start_time.date().month),
         ]
+        # Remove leading zero from tile id
+        prefix_components[0] = prefix_components[0].lstrip("0")
         if l2a_cogs:
-            # Remove leading zero from tile id
-            prefix_components[0] = prefix_components[0].lstrip("0")
             prefix_components.insert(0, "sentinel-s2-l2a-cogs")
-
-            products_path = "/".join(prefix_components) + "/" 
-            product_date = s2_prd_info.datatake_sensing_start_time.date().strftime("%Y%m%d")
+            products_path = "/".join(prefix_components) + "/"
+            product_date = s2_prd_info.datatake_sensing_start_time.date().strftime(
+                "%Y%m%d"
+            )
             product_name = self._find_product(products_path, product_date)
             (out_dirpath / product_name).mkdir(exist_ok=True)
             prefix_components.append(product_name)
