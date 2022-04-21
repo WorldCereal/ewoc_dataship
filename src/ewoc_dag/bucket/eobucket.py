@@ -197,8 +197,11 @@ class EOBucket:
                                                         Prefix=prd_path,
                                                         Delimiter='/')
 
+        folder_list = []
         for content in response.get('CommonPrefixes', []):
-            yield content.get('Prefix')
+            folder_list.append(content.get('Prefix'))
+
+        return folder_list
 
 
     def _find_product(self, folder_list: list, prd_date: str) -> str:
