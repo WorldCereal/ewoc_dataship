@@ -162,7 +162,8 @@ class AWSS2Bucket(AWSEOBucket):
             product_date = s2_prd_info.datatake_sensing_start_time.date().strftime(
                 "%Y%m%d"
             )
-            product_name = self._find_product(products_path, product_date)
+            folder_list = self._list_folders(products_path, request_payer=False)
+            product_name = self._find_product(folder_list, product_date)
             (out_dirpath / product_name).mkdir(exist_ok=True)
             prefix_components.append(product_name)
             prd_prefix = "/".join(prefix_components) + "/"
@@ -201,7 +202,12 @@ class AWSS2Bucket(AWSEOBucket):
             prefix_components.append(
                 str(s2_prd_info.datatake_sensing_start_time.date().day)
             )
-            prefix_components.append("0")
+
+            products_path = "/".join(prefix_components) + "/"
+            folder_list = self._list_folders(products_path, request_payer=True)
+            folder_number = self._find_aws_folder_number(folder_list)
+            prefix_components.append(folder_number)
+
             tile_prefix = "/".join(prefix_components) + "/"
             logger.info("tile_prefix: %s", tile_prefix)
 
