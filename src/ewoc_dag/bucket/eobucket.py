@@ -381,5 +381,5 @@ class EOBucket:
         return (
             nb_filepath,
             upload_object_size,
-            "s3://" + self.bucket_name + "/" + object_prefix,
+            "s3://" + self.bucket_name + "/" + '/'.join(key.split('/')[:-1]),
         )
