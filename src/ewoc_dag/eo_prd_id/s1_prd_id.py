@@ -35,7 +35,7 @@ class S1PrdIdInfo:
         if len(value) == 4:
             self._product_unique_id = value
         else:
-            raise ValueError("Length of Product unique id different than 4 is not possible!")
+            raise ValueError("Length of Product unique id different than 4 is not possible!", value)
 
     @property
     def mission_datatake_id(self):
@@ -46,7 +46,7 @@ class S1PrdIdInfo:
         if len(value) == 6:
             self._mission_datatake_id = value
         else:
-            raise ValueError("Length of Mission datatake id different than 6 is not possible!")
+            raise ValueError("Length of Mission datatake id different than 6 is not possible!", value)
 
     @property
     def absolute_orbit_number(self):
@@ -85,7 +85,7 @@ class S1PrdIdInfo:
         if value in allowed_values:
             self._polarisation = value
         else:
-            raise ValueError("Polarisation different than " + ', '.join(allowed_values) + " is not possible!")
+            raise ValueError("Polarisation (" + value + ") different than " + ', '.join(allowed_values) + " is not possible!")
 
     @property
     def product_class(self):
@@ -97,7 +97,7 @@ class S1PrdIdInfo:
         if value in allowed_values:
             self._product_class = value
         else:
-            raise ValueError("Product Class different than " + ', '.join(allowed_values) + " is not possible!")
+            raise ValueError("Product Class (" + value + ") different than " + ', '.join(allowed_values) + " is not possible!")
 
     @property
     def processing_level(self):
@@ -109,7 +109,7 @@ class S1PrdIdInfo:
         if value in allowed_values:
             self._processing_level = value
         else:
-            raise ValueError("Processing Level different than " + ', '.join(allowed_values) + " is not possible!")
+            raise ValueError("Processing Level (" + value + ") different than " + ', '.join(allowed_values) + " is not possible!")
 
     @property
     def resolution_class(self):
@@ -121,7 +121,7 @@ class S1PrdIdInfo:
         if value in allowed_values:
             self._resolution_class = value
         else:
-            raise ValueError("Resolution class different than " + ', '.join(allowed_values) + " is not possible!")
+            raise ValueError("Resolution class (" + value + ") different than " + ', '.join(allowed_values) + " is not possible!")
 
     @property
     def product_type(self):
@@ -133,7 +133,7 @@ class S1PrdIdInfo:
         if value in allowed_values:
             self._product_type = value
         else:
-            raise ValueError("Product type different than " + ', '.join(allowed_values) + " is not possible!")
+            raise ValueError("Product type (" + value + ") different than " + ', '.join(allowed_values) + " is not possible!")
 
     @property
     def mission_id(self):
@@ -145,7 +145,7 @@ class S1PrdIdInfo:
         if value in allowed_values:
             self._mission_id = value
         else:
-            raise ValueError("Mission ID different than "+ ', '.join(allowed_values) + " is not possible!")
+            raise ValueError("Mission ID (" + value + ") different than "+ ', '.join(allowed_values) + " is not possible!")
 
     @property
     def beam_mode(self):
@@ -157,7 +157,7 @@ class S1PrdIdInfo:
         if value in allowed_values:
             self._beam_mode = value
         else:
-            raise ValueError("Beam mode different than " + ', '.join(allowed_values) + " is not possible!")
+            raise ValueError("Beam mode (" + value + ") different than " + ', '.join(allowed_values) + " is not possible!")
 
     def __str__(self):
         return f'Info provided by the S1 product id are: mission_id={self.mission_id}, beam_mode={self.beam_mode}, \
@@ -177,4 +177,3 @@ product_unique_id={self._product_unique_id}'
             return True
         except ValueError:
             return False
-      
