@@ -29,7 +29,7 @@ class EwocArdPrdIdInfo:
 
     @platform.setter
     def platform(self, value):
-        if value in ["S2A", "S2B"]:
+        if value in ["S2A", "S2B", "LC08"]:
             self._platform = value
         else:
             raise ValueError("Platform is not possible!")
