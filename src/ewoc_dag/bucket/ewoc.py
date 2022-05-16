@@ -346,7 +346,7 @@ if __name__ == "__main__":
 
     # ewoc_auxdata_bucket.agera5_to_satio_csv()
 
-    ewoc_ard_bucket = EWOCARDBucket(ewoc_dev_mode=True)
+    ewoc_ard_bucket = EWOCARDBucket(ewoc_dev_mode=False)
 
     upload_dirpath = Path(gettempdir()) / "srtm3s"
     upload_filepath = upload_dirpath / "readme.txt"
@@ -354,6 +354,7 @@ if __name__ == "__main__":
 
     _logger.info(ewoc_ard_bucket.upload_ard_prd(upload_dirpath, "test_upload_dir"))
 
-    ewoc_ard_bucket.sar_to_satio_csv("31TCJ", "0000_0_09112021223005")
-    ewoc_ard_bucket.optical_to_satio_csv("31TCJ", "0000_0_09112021223005")
-    ewoc_ard_bucket.tir_to_satio_csv("31TCJ", "0000_0_09112021223005")
+    # ewoc_ard_bucket.sar_to_satio_csv("31TCJ", "0000_0_09112021223005")
+    # ewoc_ard_bucket.optical_to_satio_csv("31TCJ", "0000_0_09112021223005")
+    # ewoc_ard_bucket.tir_to_satio_csv("31TCJ", "0000_0_09112021223005")
+    ewoc_ard_bucket.optical_to_satio_csv("18MWV", "BRAZIL/c728b264-5c97-4f4c-81fe-1500d4c4dfbd_20090_20220321234008")
