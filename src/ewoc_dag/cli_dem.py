@@ -50,7 +50,7 @@ def get_dem_data(
                 resolution=dem_resolution, to_sen2cor=to_sen2cor
         )
     else:
-        raise ValueError
+        raise ValueError("DEM type different than srtm, copdem is not possible!")
 
 
 # ---- CLI ----

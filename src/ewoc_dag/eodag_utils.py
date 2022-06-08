@@ -37,7 +37,7 @@ def get_product_by_id(
         products, _ = dag.search(id=product_id, provider=provider)
     if not products:
         logging.error("No results return by eodag!")
-        raise ValueError
+        raise ValueError("No results return by eodag!")
     out_prd_path = dag.download(products[0], outputs_prefix=out_dir)
     # delete zip file
     list_out = os.listdir(out_dir)
