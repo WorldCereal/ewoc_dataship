@@ -166,13 +166,38 @@ class EWOCAuxDataBucket(EWOCBucket):
         agera5_dates = []
         agera5_products = []
         for agera5_dir in self._list_agera5_prd():
-            agera5_date = agera5_dir.split("/")[3]
-            agera5_path = f"{self._s3_basepath()}{agera5_dir}"
-            agera5_paths.append(agera5_path)
-            agera5_dates.append(
-                datetime.strptime(agera5_date, "%Y%m%d").strftime("%Y-%m-%d")
-            )
-            agera5_products.append("AgERA5_" + agera5_date)
+            frequence = len(agera5_dir.split("/"))
+            if frequence == 3:
+                # Case of yearly agera5
+                agera5_date = agera5_dir.split("/")[2]
+                agera5_date_path = agera5_date + "0101"
+                agera5_path = f"{self._s3_basepath()}{agera5_dir}".replace(
+                    "s3:/", "/vsis3"
+                )
+                agera5_paths.append(agera5_path)
+                agera5_dates.append(
+                    datetime.strptime(agera5_date_path, "%Y%m%d").strftime("%Y-%m-%d")
+                )
+                agera5_products.append("AgERA5_" + agera5_date)
+            elif frequence == 4:
+                # Cases of monthly and daily agera5
+                agera5_date = agera5_dir.split("/")[3]
+                if len(agera5_date) == 6:
+                    # Monthly case
+                    agera5_path = f"{self._s3_basepath()}{agera5_dir}"
+                    agera5_paths.append(agera5_path)
+                    agera5_dates.append(
+                        datetime.strptime(agera5_date, "%Y%m").strftime("%Y-%m")
+                    )
+                    agera5_products.append("AgERA5_" + agera5_date)
+                elif len(agera5_date) == 8:
+                    # daily case
+                    agera5_path = f"{self._s3_basepath()}{agera5_dir}"
+                    agera5_paths.append(agera5_path)
+                    agera5_dates.append(
+                        datetime.strptime(agera5_date, "%Y%m%d").strftime("%Y-%m-%d")
+                    )
+                    agera5_products.append("AgERA5_" + agera5_date)
 
         pd.DataFrame(
             {
@@ -357,4 +382,6 @@ if __name__ == "__main__":
     # ewoc_ard_bucket.sar_to_satio_csv("31TCJ", "0000_0_09112021223005")
     # ewoc_ard_bucket.optical_to_satio_csv("31TCJ", "0000_0_09112021223005")
     # ewoc_ard_bucket.tir_to_satio_csv("31TCJ", "0000_0_09112021223005")
-    ewoc_ard_bucket.optical_to_satio_csv("18MWV", "BRAZIL/c728b264-5c97-4f4c-81fe-1500d4c4dfbd_20090_20220321234008")
+    ewoc_ard_bucket.optical_to_satio_csv(
+        "18MWV", "BRAZIL/c728b264-5c97-4f4c-81fe-1500d4c4dfbd_20090_20220321234008"
+    )
