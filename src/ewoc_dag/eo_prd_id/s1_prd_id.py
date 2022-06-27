@@ -153,7 +153,7 @@ class S1PrdIdInfo:
 
     @beam_mode.setter
     def beam_mode(self, value):
-        allowed_values = ['SM', 'IW', 'EW', 'WV']
+        allowed_values = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'SM', 'IW', 'EW', 'WV']
         if value in allowed_values:
             self._beam_mode = value
         else:
