@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.8.1
+===========
+
+- Fix incoherence with ewoc_s1 about output directory of srtm1s data retrieval from a private ewoc bucket hosted on aws
+
 Version 0.8.0
 ===========
 

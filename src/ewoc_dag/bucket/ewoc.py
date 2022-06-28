@@ -118,7 +118,9 @@ class EWOCAuxDataBucket(EWOCBucket):
         super().__init__("ewoc-aux-data")
 
     def download_srtm1s_tiles(
-        self, srtm_tile_ids: List[str], out_dirpath: Path = Path(gettempdir())
+        self,
+        srtm_tile_ids: List[str],
+        out_dirpath: Path = Path(gettempdir()) / "srtm1s",
     ) -> None:
         """Download srtm 1s (30m) tiles according a S2 tile ID
 
@@ -141,7 +143,7 @@ class EWOCAuxDataBucket(EWOCBucket):
             )
 
             with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
-                srtm_zipfile.extractall(out_dirpath / "srtm1s")
+                srtm_zipfile.extractall(out_dirpath)
 
             srtm_tile_id_filepath.unlink()
 
