@@ -13,9 +13,11 @@ from typing import List, Tuple
 import pandas as pd
 
 from ewoc_dag.bucket.eobucket import EOBucket
-from ewoc_dag.eo_prd_id.ewoc_prd_id import (EwocArdPrdIdInfo,
-                                            EwocS1ArdPrdIdInfo,
-                                            EwocTirArdPrdIdInfo)
+from ewoc_dag.eo_prd_id.ewoc_prd_id import (
+    EwocArdPrdIdInfo,
+    EwocS1ArdPrdIdInfo,
+    EwocTirArdPrdIdInfo,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -80,7 +82,7 @@ class EWOCBucket(EOBucket):
         )
 
         if not self._check_bucket():
-            raise ValueError(f"EWoC {bucket_name} not correctly intialized!")
+            raise ValueError(f"EWoC {bucket_name} is not correctly intialized!")
 
         _logger.info(
             "EWoC bucket %s is hosted on %s and functional",
@@ -114,6 +116,34 @@ class EWOCAuxDataBucket(EWOCBucket):
 
     def __init__(self) -> None:
         super().__init__("ewoc-aux-data")
+
+    def download_srtm1s_tiles(
+        self, srtm_tile_ids: List[str], out_dirpath: Path = Path(gettempdir())
+    ) -> None:
+        """Download srtm 1s (30m) tiles according a S2 tile ID
+
+        Args:
+            srtm_tile_ids (List[str]): List of S2 MGRS tile ID
+            out_dirpath (Path, optional): Output directry to write SRTM tiles.
+                Defaults to Path(gettempdir()).
+        """
+        for srtm_tile_id in srtm_tile_ids:
+            srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
+            srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
+            srtm_object_key = "srtm30/" + srtm_tile_id_filename
+            _logger.info(
+                "Try to download %s to %s", srtm_object_key, srtm_tile_id_filepath
+            )
+            self._s3_client.download_file(
+                Bucket=self._bucket_name,
+                Key=srtm_object_key,
+                Filename=str(srtm_tile_id_filepath),
+            )
+
+            with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
+                srtm_zipfile.extractall(out_dirpath / "srtm1s")
+
+            srtm_tile_id_filepath.unlink()
 
     def download_srtm3s_tiles(
         self, srtm_tile_ids: List[str], out_dirpath: Path = Path(gettempdir())
@@ -368,6 +398,7 @@ if __name__ == "__main__":
     )
     ewoc_auxdata_bucket = EWOCAuxDataBucket()
     ewoc_auxdata_bucket.download_srtm3s_tiles(["srtm_01_16", "srtm_01_21"])
+    ewoc_auxdata_bucket.download_srtm1s_tiles(["N53E031", "N53E032"])
 
     # ewoc_auxdata_bucket.agera5_to_satio_csv()
 
