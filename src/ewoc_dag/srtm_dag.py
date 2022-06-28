@@ -15,7 +15,7 @@ from ewoc_dag.bucket.ewoc import EWOCAuxDataBucket
 
 logger = logging.getLogger(__name__)
 
-_SRTM_1S_SOURCES = ["esa", "creodias"]
+_SRTM_1S_SOURCES = ["esa", "creodias", "ewoc"]
 
 
 def get_srtm_1s_default_provider() -> str:
@@ -82,12 +82,11 @@ def get_srtm_tiles(
             )
     elif srtm_provider == "ewoc":
         if resolution == "3s":
-            logger.info("Use EWoC bucket to retrieve srtm data!")
+            logger.info("Use EWoC bucket to retrieve srtm 3s data!")
             EWOCAuxDataBucket().download_srtm3s_tiles(srtm_tile_ids, out_dir)
         else:
-            raise ValueError(
-                f"Source SRTM{resolution} not available on EWoC Aux Data bucket!"
-            )
+            logger.info("Use EWoC bucket to retrieve srtm 1s data!")
+            EWOCAuxDataBucket().download_srtm1s_tiles(srtm_tile_ids, out_dir)
     elif srtm_provider == "usgs":
         logger.info("Use usgs EE to retrieve srtm 1s data!")
         raise NotImplementedError
