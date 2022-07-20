@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """ SAFE format utilities module
 """
-import logging
 import json
-from pathlib import Path
+import logging
 import shutil
-from typing import List, Dict
 import xml.etree.ElementTree as ET
+from pathlib import Path
+from typing import Dict, List
 
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
@@ -202,10 +202,16 @@ def aws_s2_l1c_to_safe(
         if gr_elt.parts[-2] == "AUX_DATA":
             safe_gr_aux_data_dir = gr_elt.parent
             break
-    shutil.copy(
-        sorted(out_dirpath.glob("product/*/ECMWFT"))[0],
-        out_safe_dirpath / safe_gr_aux_data_dir / "AUX_ECMWFT",
-    )
+    try:
+        shutil.copy(
+            sorted(out_dirpath.glob("product/*/ECMWFT"))[0],
+            out_safe_dirpath / safe_gr_aux_data_dir / "AUX_ECMWFT",
+        )
+    except:
+        logger.warning("No ECMWFT data to copy")
+        (out_safe_dirpath / safe_gr_aux_data_dir / "AUX_DATA").mkdir(
+            parents=True, exist_ok=True
+        )
 
     # Copy GRANULE/IMG_DATA files
     img_jp2 = [el for el in safe_struct["GRANULE"] if el.parts[-2] == "IMG_DATA"]
