@@ -202,6 +202,8 @@ def aws_s2_l1c_to_safe(
         if gr_elt.parts[-2] == "AUX_DATA":
             safe_gr_aux_data_dir = gr_elt.parent
             break
+    if 'safe_gr_aux_data_dir' not in locals():
+        safe_gr_aux_data_dir = safe_gr_qi_data_dir.parents[0] / "AUX_DATA"
     try:
         shutil.copy(
             sorted(out_dirpath.glob("product/*/ECMWFT"))[0],
