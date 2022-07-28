@@ -3,6 +3,7 @@
 """
 import os
 import logging
+import numpy as np
 import zipfile
 from pathlib import Path
 from typing import List
