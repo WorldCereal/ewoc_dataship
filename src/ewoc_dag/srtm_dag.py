@@ -139,16 +139,18 @@ def get_srtm1s_ids(s2_tile_id: str) -> List[str]:
     return list(res[2].id)
 
 
-def get_srtm3s_ids(s2_tile_id: str, use_sen2cor:bool = True) -> List[str]:
+def get_srtm3s_ids(s2_tile_id: str, use_sen2cor: bool = True) -> List[str]:
     """
     Get srtm 3s id for an S2 tile
-    :param s2 tile_id:
+    :param s2 tile_id: S2 MGRS tile ID
+    :param use_sen2cor: Complete the list of tiles with the list of tiles
+    computed by the sen2cor method to avoid miss srtm3s tiles.
     :return: List of srtm ids
     """
     res = main(s2_tile_id, srtm5x5=True, overlap=True, no_l8=True, no_s2=True)
     list_srtm3s = list(res[3]["id"].values)
 
-    if use_sen2cor: 
+    if use_sen2cor:
         list_srtm3s_sen2cor = get_srtm3s_ids_using_sen2cor_method(s2_tile_id)
         list_srtm3s = list(set(list_srtm3s + list_srtm3s_sen2cor))
 
@@ -157,30 +159,30 @@ def get_srtm3s_ids(s2_tile_id: str, use_sen2cor:bool = True) -> List[str]:
 
 def get_srtm3s_ids_using_sen2cor_method(s2_tile_id: str) -> List[str]:
     """
-    Get srtm 3s id for an S2 tile using Sen2Cor method
-    :param s2 tile_id:
+    Get srtm 3s id for an S2 tile using Sen2Cor method (fork from the 2.9 version)
+    :param s2 tile_id: S2 MGRS tile id
     :return: List of srtm ids
     """
     res = main(s2_tile_id)
 
-    lonMin = res[0].geometry.bounds['minx']
-    lonMax = res[0].geometry.bounds['maxx']
-    latMin = res[0].geometry.bounds['miny']
-    latMax = res[0].geometry.bounds['maxy']
+    lon_min = res[0].geometry.bounds["minx"]
+    lon_max = res[0].geometry.bounds["maxx"]
+    lat_min = res[0].geometry.bounds["miny"]
+    lat_max = res[0].geometry.bounds["maxy"]
 
-    lonMin = int(np.rint(lonMin))
-    lonMax = int(np.rint(lonMax))
-    latMin = int(np.rint(latMin))
-    latMax = int(np.rint(latMax))
+    lon_min = int(np.rint(lon_min))
+    lon_max = int(np.rint(lon_max))
+    lat_min = int(np.rint(lat_min))
+    lat_max = int(np.rint(lat_max))
 
-    lonMinId = int((-180 - lonMin) / -360.0 * 72.0 + 1)
-    lonMaxId = int((-180 - lonMax) / -360.0 * 72.0 + 1)
-    latMinId = int((60 - latMax) / 120.0 * 24.0 + 1)  # this is inverted by intention
-    latMaxId = int((60 - latMin) / 120.0 * 24.0 + 1)  # this is inverted by intention
+    lon_min_id = int((-180 - lon_min) / -360.0 * 72.0 + 1)
+    lon_max_id = int((-180 - lon_max) / -360.0 * 72.0 + 1)
+    lat_min_id = int((60 - lat_max) / 120.0 * 24.0 + 1)  # this is inverted by intention
+    lat_max_id = int((60 - lat_min) / 120.0 * 24.0 + 1)  # this is inverted by intention
 
     list_srtm3s_sen2cor = []
-    for lon in [lonMinId, lonMaxId]:
-        for lat in [latMinId, latMaxId]:
-            list_srtm3s_sen2cor.append(f'srtm_{str(lon).zfill(2)}_{str(lat).zfill(2)}')
+    for lon in [lon_min_id, lon_max_id]:
+        for lat in [lat_min_id, lat_max_id]:
+            list_srtm3s_sen2cor.append(f"srtm_{str(lon).zfill(2)}_{str(lat).zfill(2)}")
 
     return list_srtm3s_sen2cor
