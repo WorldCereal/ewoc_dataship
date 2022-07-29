@@ -3,6 +3,7 @@
 """
 import os
 import logging
+import numpy as np
 import zipfile
 from pathlib import Path
 from typing import List
@@ -138,11 +139,48 @@ def get_srtm1s_ids(s2_tile_id: str) -> List[str]:
     return list(res[2].id)
 
 
-def get_srtm3s_ids(s2_tile_id: str) -> List[str]:
+def get_srtm3s_ids(s2_tile_id: str, use_sen2cor:bool = True) -> List[str]:
     """
     Get srtm 3s id for an S2 tile
     :param s2 tile_id:
     :return: List of srtm ids
     """
     res = main(s2_tile_id, srtm5x5=True, overlap=True, no_l8=True, no_s2=True)
-    return list(res[3]["id"].values)
+    list_srtm3s = list(res[3]["id"].values)
+
+    if use_sen2cor: 
+        list_srtm3s_sen2cor = get_srtm3s_ids_using_sen2cor_method(s2_tile_id)
+        list_srtm3s = list(set(list_srtm3s + list_srtm3s_sen2cor))
+
+    return list_srtm3s
+
+
+def get_srtm3s_ids_using_sen2cor_method(s2_tile_id: str) -> List[str]:
+    """
+    Get srtm 3s id for an S2 tile using Sen2Cor method
+    :param s2 tile_id:
+    :return: List of srtm ids
+    """
+    res = main(s2_tile_id)
+
+    lonMin = res[0].geometry.bounds['minx']
+    lonMax = res[0].geometry.bounds['maxx']
+    latMin = res[0].geometry.bounds['miny']
+    latMax = res[0].geometry.bounds['maxy']
+
+    lonMin = int(np.rint(lonMin))
+    lonMax = int(np.rint(lonMax))
+    latMin = int(np.rint(latMin))
+    latMax = int(np.rint(latMax))
+
+    lonMinId = int((-180 - lonMin) / -360.0 * 72.0 + 1)
+    lonMaxId = int((-180 - lonMax) / -360.0 * 72.0 + 1)
+    latMinId = int((60 - latMax) / 120.0 * 24.0 + 1)  # this is inverted by intention
+    latMaxId = int((60 - latMin) / 120.0 * 24.0 + 1)  # this is inverted by intention
+
+    list_srtm3s_sen2cor = []
+    for lon in [lonMinId, lonMaxId]:
+        for lat in [latMinId, latMaxId]:
+            list_srtm3s_sen2cor.append(f'srtm_{str(lon).zfill(2)}_{str(lat).zfill(2)}')
+
+    return list_srtm3s_sen2cor
