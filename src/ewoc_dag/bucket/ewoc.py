@@ -8,7 +8,7 @@ from datetime import datetime
 from distutils.util import strtobool
 from pathlib import Path
 from tempfile import gettempdir
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import pandas as pd
 
@@ -61,12 +61,18 @@ class EWOCBucket(EOBucket):
 
     _CREODIAS_EWOC_ENDPOINT_URL = "https://s3.waw2-1.cloudferro.com"
 
-    def __init__(self, bucket_name: str) -> None:
+    def __init__(self, bucket_name: str,
+                    ewoc_access_key_id:str=None,
+                    ewoc_secret_access_key_id:Optional[str]=None,
+                    ewoc_cloud_provider:str='') -> None:
 
-        ewoc_access_key_id = os.getenv("EWOC_S3_ACCESS_KEY_ID")
-        ewoc_secret_access_key_id = os.getenv("EWOC_S3_SECRET_ACCESS_KEY")
+        if ewoc_access_key_id is None:
+            ewoc_access_key_id = os.getenv("EWOC_S3_ACCESS_KEY_ID")
+        if ewoc_secret_access_key_id is None:
+            ewoc_secret_access_key_id = os.getenv("EWOC_S3_SECRET_ACCESS_KEY")
 
-        ewoc_cloud_provider = os.getenv("EWOC_CLOUD_PROVIDER", "creodias")
+        if ewoc_access_key_id=='':
+            ewoc_cloud_provider = os.getenv("EWOC_CLOUD_PROVIDER", "creodias")
         if ewoc_cloud_provider == "creodias":
             ewoc_endpoint_url = self._CREODIAS_EWOC_ENDPOINT_URL
         elif ewoc_cloud_provider == "aws":
