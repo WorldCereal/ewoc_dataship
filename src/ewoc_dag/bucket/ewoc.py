@@ -405,9 +405,14 @@ class EWOCPRDBucket(EWOCBucket):
         return super()._upload_prd(prd_path, prd_prefix, file_suffix=None)
 
     def download_prd(
-        self, bucket_prefix: str, out_dirpath: Path = Path(gettempdir())
+        self,
+        bucket_prefix: str,
+        out_dirpath: Path = Path(gettempdir()),
+        exclude_items: Optional[List[str]] = None,
     ) -> None:
-        return super()._download_prd(bucket_prefix, out_dirpath)
+        return super()._download_prd(
+            bucket_prefix, out_dirpath, exclude_items=exclude_items
+        )
 
 
 if __name__ == "__main__":

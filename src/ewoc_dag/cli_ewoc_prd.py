@@ -39,7 +39,11 @@ def get_ewoc_prd(
         "s3://" + ewoc_prd_bucket_creo.bucket_name + "/" + bucket_prefix,
         out_dirpath,
     )
-    ewoc_prd_bucket_creo.download_prd(bucket_prefix, out_dirpath=out_dirpath)
+    ewoc_prd_bucket_creo.download_prd(
+        bucket_prefix,
+        out_dirpath=out_dirpath,
+        exclude_items=["blocks", "exitlogs", "proclogs"],
+    )
 
     ewoc_prd_bucket_aws = EWOCPRDBucket(ewoc_dev_mode=True, ewoc_cloud_provider="aws")
 

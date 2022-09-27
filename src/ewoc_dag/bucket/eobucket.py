@@ -251,6 +251,7 @@ class EOBucket:
         out_dirpath: Path,
         request_payer: bool = False,
         prd_items: List[str] = None,
+        exclude_items: Optional[List[str]] = None,
     ) -> None:
         """Download product from object storage
 
@@ -283,10 +284,17 @@ class EOBucket:
                 for filter_band in prd_items:
                     if filter_band in obj["Key"]:
                         is_selected = True
+            if exclude_items is not None:
+                for exclude_item in exclude_items:
+                    if exclude_item in obj["Key"]:
+                        is_selected = False
             if obj["Key"].endswith("/"):
                 is_file = False
             else:
                 is_file = True
+
+            if not is_selected and not is_file:
+                logger.info("obj.key: %s is excluded", obj["Key"])
             if is_selected and is_file:
                 logger.debug("obj.key: %s", obj["Key"])
                 filename = obj["Key"].split(
