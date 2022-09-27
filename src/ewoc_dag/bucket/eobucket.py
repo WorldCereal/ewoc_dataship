@@ -263,62 +263,71 @@ class EOBucket:
         """
         logger.debug("Product prefix: %s", prd_prefix)
 
+        kwargs = {"Bucket": self._bucket_name, "Prefix": prd_prefix, "MaxKeys": 1000}
         extra_args = None
-        if request_payer is True:
-            extra_args = dict(RequestPayer="requester")
-            response = self._s3_client.list_objects_v2(
-                Bucket=self._bucket_name,
-                Prefix=prd_prefix,
-                RequestPayer="requester",
-            )
-        else:
-            response = self._s3_client.list_objects_v2(
-                Bucket=self._bucket_name,
-                Prefix=prd_prefix,
-            )
 
-        for obj in response["Contents"]:
-            # Should we use select this object?
-            is_selected = prd_items is None
-            if prd_items is not None:
-                for filter_band in prd_items:
-                    if filter_band in obj["Key"]:
-                        is_selected = True
-            if exclude_items is not None:
-                for exclude_item in exclude_items:
-                    if exclude_item in obj["Key"]:
-                        is_selected = False
-            if obj["Key"].endswith("/"):
-                is_file = False
+        while True:
+
+            if request_payer is True:
+                extra_args = dict(RequestPayer="requester")
+                response = self._s3_client.list_objects_v2(
+                    Bucket=self._bucket_name,
+                    Prefix=prd_prefix,
+                    RequestPayer="requester",
+                )
             else:
-                is_file = True
+                response = self._s3_client.list_objects_v2(
+                    **kwargs,
+                )
 
-            if not is_selected and not is_file:
-                logger.info("obj.key: %s is excluded", obj["Key"])
-            if is_selected and is_file:
-                logger.debug("obj.key: %s", obj["Key"])
-                filename = obj["Key"].split(
-                    sep="/", maxsplit=len(prd_prefix.split("/")) - 1
-                )[-1]
-                output_filepath = out_dirpath / filename
-                (output_filepath.parent).mkdir(parents=True, exist_ok=True)
-                if not output_filepath.exists():
-                    logging.info(
-                        "Try to download from %s to %s", obj["Key"], output_filepath
-                    )
-                    self._s3_client.download_file(
-                        Bucket=self._bucket_name,
-                        Key=obj["Key"],
-                        Filename=str(output_filepath),
-                        ExtraArgs=extra_args,
-                    )
-                    logging.info(
-                        "Download from %s to %s succeed!", obj["Key"], output_filepath
-                    )
+            for obj in response["Contents"]:
+                # Should we use select this object?
+                is_selected = prd_items is None
+                if prd_items is not None:
+                    for filter_band in prd_items:
+                        if filter_band in obj["Key"]:
+                            is_selected = True
+                if exclude_items is not None:
+                    for exclude_item in exclude_items:
+                        if exclude_item in obj["Key"]:
+                            is_selected = False
+                if obj["Key"].endswith("/"):
+                    is_file = False
                 else:
-                    logging.info(
-                        "%s already available, skip downloading!", output_filepath
-                    )
+                    is_file = True
+
+                if not is_selected and not is_file:
+                    logger.info("obj.key: %s is excluded", obj["Key"])
+                if is_selected and is_file:
+                    logger.debug("obj.key: %s", obj["Key"])
+                    filename = obj["Key"].split(
+                        sep="/", maxsplit=len(prd_prefix.split("/")) - 1
+                    )[-1]
+                    output_filepath = out_dirpath / filename
+                    (output_filepath.parent).mkdir(parents=True, exist_ok=True)
+                    if not output_filepath.exists():
+                        logging.info(
+                            "Try to download from %s to %s", obj["Key"], output_filepath
+                        )
+                        self._s3_client.download_file(
+                            Bucket=self._bucket_name,
+                            Key=obj["Key"],
+                            Filename=str(output_filepath),
+                            ExtraArgs=extra_args,
+                        )
+                        logging.info(
+                            "Download from %s to %s succeed!",
+                            obj["Key"],
+                            output_filepath,
+                        )
+                    else:
+                        logging.info(
+                            "%s already available, skip downloading!", output_filepath
+                        )
+            try:
+                kwargs["ContinuationToken"] = response["NextContinuationToken"]
+            except KeyError:
+                break
 
     def _upload_file(self, filepath: Path, key: str) -> int:
         """Upload a object to a bucket
