@@ -4,6 +4,7 @@
 import argparse
 import logging
 from pathlib import Path
+import shutil
 import sys
 from tempfile import gettempdir
 
@@ -48,9 +49,10 @@ def get_ewoc_prd(
         suffix_elt = (bucket_prefix.split("/"))[-1]
     out_dirpath = out_dirroot / suffix_elt
 
-    base_test_prefix = "test-msd-up"
-    out_prefix = base_test_prefix + "/" + suffix_elt
+    out_prefix = suffix_elt
     ewoc_prd_bucket_aws.upload_ewoc_prd(out_dirpath, out_prefix)
+
+    shutil.rmtree(out_dirpath)
 
 
 # ---- CLI ----
