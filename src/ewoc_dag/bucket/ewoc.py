@@ -61,22 +61,29 @@ class EWOCBucket(EOBucket):
 
     _CREODIAS_EWOC_ENDPOINT_URL = "https://s3.waw2-1.cloudferro.com"
 
-    def __init__(self, bucket_name: str,
-                    ewoc_access_key_id:str=None,
-                    ewoc_secret_access_key_id:Optional[str]=None,
-                    ewoc_cloud_provider:str='') -> None:
+    def __init__(
+        self,
+        bucket_name: str,
+        ewoc_access_key_id: Optional[str] = None,
+        ewoc_secret_access_key_id: Optional[str] = None,
+        ewoc_cloud_provider: Optional[str] = None,
+    ) -> None:
 
         if ewoc_access_key_id is None:
             ewoc_access_key_id = os.getenv("EWOC_S3_ACCESS_KEY_ID")
         if ewoc_secret_access_key_id is None:
             ewoc_secret_access_key_id = os.getenv("EWOC_S3_SECRET_ACCESS_KEY")
 
-        if ewoc_access_key_id=='':
+        if ewoc_cloud_provider is None:
             ewoc_cloud_provider = os.getenv("EWOC_CLOUD_PROVIDER", "creodias")
         if ewoc_cloud_provider == "creodias":
             ewoc_endpoint_url = self._CREODIAS_EWOC_ENDPOINT_URL
         elif ewoc_cloud_provider == "aws":
             ewoc_endpoint_url = None
+            ewoc_access_key_id = os.getenv("AWS_ACCESS_KEY_ID", ewoc_access_key_id)
+            ewoc_secret_access_key_id = os.getenv(
+                "AWS_SECRET_ACCESS_KEY", ewoc_secret_access_key_id
+            )
         else:
             raise ValueError(f"Cloud provider {ewoc_cloud_provider} not supported!")
 
@@ -373,14 +380,18 @@ class EWOCARDBucket(EWOCBucket):
 class EWOCPRDBucket(EWOCBucket):
     """Class to handle access of EWoC final products"""
 
-    def __init__(self, ewoc_dev_mode=None) -> None:
+    def __init__(
+        self,
+        ewoc_dev_mode: Optional[bool] = None,
+        ewoc_cloud_provider: Optional[str] = None,
+    ) -> None:
 
         if ewoc_dev_mode is None:
             ewoc_dev_mode = strtobool(os.getenv("EWOC_DEV_MODE", "False"))
         if not ewoc_dev_mode:
-            super().__init__("ewoc-prd")
+            super().__init__("ewoc-prd", ewoc_cloud_provider=ewoc_cloud_provider)
         elif ewoc_dev_mode:
-            super().__init__("ewoc-prd-dev")
+            super().__init__("ewoc-prd-dev", ewoc_cloud_provider=ewoc_cloud_provider)
 
     def upload_ewoc_prd(
         self, prd_path: Path, prd_prefix: str
@@ -393,8 +404,11 @@ class EWOCPRDBucket(EWOCBucket):
         """
         return super()._upload_prd(prd_path, prd_prefix, file_suffix=None)
 
-    def download_prd(self, bucket_prefix: str, out_dirpath: Path=Path(gettempdir())) -> None:
+    def download_prd(
+        self, bucket_prefix: str, out_dirpath: Path = Path(gettempdir())
+    ) -> None:
         return super()._download_prd(bucket_prefix, out_dirpath)
+
 
 if __name__ == "__main__":
     import sys
