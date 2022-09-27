@@ -45,7 +45,7 @@ def get_ewoc_prd(
         exclude_items=["blocks", "exitlogs", "proclogs"],
     )
 
-    ewoc_prd_bucket_aws = EWOCPRDBucket(ewoc_dev_mode=True, ewoc_cloud_provider="aws")
+    ewoc_prd_bucket_aws = EWOCPRDBucket(ewoc_dev_mode=False, ewoc_cloud_provider="aws")
 
     if bucket_prefix.endswith("/"):
         suffix_elt = (bucket_prefix.split("/"))[-2]
