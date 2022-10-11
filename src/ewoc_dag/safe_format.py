@@ -58,7 +58,7 @@ def aws_to_safe(
 
     if S1PrdIdInfo.is_valid(prd_id):
         if (out_dirpath / "productInfo.json").exists():
-            prd_safe_dirpath = aws_s1_to_safe(out_dirpath, out_safe_dirpath.parent)
+            prd_safe_dirpath = aws_s1_to_safe(out_dirpath, out_safe_dirpath)
         else:
             out_safe_dirpath.rmdir()
             raise S1SafeConversionError(

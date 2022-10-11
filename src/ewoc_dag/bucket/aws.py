@@ -118,6 +118,7 @@ class AWSS1Bucket(AWSEOBucket):
             super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
         except EOBucketException as exc:
             logger.error(exc)
+            out_dirpath.rmdir()
             raise AWSDownloadError(exc) from exc
 
         if safe_format:
