@@ -4,6 +4,7 @@
 import logging
 import os
 from pathlib import Path
+import shutil
 from tempfile import gettempdir
 from typing import List
 
@@ -11,9 +12,21 @@ from ewoc_dag.bucket.eobucket import EOBucket
 from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
-from ewoc_dag.safe_format import aws_to_safe
+from ewoc_dag.safe_format import S1SafeConversionError, aws_to_safe
 
 logger = logging.getLogger(__name__)
+
+
+class AWSDownloadError(Exception):
+    """Exception raised for errors in the S1 SAFE conversion format on AWS."""
+
+    def __init__(self, error=None):
+        self._error = error
+        self._message = "Error while downloading from AWS:"
+        super().__init__(self._message)
+
+    def __str__(self):
+        return f"{self._message} {self._error}"
 
 
 class AWSEOBucket(EOBucket):
@@ -104,7 +117,12 @@ class AWSS1Bucket(AWSEOBucket):
         super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
 
         if safe_format:
-            return aws_to_safe(out_dirpath, prd_id)
+            try:
+                return aws_to_safe(out_dirpath, prd_id)
+            except S1SafeConversionError as exc:
+                shutil.rmtree(out_dirpath)
+                logger.error(exc)
+                raise AWSDownloadError(exc) from exc
 
         return out_dirpath
 

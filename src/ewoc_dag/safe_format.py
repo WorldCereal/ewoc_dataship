@@ -6,7 +6,7 @@ import logging
 import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
@@ -14,10 +14,22 @@ from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 logger = logging.getLogger(__name__)
 
 
+class S1SafeConversionError(Exception):
+    """Exception raised for errors in the S1 SAFE conversion format on AWS."""
+
+    def __init__(self, error):
+        self._error = error
+        self._message = "Error during S1 SAFE conversion:"
+        super().__init__(self._message)
+
+    def __str__(self):
+        return f"{self._message} {self._error} !"
+
+
 def aws_to_safe(
     out_dirpath: Path,
     prd_id: str,
-    out_safe_dirroot: Path = None,
+    out_safe_dirroot: Optional[Path] = None,
 ) -> Path:
     """Translate from format used by some AWS buckets to SAFE format
 
@@ -41,18 +53,25 @@ def aws_to_safe(
         out_safe_dirpath = out_dirpath.parent / safe_prd_id
     else:
         out_safe_dirpath = out_safe_dirroot / safe_prd_id
+
     out_safe_dirpath.mkdir(exist_ok=True)
 
     if S1PrdIdInfo.is_valid(prd_id):
-        out_safe_dirpath = aws_s1_to_safe(out_dirpath, out_safe_dirpath)
+        if (out_dirpath / "productInfo.json").exists():
+            prd_safe_dirpath = aws_s1_to_safe(out_dirpath, out_safe_dirpath.parent)
+        else:
+            out_safe_dirpath.rmdir()
+            raise S1SafeConversionError(
+                f'No conversion file for {prd_id.split(".")[0]}'
+            )
     elif S2PrdIdInfo.is_valid(prd_id) and S2PrdIdInfo.is_l1c(prd_id):
-        out_safe_dirpath = aws_s2_l1c_to_safe(out_dirpath, out_safe_dirpath)
+        prd_safe_dirpath = aws_s2_l1c_to_safe(out_dirpath, out_safe_dirpath)
     else:
         raise ValueError("Product ID not supported!")
 
     shutil.rmtree(out_dirpath)
 
-    return out_safe_dirpath
+    return prd_safe_dirpath
 
 
 def aws_s1_to_safe(
@@ -202,7 +221,7 @@ def aws_s2_l1c_to_safe(
         if gr_elt.parts[-2] == "AUX_DATA":
             safe_gr_aux_data_dir = gr_elt.parent
             break
-    if 'safe_gr_aux_data_dir' not in locals():
+    if "safe_gr_aux_data_dir" not in locals():
         safe_gr_aux_data_dir = safe_gr_qi_data_dir.parents[0] / "AUX_DATA"
     try:
         shutil.copy(

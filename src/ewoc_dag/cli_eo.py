@@ -12,7 +12,7 @@ from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 from ewoc_dag.l8c2l2_dag import get_l8c2l2_product, _L8C2_SOURCES
-from ewoc_dag.s1_dag import get_s1_product
+from ewoc_dag.s1_dag import S1DagError, get_s1_product
 from ewoc_dag.s2_dag import get_s2_product
 
 
@@ -23,6 +23,18 @@ __license__ = "MIT"
 logger = logging.getLogger(__name__)
 
 
+class EwocEODagException(Exception):
+    """Base Class for ewoc_dag package"""
+
+    def __init__(self, error=None):
+        self._error = error
+        self._message = "EwoC EO DAG error:"
+        super().__init__(self._message)
+
+    def __str__(self):
+        return f"{self._message} {self._error}"
+
+
 def get_eo_data(
     prd_id: str,
     out_dirpath: Path = Path(gettempdir()),
@@ -30,6 +42,7 @@ def get_eo_data(
     eodata_config_filepath: Path = None,
     only_l2a_mask: bool = False,
     use_s2_cogs: bool = False,
+    to_safe: bool = False,
 ) -> None:
     """Retrieve EO data from the product ID
 
@@ -50,12 +63,17 @@ def get_eo_data(
             eodag_config_file=eodata_config_filepath,
         )
     elif S1PrdIdInfo.is_valid(prd_id):
-        get_s1_product(
-            prd_id,
-            out_dirpath,
-            source=eo_data_source,
-            eodag_config_file=eodata_config_filepath,
-        )
+        try:
+            get_s1_product(
+                prd_id,
+                out_dirpath,
+                source=eo_data_source,
+                eodag_config_file=eodata_config_filepath,
+                safe_format=to_safe,
+            )
+        except S1DagError as exc:
+            logger.error(exc)
+            raise EwocEODagException(exc) from exc
     elif S2PrdIdInfo.is_valid(prd_id):
         get_s2_product(
             prd_id,
@@ -103,6 +121,12 @@ def parse_args(args):
         help="Source of the EO data",
         type=str,
         default="eodag",
+    )
+    parser.add_argument(
+        "--to-safe",
+        dest="to_safe",
+        help="Convert to SAFE format (for AWS S2 L1C and S1 L1 GRD data)",
+        action="store_true",
     )
     parser.add_argument(
         "-v",
@@ -153,8 +177,18 @@ def main(args):
         args.data_source,
         args.out_dirpath,
     )
-    get_eo_data(args.prd_ids, args.out_dirpath, eo_data_source=args.data_source)
-    logger.info("Data are available at %s!", args.out_dirpath)
+    try:
+        get_eo_data(
+            args.prd_ids,
+            args.out_dirpath,
+            eo_data_source=args.data_source,
+            to_safe=args.to_safe,
+        )
+    except EwocEODagException as exc:
+        logger.error(exc)
+        sys.exit(1)
+    else:
+        logger.info("Data %s are available at %s!", args.prd_ids, args.out_dirpath)
 
 
 def run():
