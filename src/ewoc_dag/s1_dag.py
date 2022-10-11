@@ -67,7 +67,7 @@ def get_s1_product(
         logging.info(
             "Use EODAG to retrieve S1 product!",
         )
-        out_prd_path = get_product_by_id(
+        s1_prd_path = get_product_by_id(
             prd_id,
             out_root_dirpath,
             provider="creodias",  # TODO Keep eodag manage
@@ -76,13 +76,13 @@ def get_s1_product(
         )
     elif s1_provider == "creodias":
         logging.info("Use CREODIAS object storage to retrieve S1 product!")
-        out_prd_path = CreodiasBucket().download_s1_prd(prd_id, out_root_dirpath)
+        s1_prd_path = CreodiasBucket().download_s1_prd(prd_id, out_root_dirpath)
     elif s1_provider == "aws":
         logging.info("Use AWS object storage to retrieve S1 product!")
-        out_prd_path = AWSS1Bucket().download_prd(
+        s1_prd_path = AWSS1Bucket().download_prd(
             prd_id, out_root_dirpath, safe_format=safe_format
         )
     else:
         raise ValueError(f"Source {s1_provider} is not supported")
 
-    return out_prd_path
+    return s1_prd_path
