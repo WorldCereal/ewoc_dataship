@@ -8,7 +8,7 @@ import shutil
 from tempfile import gettempdir
 from typing import List
 
-from ewoc_dag.bucket.eobucket import EOBucket
+from ewoc_dag.bucket.eobucket import EOBucket, EOBucketException
 from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
 from ewoc_dag.eo_prd_id.s1_prd_id import S1PrdIdInfo
 from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
@@ -114,7 +114,11 @@ class AWSS1Bucket(AWSEOBucket):
             + "/"
         )
         logger.debug("prd_prefix: %s", prd_prefix)
-        super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
+        try:
+            super()._download_prd(prd_prefix, out_dirpath, request_payer=True)
+        except EOBucketException as exc:
+            logger.error(exc)
+            raise AWSDownloadError(exc) from exc
 
         if safe_format:
             try:

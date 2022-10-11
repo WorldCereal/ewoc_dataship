@@ -37,6 +37,25 @@ class UploadProductError(Exception):
         return f"{self.prd_dirpath} fail to be uploaded to {self.object_prefix}!"
 
 
+class EOBucketException(Exception):
+    """Exception raised when product download failed"""
+
+    def __init__(
+        self,
+        prd_prefix,
+        response,
+        bucket_name,
+    ):
+        self._prd_prefix = prd_prefix
+        self._bucket_name = bucket_name
+        self._response = response
+        self._message = "Error while downloading:"
+        super().__init__(self._message)
+
+    def __str__(self):
+        return f"{self._message} {self._prd_prefix} from {self._bucket_name} with {self._response}"
+
+
 class DownloadFileError(Exception):
     """Exception raised when file download failed"""
 
@@ -275,42 +294,46 @@ class EOBucket:
                 Bucket=self._bucket_name,
                 Prefix=prd_prefix,
             )
-
-        for obj in response["Contents"]:
-            # Should we use select this object?
-            is_selected = prd_items is None
-            if prd_items is not None:
-                for filter_band in prd_items:
-                    if filter_band in obj["Key"]:
-                        is_selected = True
-            if obj["Key"].endswith("/"):
-                is_file = False
-            else:
-                is_file = True
-            if is_selected and is_file:
-                logger.debug("obj.key: %s", obj["Key"])
-                filename = obj["Key"].split(
-                    sep="/", maxsplit=len(prd_prefix.split("/")) - 1
-                )[-1]
-                output_filepath = out_dirpath / filename
-                (output_filepath.parent).mkdir(parents=True, exist_ok=True)
-                if not output_filepath.exists():
-                    logging.info(
-                        "Try to download from %s to %s", obj["Key"], output_filepath
-                    )
-                    self._s3_client.download_file(
-                        Bucket=self._bucket_name,
-                        Key=obj["Key"],
-                        Filename=str(output_filepath),
-                        ExtraArgs=extra_args,
-                    )
-                    logging.info(
-                        "Download from %s to %s succeed!", obj["Key"], output_filepath
-                    )
+        try:
+            for obj in response["Contents"]:
+                # Should we use select this object?
+                is_selected = prd_items is None
+                if prd_items is not None:
+                    for filter_band in prd_items:
+                        if filter_band in obj["Key"]:
+                            is_selected = True
+                if obj["Key"].endswith("/"):
+                    is_file = False
                 else:
-                    logging.info(
-                        "%s already available, skip downloading!", output_filepath
-                    )
+                    is_file = True
+                if is_selected and is_file:
+                    logger.debug("obj.key: %s", obj["Key"])
+                    filename = obj["Key"].split(
+                        sep="/", maxsplit=len(prd_prefix.split("/")) - 1
+                    )[-1]
+                    output_filepath = out_dirpath / filename
+                    (output_filepath.parent).mkdir(parents=True, exist_ok=True)
+                    if not output_filepath.exists():
+                        logging.info(
+                            "Try to download from %s to %s", obj["Key"], output_filepath
+                        )
+                        self._s3_client.download_file(
+                            Bucket=self._bucket_name,
+                            Key=obj["Key"],
+                            Filename=str(output_filepath),
+                            ExtraArgs=extra_args,
+                        )
+                        logging.info(
+                            "Download from %s to %s succeed!",
+                            obj["Key"],
+                            output_filepath,
+                        )
+                    else:
+                        logging.info(
+                            "%s already available, skip downloading!", output_filepath
+                        )
+        except KeyError as exc:
+            raise EOBucketException(prd_prefix, response, self._bucket_name) from exc
 
     def _upload_file(self, filepath: Path, key: str) -> int:
         """Upload a object to a bucket

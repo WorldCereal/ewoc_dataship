@@ -186,6 +186,9 @@ def main(args):
         )
     except EwocEODagException as exc:
         logger.error(exc)
+        sys.exit(2)
+    except BaseException as err:
+        logger.error(f"Unexpected {err=}, {type(err)=}")
         sys.exit(1)
     else:
         logger.info("Data %s are available at %s!", args.prd_ids, args.out_dirpath)
