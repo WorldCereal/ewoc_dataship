@@ -6,13 +6,25 @@ import os
 from pathlib import Path
 from tempfile import gettempdir
 
-from ewoc_dag.bucket.aws import AWSS1Bucket
+from ewoc_dag.bucket.aws import AWSDownloadError, AWSS1Bucket
 from ewoc_dag.bucket.creodias import CreodiasBucket
 from ewoc_dag.eodag_utils import get_product_by_id
 
 logger = logging.getLogger(__name__)
 
 _S1_SOURCES = ["eodag", "aws", "creodias"]
+
+
+class S1DagError(Exception):
+    """Exception raised for errors in the S1 SAFE conversion format on AWS."""
+
+    def __init__(self, error=None):
+        self._error = error
+        self.message = "Error while S1 downloading:"
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f"{self.message} {self._error}"
 
 
 def get_s1_default_provider() -> str:
@@ -67,7 +79,7 @@ def get_s1_product(
         logging.info(
             "Use EODAG to retrieve S1 product!",
         )
-        out_prd_path = get_product_by_id(
+        s1_prd_path = get_product_by_id(
             prd_id,
             out_root_dirpath,
             provider="creodias",  # TODO Keep eodag manage
@@ -76,13 +88,17 @@ def get_s1_product(
         )
     elif s1_provider == "creodias":
         logging.info("Use CREODIAS object storage to retrieve S1 product!")
-        out_prd_path = CreodiasBucket().download_s1_prd(prd_id, out_root_dirpath)
+        s1_prd_path = CreodiasBucket().download_s1_prd(prd_id, out_root_dirpath)
     elif s1_provider == "aws":
         logging.info("Use AWS object storage to retrieve S1 product!")
-        out_prd_path = AWSS1Bucket().download_prd(
-            prd_id, out_root_dirpath, safe_format=safe_format
-        )
+        try:
+            s1_prd_path = AWSS1Bucket().download_prd(
+                prd_id, out_root_dirpath, safe_format=safe_format
+            )
+        except AWSDownloadError as exc:
+            logger.error(exc)
+            raise S1DagError(exc) from exc
     else:
         raise ValueError(f"Source {s1_provider} is not supported")
 
-    return out_prd_path
+    return s1_prd_path
