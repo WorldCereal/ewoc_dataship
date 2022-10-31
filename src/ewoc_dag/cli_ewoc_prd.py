@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" CLI to retrieve EO data identifiy by their product ID to EO data provider.
+""" CLI to retrieve data from the EWoC bucket.
 """
 import argparse
 import logging
@@ -8,7 +8,7 @@ import sys
 from tempfile import gettempdir
 
 from ewoc_dag import __version__
-from ewoc_dag.bucket.ewoc import EWOCPRDBucket
+from ewoc_dag.ewoc_dag import get_blocks
 
 
 __author__ = "Mickael Savinaud"
@@ -20,15 +20,21 @@ logger = logging.getLogger(__name__)
 
 def get_ewoc_prd(
     bucket_prefix: str,
-    out_dirpath: Path = Path(gettempdir()),
-) -> None:
-    """Get EWoC product from an bucket prefix
-    todo
+    out_dirpath_root: Path = Path(gettempdir()),
+) -> Path:
+    """Get EWoC data from an bucket prefix on the EWoC bucket
+
+    Args:
+        bucket_prefix (str): Bucket prefix to retrieve
+        out_dirpath (Path): Path where the data will be downloaded
     """
 
-    ewoc_prd_bucket = EWOCPRDBucket()
-    ewoc_prd_bucket.download_prd(bucket_prefix, out_dirpath=out_dirpath)
-
+    # bucket_prefix= 'c728b264-5c97-4f4c-81fe-1500d4c4dfbd_26178_20221025141020/blocks/50QLL/2021_annual/annualcropland/classification/'
+    # ewoc_prd_bucket = EWOCPRDBucket()
+    # ewoc_prd_bucket.download_bucket_prefix(bucket_prefix,
+    #                                        out_dirpath_root=out_dirpath)
+    return get_blocks(bucket_prefix,'50QLL', 'annual','2021',
+        out_dirpath_root=out_dirpath_root)
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
@@ -106,12 +112,12 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
     logger.info(
-        "Start retrieve %s from %s to %s !",
+        "Start retrieve %s to %s !",
         args.bucket_prefix,
         args.out_dirpath,
     )
-    get_ewoc_prd(args.bucket_prefix, out_dirpath=args.out_dirpath)
-    logger.info("Data are available at %s!", args.out_dirpath)
+    out_dirpath = get_ewoc_prd(args.bucket_prefix, out_dirpath_root=args.out_dirpath)
+    logger.info("Data are available at %s!", out_dirpath)
 
 
 def run():
