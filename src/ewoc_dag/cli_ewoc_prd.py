@@ -108,7 +108,6 @@ def main(args):
     logger.info(
         "Start retrieve %s from %s to %s !",
         args.bucket_prefix,
-        args.data_source,
         args.out_dirpath,
     )
     get_ewoc_prd(args.bucket_prefix, out_dirpath=args.out_dirpath)
