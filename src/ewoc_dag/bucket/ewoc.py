@@ -387,6 +387,16 @@ class EWOCPRDBucket(EWOCBucket):
         """
         return super()._upload_prd(prd_path, prd_prefix, file_suffix=None)
 
+    def download_bucket_prefix(
+        self,
+        bucket_prefix: str,
+        out_dirpath: Path=Path(gettempdir())) -> None:
+        """Donwload bucket prefix from the EWoC bucket
+        Args:
+            bucket_prefix (str): Bucket prefix to retrieve
+            out_dirpath (Path): Path where the bucket_prefix will be downloaded
+        """
+        return super()._download_prd(bucket_prefix, out_dirpath)
 
 if __name__ == "__main__":
     import sys
