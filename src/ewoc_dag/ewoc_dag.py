@@ -23,10 +23,10 @@ class S1DagError(Exception):
     def __str__(self):
         return f"{self.message} {self._error}"
 
+
 def get_bucket_prefix(
-    bucket_prefix: str,
-    out_dirpath_root: Path = Path(gettempdir())
-) -> Path:
+    bucket_prefix: str, out_dirpath_root: Path = Path(gettempdir())
+) -> None:
     """Retrieve Sentinel-1 product according to the product id and the source
 
     Args:
