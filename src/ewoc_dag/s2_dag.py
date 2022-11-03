@@ -100,14 +100,14 @@ def get_s2_product(
                     prd_id,
                     out_dirpath_root=out_root_dirpath,
                     l2a_mask_only=l2_mask_only,
-                    prd_items=['B02','B03','B04','B05','B06','B07','B08','B11','B12','SLC'],
+                    prd_items=['B02','B03','B04','B05','B06','B07','B08','B11','B12','SCL'],
                 )
             else:
                 out_prd_path = AWSS2L2ABucket().download_prd(
                     prd_id,
                     out_dirpath_root=out_root_dirpath,
                     l2a_mask_only=l2_mask_only,
-                    prd_items=['B02','B03','B04','B05','B06','B07','B08','B11','B12','SLC'],
+                    prd_items=['B02','B03','B04','B05','B06','B07','B08','B11','B12','SCL'],
                 )
 
     else:
