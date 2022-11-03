@@ -207,7 +207,7 @@ class AWSS2Bucket(AWSEOBucket):
                     Filename=str(out_dirpath / mask_filename),
                 )
             else:
-                self._download_prd(prd_prefix, out_dirpath)
+                self._download_prd(prd_prefix, out_dirpath, prd_items=prd_items)
         else:
             prd_prefix = (
                 "/".join(
@@ -340,6 +340,7 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         l2a_mask_only: bool = False,
+        prd_items: List[str] = None,
     ) -> Path:
         """Download S2 L2A product according to the product ID from the
          bucket: https://registry.opendata.aws/sentinel-2-l2a-cogs/
@@ -349,12 +350,13 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
             out_dirpath_root (Path, optional): Path where to write the product.
              Defaults to Path(gettempdir()).
             l2a_mask_only (bool, optional): Retrieve only the L2A mask. Defaults to False.
+            prd_items (List[str], optional): Applies a filter on which bands to download
 
         Returns:
             Path: Path to the Sentinel-2 L2A product
         """
         return super()._download_s2_prd(
-            prd_id, out_dirpath_root, l2_mask_only=l2a_mask_only, l2a_cogs=True
+            prd_id, out_dirpath_root, l2_mask_only=l2a_mask_only, l2a_cogs=True, prd_items=prd_items
         )
 
 
