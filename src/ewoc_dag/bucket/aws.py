@@ -144,6 +144,7 @@ class AWSS2Bucket(AWSEOBucket):
         out_dirpath_root: Path = Path(gettempdir()),
         l2_mask_only: bool = False,
         l2a_cogs: bool = False,
+        prd_items: List[str] = None,
     ) -> Path:
         """Download S2 product according to the product ID from the AWS buckets:
             - https://registry.opendata.aws/sentinel-2/ for L1C and L2A data
@@ -158,6 +159,7 @@ class AWSS2Bucket(AWSEOBucket):
              Used only for L2 product
             l2a_cogs (bool, optional): Use AWS bucket which provided COG products.
              Defaults to False.
+            prd_items (List[str], optional): Applies a filter on which bands to download
 
         Returns:
             Path: Path to the S2 product
@@ -205,7 +207,7 @@ class AWSS2Bucket(AWSEOBucket):
                     Filename=str(out_dirpath / mask_filename),
                 )
             else:
-                self._download_prd(prd_prefix, out_dirpath)
+                self._download_prd(prd_prefix, out_dirpath, prd_items=prd_items)
         else:
             prd_prefix = (
                 "/".join(
@@ -251,8 +253,8 @@ class AWSS2Bucket(AWSEOBucket):
                         ExtraArgs=dict(RequestPayer="requester"),
                     )
                 else:
-                    super()._download_prd(prd_prefix, out_prod, request_payer=True)
-                    super()._download_prd(tile_prefix, out_tile, request_payer=True)
+                    super()._download_prd(prd_prefix, out_prod, request_payer=True, prd_items=prd_items)
+                    super()._download_prd(tile_prefix, out_tile, request_payer=True, prd_items=prd_items)
             else:
                 super()._download_prd(prd_prefix, out_tile, request_payer=True)
                 super()._download_prd(tile_prefix, out_prod, request_payer=True)
@@ -306,6 +308,7 @@ class AWSS2L2ABucket(AWSS2Bucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         l2a_mask_only: bool = False,
+        prd_items: List[str] = None,
     ) -> Path:
         """Download S2 L2A product according to the product ID from the
          bucket: https://registry.opendata.aws/sentinel-2/
@@ -315,12 +318,13 @@ class AWSS2L2ABucket(AWSS2Bucket):
             out_dirpath_root (Path, optional): Path where to write the product.
              Defaults to Path(gettempdir()).
             l2a_mask_only (bool, optional): Retrieve only the L2A mask. Defaults to False.
+            prd_items (List[str], optional): Applies a filter on which bands to download
 
         Returns:
             Path:  Path to the Sentinel-2 L2A product
         """
         return super()._download_s2_prd(
-            prd_id, out_dirpath_root, l2_mask_only=l2a_mask_only
+            prd_id, out_dirpath_root, l2_mask_only=l2a_mask_only, prd_items=prd_items
         )
 
 
@@ -336,6 +340,7 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         l2a_mask_only: bool = False,
+        prd_items: List[str] = None,
     ) -> Path:
         """Download S2 L2A product according to the product ID from the
          bucket: https://registry.opendata.aws/sentinel-2-l2a-cogs/
@@ -345,12 +350,13 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
             out_dirpath_root (Path, optional): Path where to write the product.
              Defaults to Path(gettempdir()).
             l2a_mask_only (bool, optional): Retrieve only the L2A mask. Defaults to False.
+            prd_items (List[str], optional): Applies a filter on which bands to download
 
         Returns:
             Path: Path to the Sentinel-2 L2A product
         """
         return super()._download_s2_prd(
-            prd_id, out_dirpath_root, l2_mask_only=l2a_mask_only, l2a_cogs=True
+            prd_id, out_dirpath_root, l2_mask_only=l2a_mask_only, l2a_cogs=True, prd_items=prd_items
         )
 
 
