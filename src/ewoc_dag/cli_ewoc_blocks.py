@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 
 def get_ewoc_prd(
     bucket_prefix: str,
+    tile_id:str,
+    season:str,
+    year:int=2021,
     out_dirpath_root: Path = Path(gettempdir()),
 ) -> Path:
     """Get EWoC data from an bucket prefix on the EWoC bucket
@@ -33,7 +36,7 @@ def get_ewoc_prd(
     # ewoc_prd_bucket = EWOCPRDBucket()
     # ewoc_prd_bucket.download_bucket_prefix(bucket_prefix,
     #                                        out_dirpath_root=out_dirpath)
-    return get_blocks(bucket_prefix,'50QLL', 'annual','2021',
+    return get_blocks(bucket_prefix, tile_id, season, year,
         out_dirpath_root=out_dirpath_root)
 
 # ---- CLI ----
@@ -58,7 +61,18 @@ def parse_args(args):
         action="version",
         version=f"ewoc_dag {__version__}",
     )
-    parser.add_argument(dest="bucket_prefix", help="EO product ID", type=str)
+    parser.add_argument(dest="production_id", help="EWoC production ID", type=str)
+    parser.add_argument(dest="tile_id", help="S2 MGRS tile ID", type=str)
+    parser.add_argument(dest="season", help="EWoC season", type=str)
+
+
+    parser.add_argument(
+        "-y",
+        dest="season_year",
+        help="Season year",
+        type=int,
+        default=2021,
+    )
 
     parser.add_argument(
         "-o",
@@ -112,11 +126,10 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
     logger.info(
-        "Start retrieve %s to %s !",
-        args.bucket_prefix,
-        args.out_dirpath,
+        f"Start retrieve blocks of {args.tile_id} from {args.production_id} for {args.season} !",
     )
-    out_dirpath = get_ewoc_prd(args.bucket_prefix, out_dirpath_root=args.out_dirpath)
+    out_dirpath = get_ewoc_prd(args.production_id, args.tile_id, args.season,
+        args.season_year, out_dirpath_root=args.out_dirpath)
     logger.info("Data are available at %s!", out_dirpath)
 
 
