@@ -10,6 +10,7 @@ from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 from ewoc_dag.bucket.aws import AWSS2L1CBucket, AWSS2L2ABucket, AWSS2L2ACOGSBucket
 from ewoc_dag.bucket.creodias import CreodiasBucket
 from ewoc_dag.eodag_utils import get_product_by_id
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +34,8 @@ def get_s2_default_provider() -> str:
 def get_s2_product(
     prd_id: str,
     out_root_dirpath: Path = Path(gettempdir()),
-    source: str = None,
-    eodag_config_file: Path = None,
+    source: Optional[str] = None,
+    eodag_config_file: Optional[Path] = None,
     l2_mask_only: bool = False,
     aws_l2a_cogs: bool = True,
     aws_l1c_safe: bool = False,

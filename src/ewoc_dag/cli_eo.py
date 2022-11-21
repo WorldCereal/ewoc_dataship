@@ -14,6 +14,7 @@ from ewoc_dag.eo_prd_id.s2_prd_id import S2PrdIdInfo
 from ewoc_dag.l8c2l2_dag import get_l8c2l2_product, _L8C2_SOURCES
 from ewoc_dag.s1_dag import S1DagError, get_s1_product
 from ewoc_dag.s2_dag import get_s2_product
+from typing import Optional
 
 
 __author__ = "Mickael Savinaud"
@@ -39,7 +40,7 @@ def get_eo_data(
     prd_id: str,
     out_dirpath: Path = Path(gettempdir()),
     eo_data_source: str = "eodag",
-    eodata_config_filepath: Path = None,
+    eodata_config_filepath: Optional[Path] = None,
     only_l2a_mask: bool = False,
     use_s2_cogs: bool = False,
     to_safe: bool = False,

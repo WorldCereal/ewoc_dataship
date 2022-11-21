@@ -9,6 +9,7 @@ from tempfile import gettempdir
 from ewoc_dag.bucket.aws import AWSDownloadError, AWSS1Bucket
 from ewoc_dag.bucket.creodias import CreodiasBucket
 from ewoc_dag.eodag_utils import get_product_by_id
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +45,8 @@ def get_s1_default_provider() -> str:
 def get_s1_product(
     prd_id: str,
     out_root_dirpath: Path = Path(gettempdir()),
-    source: str = None,
-    eodag_config_file: Path = None,
+    source: Optional[str] = None,
+    eodag_config_file: Optional[Path] = None,
     safe_format: bool = False,
 ) -> Path:
     """Retrieve Sentinel-1 product according to the product id and the source
