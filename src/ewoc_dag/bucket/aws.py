@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import shutil
 from tempfile import gettempdir
-from typing import List
+from typing import Optional, List
 
 from ewoc_dag.bucket.eobucket import EOBucket, EOBucketException
 from ewoc_dag.eo_prd_id.l8_prd_id import L8C2PrdIdInfo
@@ -144,7 +144,7 @@ class AWSS2Bucket(AWSEOBucket):
         out_dirpath_root: Path = Path(gettempdir()),
         l2_mask_only: bool = False,
         l2a_cogs: bool = False,
-        prd_items: List[str] = None,
+        prd_items: Optional[List[str]] = None,
     ) -> Path:
         """Download S2 product according to the product ID from the AWS buckets:
             - https://registry.opendata.aws/sentinel-2/ for L1C and L2A data
@@ -308,7 +308,7 @@ class AWSS2L2ABucket(AWSS2Bucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         l2a_mask_only: bool = False,
-        prd_items: List[str] = None,
+        prd_items: Optional[List[str]] = None,
     ) -> Path:
         """Download S2 L2A product according to the product ID from the
          bucket: https://registry.opendata.aws/sentinel-2/
@@ -340,7 +340,7 @@ class AWSS2L2ACOGSBucket(AWSS2Bucket):
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
         l2a_mask_only: bool = False,
-        prd_items: List[str] = None,
+        prd_items: Optional[List[str]] = None,
     ) -> Path:
         """Download S2 L2A product according to the product ID from the
          bucket: https://registry.opendata.aws/sentinel-2-l2a-cogs/
@@ -371,7 +371,7 @@ class AWSL8C2L2Bucket(AWSEOBucket):
         self,
         prd_id: str,
         out_dirpath_root: Path = Path(gettempdir()),
-        prd_items: List[str] = None,
+        prd_items: Optional[List[str]] = None,
     ) -> Path:
         """Download Landsat 8 Collection 2 Level 2 product according to the product ID
          from the bucket: https://registry.opendata.aws/usgs-landsat/

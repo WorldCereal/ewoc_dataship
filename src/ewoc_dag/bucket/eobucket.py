@@ -76,9 +76,9 @@ class EOBucket:
     def __init__(
         self,
         bucket_name: str,
-        s3_access_key_id: str = None,
-        s3_secret_access_key: str = None,
-        endpoint_url: str = None,
+        s3_access_key_id: Optional[str] = None,
+        s3_secret_access_key: Optional[str] = None,
+        endpoint_url: Optional[str] = None,
     ) -> None:
         """EO Bucket constructor
 
@@ -269,7 +269,7 @@ class EOBucket:
         prd_prefix: str,
         out_dirpath: Path,
         request_payer: bool = False,
-        prd_items: List[str] = None,
+        prd_items: Optional[List[str]] = None,
     ) -> None:
         """Download product from object storage
 

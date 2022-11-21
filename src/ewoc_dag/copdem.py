@@ -5,7 +5,7 @@ import logging
 import os
 from pathlib import Path
 from tempfile import gettempdir
-from typing import List
+from typing import Optional, List
 
 from eotile.eotile_module import main
 
@@ -37,7 +37,7 @@ def get_copdem_default_provider() -> str:
 def get_copdem_from_s2_tile_id(
     s2_tile_id: str,
     out_dirpath: Path = Path(gettempdir()),
-    source: str = None,
+    source: Optional[str] = None,
     resolution: str = _COPDEM_RESOLUTIONS[0],
     to_sen2cor: bool = False
 ) -> None:
@@ -66,7 +66,7 @@ def get_copdem_from_s2_tile_id(
 def get_copdem_tiles(
     copdem_tile_ids: List[str],
     out_dir: Path = Path(gettempdir()),
-    source: str = None,
+    source: Optional[str] = None,
     resolution: str = _COPDEM_RESOLUTIONS[0],
     to_sen2cor: bool = False
 ) -> None:
@@ -107,7 +107,7 @@ def get_copdem_ids(s2_tile_id: str) -> List[str]:
 
 def get_gdal_vrt_files(
     copdem_tile_ids: List[str],
-    source: str = None,
+    source: Optional[str] = None,
     resolution: str = _COPDEM_RESOLUTIONS[0],
 ) -> List[str]:
     """Compute vsis3 files for the COP DEM files from a bucket
@@ -144,7 +144,7 @@ def get_gdal_vrt_files(
 
 def to_gdal_vrt_input_file_list(
     copdem_tile_ids: List[str],
-    source: str = None,
+    source: Optional[str] = None,
     resolution: str = _COPDEM_RESOLUTIONS[0],
     filepath: Path = Path(gettempdir()) / "copdem_list.txt",
 ) -> None:
