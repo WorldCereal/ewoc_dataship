@@ -45,7 +45,7 @@ def get_bucket_prefix(
 def get_blocks(production_id:str,
                tile_id:str,
                season:str,
-               year:str,
+               year:int,
                out_dirpath_root: Path = Path(gettempdir())
                )->Path:
     """Retrieve blocks files from the production id
