@@ -8,7 +8,7 @@ from datetime import datetime
 from distutils.util import strtobool
 from pathlib import Path
 from tempfile import gettempdir
-from typing import List, Tuple
+from typing import List, Tuple, Set, Optional
 
 import pandas as pd
 
@@ -90,12 +90,16 @@ class EWOCBucket(EOBucket):
             ewoc_cloud_provider,
         )
 
-    def _list_prds_key(self, tile_prefix):
+    def _list_prds_key(self, tile_prefix: str) -> Set:
         prds_key = set()
 
         kwargs = {"Bucket": self._bucket_name, "Prefix": tile_prefix, "MaxKeys": 1000}
         while True:
             resp = self._s3_client.list_objects_v2(**kwargs)
+
+            if resp.get("Contents") is None:
+                _logger.error("No object in %s/%s", self._s3_basepath(), tile_prefix)
+                raise ValueError("No key in the prefix")
 
             for obj in resp.get("Contents"):
                 _logger.debug("obj.key: %s", obj["Key"])
@@ -109,6 +113,9 @@ class EWOCBucket(EOBucket):
                 break
 
         return prds_key
+
+    def close(self):
+        self._s3_client.close()
 
 
 class EWOCAuxDataBucket(EWOCBucket):
@@ -133,8 +140,12 @@ class EWOCAuxDataBucket(EWOCBucket):
             srtm_tile_id_filename = srtm_tile_id + ".SRTMGL1.hgt.zip"
             srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
             srtm_object_key = "srtm30/" + srtm_tile_id_filename
+            out_dirpath.mkdir(exist_ok=True)
             _logger.info(
-                "Try to download %s to %s", srtm_object_key, srtm_tile_id_filepath
+                "Try to download %s/%s to %s",
+                self._s3_basepath(),
+                srtm_object_key,
+                srtm_tile_id_filepath,
             )
             self._s3_client.download_file(
                 Bucket=self._bucket_name,
@@ -367,7 +378,7 @@ class EWOCARDBucket(EWOCBucket):
 class EWOCPRDBucket(EWOCBucket):
     """Class to handle access of EWoC final products"""
 
-    def __init__(self, ewoc_dev_mode=None) -> None:
+    def __init__(self, ewoc_dev_mode: Optional[bool] = None) -> None:
 
         if ewoc_dev_mode is None:
             ewoc_dev_mode = strtobool(os.getenv("EWOC_DEV_MODE", "False"))
@@ -388,9 +399,8 @@ class EWOCPRDBucket(EWOCBucket):
         return super()._upload_prd(prd_path, prd_prefix, file_suffix=None)
 
     def download_bucket_prefix(
-        self,
-        bucket_prefix: str,
-        out_dirpath: Path=Path(gettempdir())) -> None:
+        self, bucket_prefix: str, out_dirpath: Path = Path(gettempdir())
+    ) -> None:
         """Donwload bucket prefix from the EWoC bucket
         Args:
             bucket_prefix (str): Bucket prefix to retrieve
@@ -398,33 +408,6 @@ class EWOCPRDBucket(EWOCBucket):
         """
         return super()._download_prd(bucket_prefix, out_dirpath)
 
+
 if __name__ == "__main__":
-    import sys
-
-    _LOGFORMAT = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(
-        level=logging.INFO,
-        stream=sys.stdout,
-        format=_LOGFORMAT,
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-    ewoc_auxdata_bucket = EWOCAuxDataBucket()
-    ewoc_auxdata_bucket.download_srtm3s_tiles(["srtm_01_16", "srtm_01_21"])
-    ewoc_auxdata_bucket.download_srtm1s_tiles(["N53E031", "N53E032"])
-
-    # ewoc_auxdata_bucket.agera5_to_satio_csv()
-
-    ewoc_ard_bucket = EWOCARDBucket(ewoc_dev_mode=False)
-
-    upload_dirpath = Path(gettempdir()) / "srtm3s"
-    upload_filepath = upload_dirpath / "readme.txt"
-    _logger.info(ewoc_ard_bucket.upload_ard_raster(upload_filepath, "test_upload.file"))
-
-    _logger.info(ewoc_ard_bucket.upload_ard_prd(upload_dirpath, "test_upload_dir"))
-
-    # ewoc_ard_bucket.sar_to_satio_csv("31TCJ", "0000_0_09112021223005")
-    # ewoc_ard_bucket.optical_to_satio_csv("31TCJ", "0000_0_09112021223005")
-    # ewoc_ard_bucket.tir_to_satio_csv("31TCJ", "0000_0_09112021223005")
-    ewoc_ard_bucket.optical_to_satio_csv(
-        "18MWV", "BRAZIL/c728b264-5c97-4f4c-81fe-1500d4c4dfbd_20090_20220321234008"
-    )
+    pass
