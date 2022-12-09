@@ -1,4 +1,4 @@
-name: Python
+name: ci-cd
 
 on:
   push:
