@@ -7,7 +7,7 @@ import sys
 import tempfile
 
 from ewoc_dag import __version__
-from ewoc_dag.copdem import get_copdem_from_s2_tile_id
+from ewoc_dag.copdem_dag import get_copdem_from_s2_tile_id
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id
 
 
@@ -24,7 +24,7 @@ def get_dem_data(
     dem_source: str = "esa",
     dem_type: str = "srtm",
     dem_resolution: str = "1s",
-    to_sen2cor: bool = False
+    to_sen2cor: bool = False,
 ) -> None:
     """Retrieve the dem data from the S2 tile ID
 
@@ -46,8 +46,11 @@ def get_dem_data(
         )
     elif dem_type == "copdem":
         get_copdem_from_s2_tile_id(
-            s2_tile_id, out_dirpath, source=dem_source, \
-                resolution=dem_resolution, to_sen2cor=to_sen2cor
+            s2_tile_id,
+            out_dirpath,
+            source=dem_source,
+            resolution=dem_resolution,
+            to_sen2cor=to_sen2cor,
         )
     else:
         raise ValueError("DEM type different than srtm, copdem is not possible!")
@@ -106,7 +109,7 @@ def parse_args(args):
     )
     parser.add_argument(
         "--to-sen2cor",
-        action='store_true',
+        action="store_true",
         help="Rename copdem files for Sen2Cor",
     )
     parser.add_argument(
@@ -160,7 +163,7 @@ def main(args):
         dem_source=args.dem_source,
         dem_type=args.dem_type,
         dem_resolution=args.resolution,
-        to_sen2cor=args.to_sen2cor
+        to_sen2cor=args.to_sen2cor,
     )
     # logger.info("Data are available at %s!", args.out_dirpath)
 
