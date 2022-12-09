@@ -144,7 +144,9 @@ class EOBucket:
             if error_code == "404":
                 logger.critical("Path %s/%s does not exist!", self._bucket_name, prefix)
             elif error_code == "403":
-                logger.critical("Acces forbidden to %s/%s path!", self._bucket_name, prefix)
+                logger.critical(
+                    "Acces forbidden to %s/%s path!", self._bucket_name, prefix
+                )
             return False
 
         return True
@@ -159,32 +161,38 @@ class EOBucket:
             s3_result = self._s3_client.list_objects_v2(
                 Bucket=self._bucket_name,
                 Prefix=prefix,
-                Delimiter = "/",
-                RequestPayer="requester"
+                Delimiter="/",
+                RequestPayer="requester",
             )
         else:
             s3_result = self._s3_client.list_objects_v2(
-                Bucket=self._bucket_name,
-                Prefix=prefix,
-                Delimiter = "/"
+                Bucket=self._bucket_name, Prefix=prefix, Delimiter="/"
             )
 
-        if 'Contents' not in s3_result:
+        if "Contents" not in s3_result:
             logger.critical("Path %s/%s does not exist!", self._bucket_name, prefix)
             return False
         else:
 
             list_product_files = []
-            for obj in s3_result.get('Contents'):
-                list_product_files.append(obj.get('Key'))
+            for obj in s3_result.get("Contents"):
+                list_product_files.append(obj.get("Key"))
 
-            if len(list_product_files)>threshold:
-                logger.debug("Path %s/%s is full with %s files \n", \
-                    self._bucket_name, prefix, len(list_product_files))
+            if len(list_product_files) > threshold:
+                logger.debug(
+                    "Path %s/%s is full with %s files \n",
+                    self._bucket_name,
+                    prefix,
+                    len(list_product_files),
+                )
                 return True
             else:
-                logger.debug("Path %s/%s is partial with %s files \n", \
-                    self._bucket_name, prefix, len(list_product_files))
+                logger.debug(
+                    "Path %s/%s is partial with %s files \n",
+                    self._bucket_name,
+                    prefix,
+                    len(list_product_files),
+                )
                 return False
 
     def _s3_basepath(self) -> str:
@@ -207,21 +215,22 @@ class EOBucket:
         """
 
         if request_payer is True:
-            response = self._s3_client.list_objects_v2(Bucket=self._bucket_name,
-                                                        Prefix=prd_path,
-                                                        Delimiter='/',
-                                                        RequestPayer="requester")
+            response = self._s3_client.list_objects_v2(
+                Bucket=self._bucket_name,
+                Prefix=prd_path,
+                Delimiter="/",
+                RequestPayer="requester",
+            )
         else:
-            response = self._s3_client.list_objects_v2(Bucket=self._bucket_name,
-                                                        Prefix=prd_path,
-                                                        Delimiter='/')
+            response = self._s3_client.list_objects_v2(
+                Bucket=self._bucket_name, Prefix=prd_path, Delimiter="/"
+            )
 
         folder_list = []
-        for content in response.get('CommonPrefixes', []):
-            folder_list.append(content.get('Prefix'))
+        for content in response.get("CommonPrefixes", []):
+            folder_list.append(content.get("Prefix"))
 
         return folder_list
-
 
     def _find_product(self, folder_list: list, prd_date: str) -> str:
         """Find the product name in the bucket from the list of folders
@@ -235,15 +244,17 @@ class EOBucket:
         """
 
         for folder in folder_list:
-            logger.debug('Folder found: %s', folder.split('/')[-2])
+            logger.debug("Folder found: %s", folder.split("/")[-2])
 
-            if prd_date in folder.split('/')[-2]:
-                prd_name = folder.split('/')[-2]
-                logger.debug('Product name: %s', prd_name)
+            if prd_date in folder.split("/")[-2]:
+                prd_name = folder.split("/")[-2]
+                logger.debug("Product name: %s", prd_name)
 
         return prd_name
 
-    def _find_aws_folder_number(self, folder_list: list, folder_number: str = "0") -> str:
+    def _find_aws_folder_number(
+        self, folder_list: list, folder_number: str = "0"
+    ) -> str:
         """Find the aws folder number in the bucket
 
         Args:
@@ -255,12 +266,12 @@ class EOBucket:
         """
 
         for folder in folder_list:
-            logger.debug('Folder found: %s', folder.split('/')[-2])
+            logger.debug("Folder found: %s", folder.split("/")[-2])
 
-            if int(folder.split('/')[-2]) > int(folder_number):
-                folder_number = folder.split('/')[-2]
+            if int(folder.split("/")[-2]) > int(folder_number):
+                folder_number = folder.split("/")[-2]
 
-        logger.debug('Folder number: %s', folder_number)
+        logger.debug("Folder number: %s", folder_number)
 
         return folder_number
 
@@ -412,5 +423,5 @@ class EOBucket:
         return (
             nb_filepath,
             upload_object_size,
-            "s3://" + self.bucket_name + "/" + '/'.join(key.split('/')[:-1]),
+            "s3://" + self.bucket_name + "/" + "/".join(key.split("/")[:-1]),
         )
