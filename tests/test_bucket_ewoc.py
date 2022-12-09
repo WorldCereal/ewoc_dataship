@@ -55,8 +55,15 @@ class Test_ewoc(unittest.TestCase):
         ewoc_ard_dev_bucket.close()
 
         ewoc_ard_bucket = EWOCARDBucket()
+        # Tile not available
         with self.assertRaises(ValueError):
-            ewoc_ard_bucket.sar_to_satio_csv("31TCJ", "0000_0_09112021223005")
+            ewoc_ard_bucket.sar_to_satio_csv(
+                "31TCJ", "c728b264-5c97-4f4c-81fe-1500d4c4dfbd_11106_20220809155141"
+            )
+
+        ewoc_ard_bucket.sar_to_satio_csv(
+            "18GWR", "c728b264-5c97-4f4c-81fe-1500d4c4dfbd_11106_20220809155141"
+        )
 
         ewoc_ard_bucket.close()
 
@@ -68,7 +75,9 @@ class Test_ewoc(unittest.TestCase):
         ewoc_prd_dev_bucket.close()
 
         ewoc_prd_bucket = EWOCPRDBucket()
-        ewoc_prd_dev_bucket.download_bucket_prefix("toto", Path(gettempdir()))
+        ewoc_prd_dev_bucket.download_bucket_prefix(
+            "47QQG/2021_annual/", Path(gettempdir())
+        )
         ewoc_prd_bucket.close()
 
 
