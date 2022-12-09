@@ -39,7 +39,7 @@ def get_copdem_from_s2_tile_id(
     out_dirpath: Path = Path(gettempdir()),
     source: Optional[str] = None,
     resolution: str = _COPDEM_RESOLUTIONS[0],
-    to_sen2cor: bool = False
+    to_sen2cor: bool = False,
 ) -> None:
     """
     Retrieve copdem data for a Sentinel-2 tile id from the source into the output dir
@@ -59,7 +59,7 @@ def get_copdem_from_s2_tile_id(
         out_dirpath,
         source=copdem_provider,
         resolution=resolution,
-        to_sen2cor=to_sen2cor
+        to_sen2cor=to_sen2cor,
     )
 
 
@@ -68,7 +68,7 @@ def get_copdem_tiles(
     out_dir: Path = Path(gettempdir()),
     source: Optional[str] = None,
     resolution: str = _COPDEM_RESOLUTIONS[0],
-    to_sen2cor: bool = False
+    to_sen2cor: bool = False,
 ) -> None:
     """
     Retrieve copdem data from the source into the output dir
@@ -89,8 +89,9 @@ def get_copdem_tiles(
         )
     elif copdem_provider == "aws":
         logger.info("Use AWS bucket to retrieve copdem data!")
-        AWSCopDEMBucket(resolution=resolution).download_tiles(copdem_tile_ids,\
-            out_dir, to_sen2cor=to_sen2cor)
+        AWSCopDEMBucket(resolution=resolution).download_tiles(
+            copdem_tile_ids, out_dir, to_sen2cor=to_sen2cor
+        )
     else:
         raise ValueError(f"Source {copdem_provider} not supported {_COPDEM_SOURCES}!")
 
@@ -173,21 +174,4 @@ def to_gdal_vrt_input_file_list(
 
 
 if __name__ == "__main__":
-    import sys
-
-    LOG_FORMAT = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(
-        level=logging.INFO,
-        stream=sys.stdout,
-        format=LOG_FORMAT,
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
-    _TILE_ID = "31TCJ"
-    logger.info(get_copdem_ids(_TILE_ID))
-    logger.info(get_gdal_vrt_files([_TILE_ID]))
-    to_gdal_vrt_input_file_list(get_copdem_ids(_TILE_ID))
-    get_copdem_from_s2_tile_id(_TILE_ID, source="aws")
-    get_copdem_from_s2_tile_id(
-        _TILE_ID, source="aws", resolution=_COPDEM_RESOLUTIONS[1]
-    )
+    pass
