@@ -91,7 +91,7 @@ class EWOCBucket(EOBucket):
             ewoc_cloud_provider,
         )
 
-    def _list_prds_key(self, tile_prefix: str) -> Set:
+    def _list_prds_key(self, tile_prefix: str) -> Set[str]:
         prds_key = set()
 
         kwargs = {"Bucket": self._bucket_name, "Prefix": tile_prefix, "MaxKeys": 1000}
@@ -188,8 +188,8 @@ class EWOCAuxDataBucket(EWOCBucket):
 
             srtm_tile_id_filepath.unlink()
 
-    def _list_agera5_prd(self) -> List[str]:
-        """list all AgERA5 prodcuts inside the AUX data bucket
+    def _list_agera5_prd(self) -> Set[str]:
+        """list all AgERA5 products inside the AUX data bucket
 
         Returns:
             List[str]: list of AgERA5 products in the bucket
@@ -209,7 +209,7 @@ class EWOCAuxDataBucket(EWOCBucket):
         agera5_paths = []
         agera5_dates = []
         agera5_products = []
-        for agera5_dir in self._list_agera5_prd():
+        for agera5_dir in sorted(self._list_agera5_prd()):
             frequence = len(agera5_dir.split("/"))
             if frequence == 3:
                 # Case of yearly agera5
@@ -382,7 +382,7 @@ class EWOCPRDBucket(EWOCBucket):
     def __init__(self, ewoc_dev_mode: Optional[bool] = None) -> None:
 
         if ewoc_dev_mode is None:
-            ewoc_dev_mode = strtobool(os.getenv("EWOC_DEV_MODE", "False"))
+            ewoc_dev_mode = bool(strtobool(os.getenv("EWOC_DEV_MODE", "False")))
         if not ewoc_dev_mode:
             super().__init__("ewoc-prd")
         elif ewoc_dev_mode:
