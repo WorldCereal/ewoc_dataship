@@ -34,8 +34,8 @@ class Test_ewoc(unittest.TestCase):
         ewoc_auxdata_bucket.download_srtm1s_tiles(
             ["N53E031", "N53E032"], out_dirpath=out_dirpath
         )
-        self.assertTrue((out_dirpath / "srtm1s" / "N53E031.hgt").exists())
-        self.assertTrue((out_dirpath / "srtm1s" / "N53E032.hgt").exists())
+        self.assertTrue((out_dirpath / "N53E031.hgt").exists())
+        self.assertTrue((out_dirpath / "N53E032.hgt").exists())
 
         # TODO Need to fix the following lines to avoid to use private attribute
         with self.assertRaises(ValueError):
@@ -49,23 +49,23 @@ class Test_ewoc(unittest.TestCase):
     def test_ewoc_ard(self):
         ewoc_ard_dev_bucket = EWOCARDBucket(ewoc_dev_mode=True)
         upload_dirpath = Path(gettempdir()) / "srtm3s"
+        upload_dirpath.mkdir(exist_ok=True)
         upload_filepath = upload_dirpath / "readme.txt"
+        upload_filepath.touch()
         ewoc_ard_dev_bucket.upload_ard_raster(upload_filepath, "test_upload.file")
         ewoc_ard_dev_bucket.upload_ard_prd(upload_dirpath, "test_upload_dir")
-        ewoc_ard_dev_bucket.close()
 
-        ewoc_ard_bucket = EWOCARDBucket()
         # Tile not available
         with self.assertRaises(ValueError):
-            ewoc_ard_bucket.sar_to_satio_csv(
+            ewoc_ard_dev_bucket.sar_to_satio_csv(
                 "31TCJ", "c728b264-5c97-4f4c-81fe-1500d4c4dfbd_11106_20220809155141"
             )
 
-        ewoc_ard_bucket.sar_to_satio_csv(
+        ewoc_ard_dev_bucket.sar_to_satio_csv(
             "18GWR", "c728b264-5c97-4f4c-81fe-1500d4c4dfbd_11106_20220809155141"
         )
 
-        ewoc_ard_bucket.close()
+        ewoc_ard_dev_bucket.close()
 
     def test_ewoc_prd(self):
         # TODO finalize the test
