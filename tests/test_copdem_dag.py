@@ -54,8 +54,8 @@ class Test_copdem_dag(unittest.TestCase):
         self.assertListEqual(
             get_gdal_vrt_files(sorted(get_copdem_ids(self._TEST_TILE_ID_1))),
             [
-                "/vsis3/copernicus-dem-30m/Copernicus_DSM_COG_10_N43_00_E001_00_DEM/Copernicus_DSM_COG_10_N43_00_E001_00_DEM.tif",
                 "/vsis3/copernicus-dem-30m/Copernicus_DSM_COG_10_N43_00_E000_00_DEM/Copernicus_DSM_COG_10_N43_00_E000_00_DEM.tif",
+                "/vsis3/copernicus-dem-30m/Copernicus_DSM_COG_10_N43_00_E001_00_DEM/Copernicus_DSM_COG_10_N43_00_E001_00_DEM.tif",
                 "/vsis3/copernicus-dem-30m/Copernicus_DSM_COG_10_N44_00_E000_00_DEM/Copernicus_DSM_COG_10_N44_00_E000_00_DEM.tif",
                 "/vsis3/copernicus-dem-30m/Copernicus_DSM_COG_10_N44_00_E001_00_DEM/Copernicus_DSM_COG_10_N44_00_E001_00_DEM.tif",
             ],
