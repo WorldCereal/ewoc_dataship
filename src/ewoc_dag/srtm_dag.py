@@ -5,6 +5,7 @@ import os
 import logging
 import numpy as np
 import zipfile
+from geopandas import GeoDataFrame
 from pathlib import Path
 from typing import Optional, List
 
@@ -164,6 +165,8 @@ def get_srtm3s_ids_using_sen2cor_method(s2_tile_id: str) -> List[str]:
     :return: List of srtm ids
     """
     res = main(s2_tile_id)
+
+    res[0] = GeoDataFrame(res[0], crs=res[0].SRS[0], geometry=res[0].geometry)
 
     lon_min = res[0].geometry.bounds["minx"]
     lon_max = res[0].geometry.bounds["maxx"]
