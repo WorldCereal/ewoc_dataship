@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" Test EWoC private data bucket management module
+""" Test copdem dag module
 """
 from pathlib import Path
 from tempfile import gettempdir
