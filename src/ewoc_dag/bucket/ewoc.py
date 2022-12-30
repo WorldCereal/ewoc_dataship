@@ -10,9 +10,10 @@ from pathlib import Path
 from tempfile import gettempdir
 from typing import List, Tuple, Set, Optional
 
+from botocore.exceptions import ClientError
 import pandas as pd
 
-from ewoc_dag.bucket.eobucket import EOBucket
+from ewoc_dag.bucket.eobucket import EOBucket, DownloadFileError
 from ewoc_dag.eo_prd_id.ewoc_prd_id import (
     EwocArdPrdIdInfo,
     EwocS1ArdPrdIdInfo,
@@ -175,13 +176,16 @@ class EWOCAuxDataBucket(EWOCBucket):
             srtm_tile_id_filepath = out_dirpath / srtm_tile_id_filename
             srtm_object_key = "srtm90/" + srtm_tile_id_filename
             _logger.info(
-                "Try to download %s to %s", srtm_object_key, srtm_tile_id_filepath
+                f"Try to download s3://{self.bucket_name}/{srtm_object_key} to {srtm_tile_id_filepath}", 
             )
-            self._s3_client.download_file(
-                Bucket=self._bucket_name,
-                Key=srtm_object_key,
-                Filename=str(srtm_tile_id_filepath),
-            )
+            try:
+                self._s3_client.download_file(
+                    Bucket=self._bucket_name,
+                    Key=srtm_object_key,
+                    Filename=str(srtm_tile_id_filepath),
+                )
+            except ClientError as err:
+                raise DownloadFileError(err, srtm_tile_id_filepath, self.bucket_name, srtm_object_key) from err
 
             with zipfile.ZipFile(srtm_tile_id_filepath, "r") as srtm_zipfile:
                 srtm_zipfile.extractall(out_dirpath / "srtm3s")

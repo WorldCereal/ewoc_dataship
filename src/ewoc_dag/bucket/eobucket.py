@@ -10,6 +10,18 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
+class DownloadFileError(Exception):
+    """Exception raised when file download failed"""
+
+    def __init__(self, client_error: ClientError, filepath, bucket_name, key):
+        self.filepath = filepath
+        self.bucket_name = bucket_name
+        self.key = key
+        self.message = client_error.response["Error"]["Message"]
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f"s3://{self.bucket_name}/{self.key} is not download to {self.filepath}!"
 
 class UploadFileError(Exception):
     """Exception raised when file upload failed"""
@@ -54,20 +66,6 @@ class EOBucketException(Exception):
 
     def __str__(self):
         return f"{self._message} {self._prd_prefix} from {self._bucket_name} with {self._response}"
-
-
-class DownloadFileError(Exception):
-    """Exception raised when file download failed"""
-
-    def __init__(self, client_error: ClientError, filepath, bucket_name, key):
-        self.filepath = filepath
-        self.bucket_name = bucket_name
-        self.key = key
-        super().__init__(client_error.response["Error"]["Message"])
-
-    def __str__(self):
-        return f"{self.key} is not download from {self.bucket_name} to {self.filepath}!"
-
 
 class EOBucket:
     """Base class to describe the access (download, upload and list)
