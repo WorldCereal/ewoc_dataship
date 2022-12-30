@@ -7,6 +7,7 @@ import numpy as np
 import zipfile
 from pathlib import Path
 from typing import Optional, List
+from tempfile import gettempdir
 
 import requests
 from eotile.eotile_module import main
@@ -34,7 +35,7 @@ def get_srtm_1s_default_provider() -> str:
 
 
 def get_srtm_from_s2_tile_id(
-    s2_tile_id: str, out_dirpath: Path, source: Optional[str] = None, resolution: str = "1s"
+    s2_tile_id: str, out_dirpath: Path = Path(gettempdir()), source: Optional[str] = None, resolution: str = "1s"
 ) -> None:
     """
     Retrieve srtm 1s data for a Sentinel-2 tile id from the source into the output dir
@@ -51,7 +52,7 @@ def get_srtm_from_s2_tile_id(
 
 
 def get_srtm_tiles(
-    srtm_tile_ids: List[str], out_dir: Path, source: Optional[str] = None, resolution: str = "1s"
+    srtm_tile_ids: List[str], out_dir: Path = Path(gettempdir()), source: Optional[str] = None, resolution: str = "1s"
 ) -> None:
     """
     Retrieve srtm 1s data from the source into the output dir
@@ -95,7 +96,7 @@ def get_srtm_tiles(
         raise ValueError(f"Source {srtm_provider} not supported for srtm!")
 
 
-def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path) -> None:
+def get_srtm_from_esa(srtm_tile_ids: List[str], out_dirpath: Path=Path(gettempdir())) -> None:
     """
     Retrieve srtm 1s data from ESA website into the output dir
     :param srtm_tile_ids: List of srtm tile ids
