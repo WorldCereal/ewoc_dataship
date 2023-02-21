@@ -37,11 +37,6 @@ class Test_ewoc(unittest.TestCase):
         self.assertTrue((out_dirpath / "N53E031.hgt").exists())
         self.assertTrue((out_dirpath / "N53E032.hgt").exists())
 
-        # TODO Need to fix the following lines to avoid to use private attribute
-        with self.assertRaises(ValueError):
-            ewoc_auxdata_bucket.agera5_to_satio_csv()
-
-        ewoc_auxdata_bucket._bucket_name = "ewoc-agera5-yearly"
         ewoc_auxdata_bucket.agera5_to_satio_csv()
         self.assertTrue((out_dirpath / "satio_agera5.csv").exists())
         ewoc_auxdata_bucket.close()
