@@ -63,6 +63,11 @@ def get_s2_product(
         ValueError: if the source is not supported
     """
 
+    date_acq=prd_id.split('_')[2][:8]
+    date_end=prd_id.split('_')[-1][:8]
+    if date_acq!=date_end:
+        prd_id=prd_id.replace(date_acq, date_end)
+
     if source is None:
         s2_provider = get_s2_default_provider()
     else:
@@ -130,9 +135,9 @@ if __name__ == "__main__":
 
     _L1C_PRD_ID = "S2B_MSIL1C_20210714T235249_N0301_R130_T57KUR_20210715T005654.SAFE"
     _L2A_PRD_ID = "S2B_MSIL2A_20210714T131719_N0301_R124_T28WDB_20210714T160455.SAFE"
-    get_s2_product(_L1C_PRD_ID, source="eodag")
+    #get_s2_product(_L1C_PRD_ID, source="eodag")
     # get_s2_product(_L1C_PRD_ID, source="aws")
-    # get_s2_product(_L2A_PRD_ID, source="aws")
+    get_s2_product(_L2A_PRD_ID, source="aws")
     # get_s2_product(_L2A_PRD_ID, source="aws", l2_mask_only=True)
     # get_s2_product(_L2A_PRD_ID, source="aws", aws_l2a_cogs=True)
     # get_s2_product(_L2A_PRD_ID, source="aws", aws_l2a_cogs=True, l2_mask_only=True)
