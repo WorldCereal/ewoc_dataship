@@ -62,12 +62,7 @@ def get_s2_product(
     Raises:
         ValueError: if the source is not supported
     """
-
-    date_acq=prd_id.split('_')[2][:8]
-    date_end=prd_id.split('_')[-1][:8]
-    if date_acq!=date_end:
-        prd_id=prd_id.replace(date_acq, date_end)
-
+    
     if source is None:
         s2_provider = get_s2_default_provider()
     else:
