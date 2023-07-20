@@ -10,8 +10,7 @@ on:
 jobs:
   build-python:
 
-    # runs-on: ubuntu-20.04
-    runs-on: self-hosted
+    runs-on: ubuntu-20.04
 
     env:
        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
